@@ -438,19 +438,19 @@
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
     
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { 
             getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
         // SUBSTITUA PELA SUA CONFIGURAÇÃO REAL DO FIREBASE
         const firebaseConfig = {
-          apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
-  authDomain: "theeye-c3ace.firebaseapp.com",
-  projectId: "theeye-c3ace",
-  storageBucket: "theeye-c3ace.firebasestorage.app",
-  messagingSenderId: "742355525459",
-  appId: "1:742355525459:web:fbe84a9594be4bedc28ba6"
+          apiKey: "SUA_API_KEY", 
+          authDomain: "SEU_AUTH_DOMAIN",
+          projectId: "SEU_PROJECT_ID",
+          storageBucket: "SEU_STORAGE_BUCKET",
+          messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+          appId: "SEU_APP_ID"
         };
 
         // Initialize Firebase
@@ -494,11 +494,11 @@
         let pessoaSelecionadaAtual = null;
         let designacoesDaPessoaAtual = []; 
         let designacoesFiltradas = [];     
-        let designacoesChart = null; // Variável para manter a instância do gráfico
+        let designacoesChart = null; 
 
         // --- Estrutura HTML da Coluna Detalhes (Abas e Filtros) ---
         function criarEstruturaDetalhes() {
-            colunaDetalhesContent.style.display = 'none'; // Esconde mensagem placeholder
+            colunaDetalhesContent.style.display = 'none'; 
             colunaDetalhesDiv.innerHTML = `
                 <h3>Detalhes de: <span id="nome-pessoa-detalhe"></span></h3>
                 <div class="tabs">
@@ -516,14 +516,13 @@
                 <div id="historico-content" class="tab-content active"></div>
                 <div id="estatisticas-content" class="tab-content"></div>`;
 
-            // Adicionar event listeners para abas e filtros
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.addEventListener('click', () => {
                     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                     document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
-                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas(); // Renderiza ao trocar para aba
+                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas(); 
                 });
             });
             document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarEAtualizarFiltros);
@@ -534,21 +533,21 @@
         function popularFiltros() {
             const filtroAnoSelect = document.getElementById('filtro-ano');
             const filtroElementoSelect = document.getElementById('filtro-elemento');
-            if (!filtroAnoSelect || !filtroElementoSelect) return; // Elementos podem não existir se pessoa não selecionada
+            if (!filtroAnoSelect || !filtroElementoSelect) return; 
 
             const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a,b) => b-a);
-            const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a,b) => a.localeCompare(b)); // Ordena alfabeticamente
+            const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a,b) => a.localeCompare(b)); 
 
             filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
         }
 
         function aplicarEAtualizarFiltros() {
-            const mes = document.getElementById('filtro-mes')?.value; // Adiciona ? para segurança se o elemento não existir
+            const mes = document.getElementById('filtro-mes')?.value; 
             const ano = document.getElementById('filtro-ano')?.value;
             const elemento = document.getElementById('filtro-elemento')?.value;
 
-            if(mes === undefined || ano === undefined || elemento === undefined) { // Se os filtros não existem (ex: antes de selecionar pessoa)
+            if(mes === undefined || ano === undefined || elemento === undefined) { 
                 designacoesFiltradas = [...designacoesDaPessoaAtual];
             } else {
                  designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
@@ -579,47 +578,66 @@
             const historicoContent = document.getElementById('historico-content');
             if (!historicoContent) return;
             
-            historicoContent.innerHTML = ''; // Limpa conteúdo antigo
+            historicoContent.innerHTML = ''; 
             if (designacoesFiltradas.length === 0) {
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Nenhuma designação encontrada com os filtros atuais.</p>';
                 return;
             }
 
-            // Ordenar da mais recente para a mais antiga
             const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
                 const valA = parseInt(a.ano) * 10000 + parseInt(a.mes) * 100 + parseInt(a.dia);
                 const valB = parseInt(b.ano) * 10000 + parseInt(b.mes) * 100 + parseInt(b.dia);
-                return valB - valA; // Mais recente primeiro
+                return valB - valA; 
             });
 
             const ul = document.createElement('ul');
             ul.style.listStyleType = 'none'; 
             ul.style.paddingLeft = '0';    
 
+            let mesAnoAtual = null; 
+
             designacoesOrdenadas.forEach(desig => {
+                const dataFormatada = `${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}`;
+                const mesDaDesignacao = parseInt(desig.mes);
+                const anoDaDesignacao = parseInt(desig.ano);
+                const nomeMesAno = `${new Date(anoDaDesignacao, mesDaDesignacao - 1).toLocaleString('pt-BR', { month: 'long' })} de ${anoDaDesignacao}`;
+                
+                if (mesAnoAtual !== nomeMesAno) {
+                    mesAnoAtual = nomeMesAno;
+                    const separadorLi = document.createElement('li');
+                    separadorLi.style.padding = '15px 0 5px 0';
+                    separadorLi.style.fontWeight = 'bold';
+                    separadorLi.style.fontSize = '1.1em';
+                    separadorLi.style.color = '#0056b3'; 
+                    if (ul.childNodes.length > 0) { 
+                        separadorLi.style.borderTop = '2px solid #ddd';
+                        separadorLi.style.marginTop = '10px';
+                    }
+                    separadorLi.textContent = nomeMesAno.charAt(0).toUpperCase() + nomeMesAno.slice(1); 
+                    ul.appendChild(separadorLi);
+                }
+
                 const li = document.createElement('li');
-                li.style.padding = '8px 0'; 
+                li.style.padding = '8px 0 8px 10px'; 
                 li.style.borderBottom = '1px solid #eee'; 
 
                 const nomeElemento = desig.nome || 'Elemento sem nome';
                 const participantesNomesArray = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean); 
                 const participantesString = participantesNomesArray.join(' - ');
-                const dataFormatada = `${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}`;
                 
-                let textoFinal = `${nomeElemento}`;
+                let textoFinal = `${dataFormatada} | ${nomeElemento}`;
                 if (participantesString) {
                     textoFinal += `: ${participantesString}`;
                 }
-                textoFinal += ` (${dataFormatada})`;
                 
                 li.textContent = textoFinal;
                 ul.appendChild(li);
             });
             
             if (ul.childNodes.length > 0) {
-                const ultimoItem = ul.lastChild;
-                if (ultimoItem) {
-                    ultimoItem.style.borderBottom = 'none'; 
+                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.textContent.includes('|')); 
+                if (ultimoItemDeDesignacao) {
+                    ultimoItemDeDesignacao.style.borderBottom = 'none'; 
                 }
                 historicoContent.appendChild(ul);
             } else if (designacoesFiltradas.length > 0) { 
@@ -633,11 +651,9 @@
             statsContent.innerHTML = ''; 
 
             if (!pessoaSelecionadaAtual || designacoesFiltradas.length === 0) {
-                // A mensagem é tratada pelo CSS agora
                 return;
             }
 
-            // 1. Total de Designações
             const totalDesignacoes = designacoesFiltradas.length;
             statsContent.innerHTML += `
                 <div class="stat-card">
@@ -646,7 +662,6 @@
                     <span class="stat-label">(Com filtro aplicado)</span>
                 </div>`;
 
-            // 2. Elementos Mais Realizados
             const contagemElementos = designacoesFiltradas.reduce((acc, d) => {
                 acc[d.nome] = (acc[d.nome] || 0) + 1; return acc;
             }, {});
@@ -662,7 +677,6 @@
             elementosHtml += '</div>';
             statsContent.innerHTML += elementosHtml;
 
-            // 3. Parceiros Mais Frequentes
             const contagemParceiros = designacoesFiltradas.reduce((acc, d) => {
                 [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome)
                     .forEach(parceiro => acc[parceiro] = (acc[parceiro] || 0) + 1);
@@ -672,7 +686,7 @@
             let parceirosHtml = '<div class="stat-card"><h4>Parceiros Mais Frequentes</h4>';
             if (parceiroMaisFrequente.length > 0) {
                 parceirosHtml += '<ul>';
-                parceiroMaisFrequente.slice(0,3).forEach(([nome, count]) => { // Top 3 parceiros
+                parceiroMaisFrequente.slice(0,3).forEach(([nome, count]) => { 
                      parceirosHtml += `<li>${nome}: <span class="stat-value-inline">${count}</span></li>`;
                 });
                 parceirosHtml += '</ul>';
@@ -680,7 +694,6 @@
             parceirosHtml += '</div>';
             statsContent.innerHTML += parceirosHtml;
 
-            // 4. Verificação de Designação Conjunta
             statsContent.innerHTML += `
                 <div class="stat-card" id="verificacao-conjunta-container">
                     <h4>Verificar Designação Conjunta</h4>
@@ -695,9 +708,14 @@
                     <button id="btn-verificar-conjunta">Verificar</button>
                     <div id="resultado-verificacao-conjunta"></div>
                 </div>`;
-            document.getElementById('btn-verificar-conjunta').addEventListener('click', verificarDesignacaoConjunta);
+            // Adiciona o listener aqui, após o botão ser adicionado ao DOM
+            const btnVerificar = document.getElementById('btn-verificar-conjunta');
+            if (btnVerificar) {
+                btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
+            } else {
+                console.error("Botão 'btn-verificar-conjunta' não encontrado após renderizar estatísticas!");
+            }
         
-            // Gráfico
             statsContent.innerHTML += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
             if (designacoesChart) designacoesChart.destroy();
             const labels = Object.keys(contagemElementos);
@@ -711,30 +729,84 @@
                 });
             } else {
                  const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
-                 if(chartContainer) chartContainer.querySelector('canvas').outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico.</p>";
+                 if(chartContainer) {
+                    const canvas = chartContainer.querySelector('canvas');
+                    if(canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico.</p>";
+                 }
             }
         }
         
         function verificarDesignacaoConjunta() {
-            const nomeOutraPessoa = document.getElementById('select-outra-pessoa').value;
-            const nomeElemento = document.getElementById('select-elemento-verificacao').value;
+            console.log("--- verificarDesignacaoConjunta CHAMADA ---"); 
+
+            const selectOutraPessoaElement = document.getElementById('select-outra-pessoa');
+            const selectElementoVerificacaoElement = document.getElementById('select-elemento-verificacao');
             const resultadoDiv = document.getElementById('resultado-verificacao-conjunta');
-            resultadoDiv.className = ''; // Limpa classes anteriores
+
+            if (!selectOutraPessoaElement) {
+                console.error("ERRO: Elemento select-outra-pessoa não encontrado!");
+                return;
+            }
+            if (!selectElementoVerificacaoElement) {
+                console.error("ERRO: Elemento select-elemento-verificacao não encontrado!");
+                return;
+            }
+            if (!resultadoDiv) {
+                console.error("ERRO: Elemento resultado-verificacao-conjunta não encontrado!");
+                return;
+            }
+
+            const nomeOutraPessoa = selectOutraPessoaElement.value;
+            const nomeElemento = selectElementoVerificacaoElement.value;
+
+            console.log("Pessoa Selecionada (pessoaSelecionadaAtual):", pessoaSelecionadaAtual ? pessoaSelecionadaAtual.nome : "Nenhuma");
+            console.log("Outra Pessoa Selecionada (dropdown):", nomeOutraPessoa); 
+            console.log("Elemento Selecionado (dropdown):", nomeElemento);    
+
+            resultadoDiv.className = ''; 
+            resultadoDiv.textContent = ''; 
 
             if (!nomeOutraPessoa || !nomeElemento) {
-                resultadoDiv.textContent = "Selecione pessoa e elemento.";
-                resultadoDiv.classList.add('info'); return;
+                resultadoDiv.textContent = "Por favor, selecione uma pessoa e um elemento para verificar.";
+                resultadoDiv.classList.add('info'); 
+                console.log("Mensagem: Por favor, selecione pessoa e elemento."); 
+                return;
             }
-            // Usa designacoesDaPessoaAtual para esta verificação específica, não as filtradas
-            const contagem = designacoesDaPessoaAtual.filter(d => d.nome === nomeElemento && d.participantes && d.participantes[nomeOutraPessoa]).length;
+
+            if (!pessoaSelecionadaAtual || !pessoaSelecionadaAtual.nome) {
+                console.error("ERRO: pessoaSelecionadaAtual não está definida ou não tem nome.");
+                resultadoDiv.textContent = "Erro: Pessoa principal não selecionada.";
+                resultadoDiv.classList.add('error');
+                return;
+            }
+
+            console.log("Total de designações da pessoa atual:", designacoesDaPessoaAtual.length);
+            // console.log("Designações da pessoa atual (para verificação):", JSON.stringify(designacoesDaPessoaAtual, null, 2));
+
+            const designacoesRelevantes = designacoesDaPessoaAtual.filter(d => {
+                const elementoMatch = d.nome === nomeElemento;
+                const pessoaAtualParticipa = d.participantes && d.participantes[pessoaSelecionadaAtual.nome] === true;
+                const outraPessoaParticipa = d.participantes && d.participantes[nomeOutraPessoa] === true;
+                
+                // console.log(`  Verificando Desig ID ${d.id}: Elem: "${d.nome}" (Match: ${elementoMatch}), P.Atual: ${pessoaAtualParticipa}, Outra P: ${outraPessoaParticipa}`);
+                
+                return elementoMatch && pessoaAtualParticipa && outraPessoaParticipa;
+            });
+            
+            const contagem = designacoesRelevantes.length;
+            console.log("Contagem de designações conjuntas encontradas:", contagem); 
+            // console.log("Designações conjuntas relevantes:", JSON.stringify(designacoesRelevantes, null, 2));
+
             if (contagem > 0) {
-                resultadoDiv.textContent = `Sim, ${contagem} vez(es) juntos em "${nomeElemento}".`;
+                resultadoDiv.textContent = `Sim, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} fizeram "${nomeElemento}" juntos ${contagem} vez(es).`;
                 resultadoDiv.classList.add('success');
             } else {
-                resultadoDiv.textContent = `Não fizeram "${nomeElemento}" juntos.`;
+                resultadoDiv.textContent = `Não, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} não fizeram "${nomeElemento}" juntos (com base nos dados carregados).`;
                 resultadoDiv.classList.add('error');
             }
+            console.log("Resultado final exibido:", resultadoDiv.textContent); 
         }
+
 
         // --- Funções Principais ---
         async function carregarPessoas() {
@@ -743,7 +815,6 @@
                 todasPessoas = [];
                 querySnapshot.forEach((docSnap) => todasPessoas.push({ id: docSnap.id, ...docSnap.data() }));
                 
-                // Ordenar todasPessoas alfabeticamente pelo nome
                 todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
                 listaPessoasUl.innerHTML = ''; 
