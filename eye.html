@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Designações Avançado</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
     <style>
-        body {
+       body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             background-color: #f0f2f5;
@@ -35,9 +35,9 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .coluna#coluna-pessoas {
-             flex-basis: 30%; 
+             flex-basis: 30%;
              max-width: 350px;
         }
         .coluna#coluna-detalhes {
@@ -52,435 +52,183 @@
             margin-bottom: 15px;
         }
 
-        #lista-pessoas {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
+        #search-pessoa-container { margin-bottom: 10px; padding: 5px; border-radius: 6px; }
+        #search-pessoa-input { width: calc(100% - 20px); padding: 10px; border: 1px solid #ced4da; border-radius: 5px; font-size: 0.95em; box-sizing: border-box; }
+        #lista-pessoas { list-style-type: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        #lista-pessoas li { padding: 10px 12px; margin-bottom: 6px; background-color: #e9ecef; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-size: 0.95em; }
+        #lista-pessoas li:hover { background-color: #d3d9df; }
+        #lista-pessoas li.active { background-color: #007bff; color: white; font-weight: 500; }
+        #lista-pessoas li.hidden-by-search { display: none; }
 
-        #lista-pessoas li {
-            padding: 10px 12px;
-            margin-bottom: 6px;
-            background-color: #e9ecef;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            font-size: 0.95em;
-        }
+        .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
+        .tab-button { padding: 10px 15px; cursor: pointer; border: none; background-color: transparent; font-size: 1em; margin-right: 5px; border-bottom: 3px solid transparent; color: #555; }
+        .tab-button.active { border-bottom: 3px solid #007bff; font-weight: bold; color: #007bff; }
 
-        #lista-pessoas li:hover {
-            background-color: #d3d9df;
-        }
-        #lista-pessoas li.active {
-            background-color: #007bff;
-            color: white;
-            font-weight: 500;
-        }
-
-        /* Abas */
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 15px;
-        }
-        .tab-button {
-            padding: 10px 15px;
-            cursor: pointer;
-            border: none;
-            background-color: transparent;
-            font-size: 1em;
-            margin-right: 5px;
-            border-bottom: 3px solid transparent;
-            color: #555;
-        }
-        .tab-button.active {
-            border-bottom: 3px solid #007bff;
-            font-weight: bold;
-            color: #007bff;
-        }
+        /* --- CSS DAS ABAS CORRIGIDO --- */
         .tab-content {
-            display: none;
-            flex-grow: 1; 
-            overflow-y: auto; 
+            display: none; /* Oculta por padrão */
+            flex-grow: 1;
+            overflow-y: auto;
         }
         .tab-content.active {
-            display: flex; 
+            display: flex; /* Padrão para conteúdo ativo (usado por 'Histórico') */
             flex-direction: column;
         }
 
-        /* Filtros */
-        .filters-container {
-            display: flex;
-            flex-wrap: wrap; /* Permite que os filtros quebrem linha em telas menores */
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            align-items: center;
-        }
-        .filters-container label {
-            font-size: 0.9em;
-            margin-right: 5px;
-        }
-        .filters-container select, .filters-container input, .filters-container button {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ced4da;
-            font-size: 0.9em;
-        }
-        .filters-container button {
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        .filters-container button#btn-limpar-filtros {
-            background-color: #6c757d;
-        }
-
-
-        .designacao-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        }
-        .designacao-card h4 {
-            margin-top: 0;
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 1.1em;
-        }
-        .designacao-card p {
-            margin: 4px 0;
-            font-size: 0.9em;
-            color: #555;
-        }
-
-        /* Estilos para Estatísticas em Cards */
-        #estatisticas-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Colunas responsivas para os cards */
+        #estatisticas-content.active { /* Só aplica display: grid quando #estatisticas-content TAMBÉM tiver a classe .active */
+            display: grid; /* Sobrescreve o display: flex de .tab-content.active */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             padding-top: 10px;
+            /* As propriedades flex-grow e overflow-y são herdadas de .tab-content
+               ou podem ser redefinidas aqui se necessário para o layout de grid */
         }
-
-        .stat-card {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-card h4 { /* Título dentro do card de estatística */
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #0056b3; 
-            font-size: 1.15em;
-            border-bottom: 1px solid #eef;
-            padding-bottom: 10px;
-        }
-
-        .stat-card .stat-value { /* Valor numérico principal da estatística */
-            font-size: 2em; 
-            font-weight: 600;
-            color: #007bff; 
-            display: block; 
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .stat-card .stat-label { /* Rótulo descritivo para o valor */
-            font-size: 0.9em;
-            color: #555;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .stat-card p, .stat-card ul {
-            font-size: 0.95em;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        .stat-card ul {
-            padding-left: 20px;
-            list-style-type: "– "; /* Um traço simples para a lista */
-        }
-        .stat-card li {
-            margin-bottom: 6px;
-        }
-        .stat-card li .stat-value-inline { /* Para valores dentro de listas */
-            font-weight: bold;
-            color: #28a745;
-        }
+        /* --- FIM DA CORREÇÃO DO CSS DAS ABAS --- */
 
 
-        #verificacao-conjunta-container.stat-card label,
-        #verificacao-conjunta-container.stat-card select,
-        #verificacao-conjunta-container.stat-card button {
-            display: block; 
-            width: calc(100% - 16px); 
-            margin-bottom: 12px;
-            box-sizing: border-box;
-        }
-        #verificacao-conjunta-container.stat-card button {
-            width: auto; 
-            padding: 10px 18px;
-            background-color: #17a2b8;
-            border-color: #17a2b8;
-            color: white;
-            cursor: pointer;
-        }
-        #resultado-verificacao-conjunta {
-            margin-top: 12px;
-            font-weight: 500;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
+        .filters-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 6px; align-items: center; }
+        .filters-container label { font-size: 0.9em; margin-right: 5px; }
+        .filters-container select, .filters-container input, .filters-container button { padding: 8px; border-radius: 4px; border: 1px solid #ced4da; font-size: 0.9em; }
+        .filters-container button { background-color: #007bff; color: white; cursor: pointer; }
+        .filters-container button#btn-limpar-filtros { background-color: #6c757d; }
+
+        #historico-content ul { list-style-type: none; padding-left: 0; }
+        #historico-content li { padding: 8px 0 8px 10px; border-bottom: 1px solid #eee; }
+        #historico-content li.month-separator { padding: 15px 0 5px 0; font-weight: bold; font-size: 1.1em; color: #0056b3; }
+        #historico-content li.month-separator.first-month-separator { border-top: none; margin-top: 0; }
+        #historico-content li.month-separator:not(.first-month-separator) { border-top: 2px solid #ddd; margin-top: 10px;}
+        #historico-content li:last-child:not(.month-separator) { border-bottom: none; }
+
+        /* Os estilos abaixo de #estatisticas-content foram movidos para dentro de #estatisticas-content.active */
+        /* #estatisticas-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; padding-top: 10px; } */
+        .stat-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+        .stat-card h4 { margin-top: 0; margin-bottom: 15px; color: #0056b3; font-size: 1.15em; border-bottom: 1px solid #eef; padding-bottom: 10px; }
+        .stat-card .stat-value { font-size: 2em; font-weight: 600; color: #007bff; display: block; margin-bottom: 8px; text-align: center; }
+        .stat-card .stat-label { font-size: 0.9em; color: #555; text-align: center; margin-bottom: 15px; }
+        .stat-card p, .stat-card ul { font-size: 0.95em; color: #333; margin-bottom: 8px; }
+        .stat-card ul { padding-left: 20px; list-style-type: "– "; }
+        .stat-card li { margin-bottom: 6px; }
+        .stat-card li .stat-value-inline { font-weight: bold; color: #28a745; }
+        #verificacao-conjunta-container.stat-card label, #verificacao-conjunta-container.stat-card select, #verificacao-conjunta-container.stat-card button { display: block; width: calc(100% - 16px); margin-bottom: 12px; box-sizing: border-box; }
+        #verificacao-conjunta-container.stat-card button { width: auto; padding: 10px 18px; background-color: #17a2b8; border-color: #17a2b8; color: white; cursor: pointer; }
+        #resultado-verificacao-conjunta { margin-top: 12px; font-weight: 500; padding: 10px; border-radius: 5px; text-align: center; }
         #resultado-verificacao-conjunta.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
         #resultado-verificacao-conjunta.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
         #resultado-verificacao-conjunta.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;}
+        #designacoesPorElementoChartContainer.stat-card { min-height: 300px; }
+        #designacoesPorElementoChartContainer.stat-card canvas{ width: 100% !important; max-height: 320px; }
+        #estatisticas-content:empty::before, #estatisticas-content:has(> p:only-child)::before { content: "Nenhuma designação para calcular estatísticas com os filtros atuais."; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%; color: #777; font-size: 1.1em; }
+        #estatisticas-content > p:only-child { display: none; }
 
+        .fab-container { position: fixed; bottom: 30px; right: 30px; z-index: 1000; }
+        .fab { background-color: #007bff; color: white; border: none; width: 56px; height: 56px; border-radius: 50%; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease, background-color 0.2s ease; }
+        .fab:hover { background-color: #0056b3; transform: translateY(-2px); }
+        .fab-options { display: none; position: absolute; bottom: 70px; right: 0; flex-direction: column; gap: 10px; }
+        .fab-options.show { display: flex; }
+        .fab-option { background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: background-color 0.2s ease; }
+        .fab-option:hover { background-color: #138496; }
 
-        #designacoesPorElementoChartContainer.stat-card {
-            min-height: 300px; 
-        }
-        #designacoesPorElementoChartContainer.stat-card canvas{
-            width: 100% !important; /* Força o canvas a ocupar a largura do card */
-            max-height: 320px;
-        }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fff; margin: 8% auto; padding: 25px; border: 1px solid #bbb; width: 90%; max-width: 550px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
+        .modal-content.modal-gerenciar { max-width: 700px; }
+        .close-button { color: #888; position: absolute; top: 10px; right: 15px; font-size: 30px; font-weight: bold; line-height: 1; }
+        .close-button:hover, .close-button:focus { color: #333; text-decoration: none; cursor: pointer; }
+        .modal-content h3 { margin-top: 0; color: #0056b3; font-size: 1.5em; margin-bottom: 20px; }
+        .modal-content form div { margin-bottom: 18px; }
+        .modal-content label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.95em; }
+        .modal-content input[type="text"], .modal-content select { width: calc(100% - 24px); padding: 10px 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
+        .modal-content button[type="submit"] { background-color: #28a745; color: white; padding: 12px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; transition: background-color 0.2s ease; }
+        .modal-content button[type="submit"]:hover { background-color: #218838; }
+        #coluna-detalhes-content { display: flex; align-items: center; justify-content: center; height: 100%; color: #777; font-size: 1.2em; }
+
+        #lista-gerenciar-pessoas { list-style-type: none; padding: 0; max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; }
+        #lista-gerenciar-pessoas li { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #f0f0f0; }
+        #lista-gerenciar-pessoas li:last-child { border-bottom: none; }
+        #lista-gerenciar-pessoas .pessoa-nome { flex-grow: 1; }
+        #lista-gerenciar-pessoas .pessoa-status-visivel.oculta { font-style: italic; color: #888; margin-left: 10px; font-size: 0.9em; }
+        #lista-gerenciar-pessoas .pessoa-actions button { margin-left: 8px; padding: 5px 10px; font-size: 0.85em; cursor: pointer; border: 1px solid transparent; border-radius: 4px; }
+        #lista-gerenciar-pessoas .pessoa-actions .btn-toggle-visibilidade { background-color: #ffc107; color: #333; }
+        #lista-gerenciar-pessoas .pessoa-actions .btn-toggle-visibilidade.mostrar { background-color: #28a745; color: white; } /* Classe para o botão "Mostrar" */
+        #lista-gerenciar-pessoas .pessoa-actions .btn-editar-pessoa { background-color: #17a2b8; color: white; }
+        #lista-gerenciar-pessoas .pessoa-actions .btn-remover-pessoa { background-color: #dc3545; color: white; }
         
-        #estatisticas-content:empty::before,
-        #estatisticas-content:has(> p:only-child)::before {
-            content: "Nenhuma designação para calcular estatísticas com os filtros atuais.";
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-            color: #777;
-            font-size: 1.1em;
-        }
-         #estatisticas-content > p:only-child {
-            display: none; /* Esconde o <p> se a mensagem ::before for mostrada */
-        }
-
-
-        /* FAB (Floating Action Button) */
-        .fab-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-        }
-        .fab {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-        .fab:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        .fab-options {
-            display: none;
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .fab-options.show {
-            display: flex;
-        }
-        .fab-option {
-            background-color: #17a2b8; 
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            font-size: 0.9em;
-            white-space: nowrap;
-            transition: background-color 0.2s ease;
-        }
-        .fab-option:hover {
-            background-color: #138496;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-        }
-        .modal-content {
-            background-color: #fff;
-            margin: 8% auto;
-            padding: 25px;
-            border: 1px solid #bbb;
-            width: 90%;
-            max-width: 550px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-        }
-        .close-button {
-            color: #888;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 30px;
-            font-weight: bold;
-            line-height: 1;
-        }
-        .close-button:hover,
-        .close-button:focus {
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .modal-content h3 {
-            margin-top: 0;
-            color: #0056b3;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-        .modal-content form div {
-            margin-bottom: 18px;
-        }
-        .modal-content label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            font-size: 0.95em;
-        }
-        .modal-content input[type="text"],
-        .modal-content select
-        {
-            width: calc(100% - 24px);
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 1em;
-        }
-        .modal-content button[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            padding: 12px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s ease;
-        }
-        .modal-content button[type="submit"]:hover {
-            background-color: #218838;
-        }
-        #coluna-detalhes-content { 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #777;
-            font-size: 1.2em;
-        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <div id="coluna-pessoas" class="coluna">
             <h2>Pessoas</h2>
+            <div id="search-pessoa-container"><input type="text" id="search-pessoa-input" placeholder="Pesquisar pessoa..."></div>
             <ul id="lista-pessoas"></ul>
         </div>
-        <div id="coluna-detalhes" class="coluna">
-            <div id="coluna-detalhes-content">
-                 <p>Selecione uma pessoa para ver os detalhes.</p>
-            </div>
-        </div>
+        <div id="coluna-detalhes" class="coluna"><div id="coluna-detalhes-content"><p>Selecione uma pessoa para ver os detalhes.</p></div></div>
     </div>
 
     <div class="fab-container">
         <button id="fab-main" class="fab">+</button>
         <div id="fab-options" class="fab-options">
-            <button id="btn-criar-pessoa-fab" class="fab-option">Criar Pessoa</button>
-            <button id="btn-criar-elemento-fab" class="fab-option">Criar Elemento</button>
-            <button id="btn-criar-designacao-fab" class="fab-option">Criar Designação</button>
+            <button id="btn-gerenciar-pessoas-fab" class="fab-option">⚙️ Gerenciar Pessoas</button>
+            <button id="btn-criar-pessoa-fab" class="fab-option">👤 Criar Pessoa</button>
+            <button id="btn-criar-elemento-fab" class="fab-option">📄 Criar Elemento</button>
+            <button id="btn-criar-designacao-fab" class="fab-option">📌 Criar Designação</button>
         </div>
     </div>
 
-    <div id="modal-pessoa" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-pessoa">×</span><h3>Criar Nova Pessoa</h3><form id="form-criar-pessoa"><div><label for="nome-pessoa">Nome:</label><input type="text" id="nome-pessoa" required></div><button type="submit">Criar Pessoa</button></form></div></div>
+    <div id="modal-pessoa" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-pessoa">×</span><h3 id="modal-pessoa-titulo">Criar Nova Pessoa</h3><form id="form-criar-pessoa"><input type="hidden" id="pessoa-id-edit"><div><label for="nome-pessoa">Nome:</label><input type="text" id="nome-pessoa" required></div><div><label for="idioma-pessoa">Idioma:</label><select id="idioma-pessoa"><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select></div><div><label for="genero-pessoa">Gênero:</label><select id="genero-pessoa"><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div><div><label for="cargo-pessoa">Cargo:</label><select id="cargo-pessoa"><option value="Publicador">Publicador</option><option value="Servo Ministerial">Servo Ministerial</option><option value="Ancião">Ancião</option></select></div><div><label for="pregacao-pessoa">Pregação:</label><select id="pregacao-pessoa"><option value="">Nenhum</option><option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option><option value="Pioneiro Regular">Pioneiro Regular</option></select></div><button type="submit" id="btn-submit-pessoa">Criar Pessoa</button></form></div></div>
+    <div id="modal-gerenciar-pessoas" class="modal"><div class="modal-content modal-gerenciar"><span class="close-button" data-modal-id="modal-gerenciar-pessoas">×</span><h3>Gerenciar Pessoas</h3><p><small>Aqui você pode editar, remover ou ocultar pessoas da lista principal do site.</small></p><ul id="lista-gerenciar-pessoas"></ul></div></div>
     <div id="modal-elemento" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-elemento">×</span><h3>Criar Novo Elemento</h3><form id="form-criar-elemento"><div><label for="nome-elemento-modal">Nome do Elemento:</label><input type="text" id="nome-elemento-modal" required></div><div><label for="tipo-elemento">Tipo:</label><select id="tipo-elemento"><option value="reuniao">Reunião</option><option value="pregacao">Pregação</option></select></div><div><label for="genero-elemento">Gênero:</label><select id="genero-elemento"><option value="semana">Semana</option><option value="fim de semana">Fim de Semana</option><option value="tecnico">Técnico</option></select></div><button type="submit">Criar Elemento</button></form></div></div>
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
     
     <script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { 
-            getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, serverTimestamp 
+            getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, 
+            serverTimestamp, updateDoc, deleteDoc 
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-        // SUBSTITUA PELA SUA CONFIGURAÇÃO REAL DO FIREBASE
+        // SUA CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
-       apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
+            apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
   authDomain: "theeye-c3ace.firebaseapp.com",
   projectId: "theeye-c3ace",
   storageBucket: "theeye-c3ace.firebasestorage.app",
   messagingSenderId: "742355525459",
   appId: "1:742355525459:web:fbe84a9594be4bedc28ba6"
         };
-
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
         // DOM Elements
         const listaPessoasUl = document.getElementById('lista-pessoas');
+        const searchPessoaInput = document.getElementById('search-pessoa-input');
         const colunaDetalhesDiv = document.getElementById('coluna-detalhes');
-        const colunaDetalhesContent = document.getElementById('coluna-detalhes-content');
-
+        const colunaDetalhesContent = document.getElementById('coluna-detalhes-content'); 
         const fabMain = document.getElementById('fab-main');
         const fabOptions = document.getElementById('fab-options');
         const btnCriarPessoaFab = document.getElementById('btn-criar-pessoa-fab');
         const btnCriarElementoFab = document.getElementById('btn-criar-elemento-fab');
         const btnCriarDesignacaoFab = document.getElementById('btn-criar-designacao-fab');
-
+        const btnGerenciarPessoasFab = document.getElementById('btn-gerenciar-pessoas-fab');
         const modalPessoa = document.getElementById('modal-pessoa');
         const modalElemento = document.getElementById('modal-elemento');
         const modalDesignacao = document.getElementById('modal-designacao');
+        const modalGerenciarPessoas = document.getElementById('modal-gerenciar-pessoas');
+        const listaGerenciarPessoasUl = document.getElementById('lista-gerenciar-pessoas');
+        const modalPessoaTitulo = document.getElementById('modal-pessoa-titulo');
+        const pessoaIdEditInput = document.getElementById('pessoa-id-edit');
+        const btnSubmitPessoa = document.getElementById('btn-submit-pessoa');
         const closeButtons = document.querySelectorAll('.close-button');
-
         const formCriarPessoa = document.getElementById('form-criar-pessoa');
         const nomePessoaInput = document.getElementById('nome-pessoa');
-
+        const idiomaPessoaSelect = document.getElementById('idioma-pessoa'); 
+        const generoPessoaSelect = document.getElementById('genero-pessoa'); 
+        const cargoPessoaSelect = document.getElementById('cargo-pessoa');   
+        const pregacaoPessoaSelect = document.getElementById('pregacao-pessoa'); 
         const formCriarElemento = document.getElementById('form-criar-elemento');
         const nomeElementoModalInput = document.getElementById('nome-elemento-modal');
         const tipoElementoSelect = document.getElementById('tipo-elemento');
-        const generoElementoSelect = document.getElementById('genero-elemento');
-
+        const generoElementoSelectDoc = document.getElementById('genero-elemento'); // Renomeado para evitar conflito com generoPessoaSelect
         const formCriarDesignacao = document.getElementById('form-criar-designacao');
         const selectElementoDesignacao = document.getElementById('select-elemento-designacao');
         const selectPessoaA = document.getElementById('select-pessoaA');
@@ -488,7 +236,7 @@
         const selectPessoaC = document.getElementById('select-pessoaC');
         const dataDesignacaoInput = document.getElementById('data-designacao');
 
-        // Globais para dados e estado
+        // Globais
         let todasPessoas = [];
         let todosElementos = [];
         let pessoaSelecionadaAtual = null;
@@ -496,11 +244,91 @@
         let designacoesFiltradas = [];     
         let designacoesChart = null; 
 
-        // --- Estrutura HTML da Coluna Detalhes (Abas e Filtros) ---
+        // --- Barra de Pesquisa Pessoas ---
+        if(searchPessoaInput) {
+            searchPessoaInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const pessoasLi = listaPessoasUl.getElementsByTagName('li');
+                Array.from(pessoasLi).forEach(li => {
+                    const nomePessoa = li.textContent.toLowerCase();
+                    li.classList.toggle('hidden-by-search', !nomePessoa.includes(searchTerm));
+                });
+            });
+        }
+
+        // --- Lógica Principal da UI ---
+        async function carregarPessoas() {
+            console.log("carregarPessoas: Iniciando");
+            try {
+                const querySnapshot = await getDocs(collection(db, "pessoas"));
+                todasPessoas = [];
+                querySnapshot.forEach((docSnap) => todasPessoas.push({ id: docSnap.id, ...docSnap.data() }));
+                todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+                listaPessoasUl.innerHTML = ''; 
+                if(searchPessoaInput) searchPessoaInput.value = ''; 
+                const pessoasVisiveis = todasPessoas.filter(p => p.estaVisivel !== false); 
+                console.log(`carregarPessoas: Encontradas ${todasPessoas.length} pessoas, ${pessoasVisiveis.length} visíveis.`);
+                pessoasVisiveis.forEach(pessoa => {
+                    const li = document.createElement('li');
+                    li.textContent = pessoa.nome;
+                    li.dataset.pessoaId = pessoa.id; 
+                    li.addEventListener('click', () => {
+                        console.log("Pessoa da lista clicada:", pessoa.nome, pessoa.id); 
+                        document.querySelectorAll('#lista-pessoas li').forEach(item => item.classList.remove('active'));
+                        li.classList.add('active');
+                        pessoaSelecionadaAtual = pessoa;
+                        carregarDesignacoesDaPessoa(pessoa.nome); 
+                    });
+                    listaPessoasUl.appendChild(li);
+                });
+                popularDropdownsPessoasNosModais();
+            } catch (error) { console.error("Erro ao carregar pessoas: ", error); alert("Falha ao carregar pessoas."); }
+        }
+
+        async function carregarDesignacoesDaPessoa(nomePessoa) {
+            console.log("carregarDesignacoesDaPessoa para:", nomePessoa); 
+            if (!pessoaSelecionadaAtual || pessoaSelecionadaAtual.nome !== nomePessoa) {
+                console.warn("Pessoa selecionada atual não corresponde ou é nula. Tentando encontrar...");
+                pessoaSelecionadaAtual = todasPessoas.find(p => p.nome === nomePessoa);
+                if (!pessoaSelecionadaAtual) {
+                    console.error("Não foi possível encontrar a pessoa selecionada para carregar designações.");
+                     colunaDetalhesDiv.innerHTML = ''; 
+                    colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
+                    colunaDetalhesContent.style.display = 'flex';
+                    return;
+                }
+            }
+            
+            criarEstruturaDetalhes(); 
+            const historicoContent = document.getElementById('historico-content'); 
+            if(historicoContent) historicoContent.innerHTML = '<p style="text-align:center;color:#777;margin-top:20px;">Carregando designações...</p>';
+            else { console.error("Elemento #historico-content não encontrado após criarEstruturaDetalhes."); return; }
+            try {
+                const q = query(collection(db, "designacoes"), where(`participantes.${nomePessoa}`, "==", true));
+                const querySnapshot = await getDocs(q);
+                designacoesDaPessoaAtual = [];
+                querySnapshot.forEach((docSnap) => designacoesDaPessoaAtual.push({ id: docSnap.id, ...docSnap.data() }));
+                console.log(`carregarDesignacoesDaPessoa: ${designacoesDaPessoaAtual.length} designações encontradas para ${nomePessoa}`);
+                popularFiltros(); 
+                aplicarEAtualizarFiltros(); 
+            } catch (error) {
+                console.error(`Erro ao carregar designações para ${nomePessoa}: `, error);
+                if(historicoContent) historicoContent.innerHTML = `<p style="text-align:center;color:#777;margin-top:20px;">Erro ao carregar designações.</p>`;
+            }
+        }
+        
         function criarEstruturaDetalhes() {
-            colunaDetalhesContent.style.display = 'none'; 
+            console.log("criarEstruturaDetalhes - Pessoa selecionada:", pessoaSelecionadaAtual?.nome);
+            if (!pessoaSelecionadaAtual) {
+                colunaDetalhesDiv.innerHTML = '';
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent);
+                colunaDetalhesContent.style.display = 'flex';
+                console.log("criarEstruturaDetalhes: Nenhuma pessoa selecionada, mostrando placeholder.");
+                return;
+            }
+            colunaDetalhesContent.style.display = 'none';
             colunaDetalhesDiv.innerHTML = `
-                <h3>Detalhes de: <span id="nome-pessoa-detalhe"></span></h3>
+                <h3>Detalhes de: <span id="nome-pessoa-detalhe">${pessoaSelecionadaAtual.nome}</span></h3>
                 <div class="tabs">
                     <button class="tab-button active" data-tab="historico">Histórico</button>
                     <button class="tab-button" data-tab="estatisticas">Estatísticas</button>
@@ -515,38 +343,84 @@
                 </div>
                 <div id="historico-content" class="tab-content active"></div>
                 <div id="estatisticas-content" class="tab-content"></div>`;
+            console.log("criarEstruturaDetalhes: Estrutura da segunda coluna criada.");
 
+            // ESTE É O TRECHO CRÍTICO PARA ALTERNAR AS ABAS
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.addEventListener('click', () => {
+                    console.log("===================================");
+                    console.log("Tab clicada:", button.dataset.tab);
+
+                    // Gerencia a ativação dos botões das abas
                     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                    document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
-                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas(); 
+
+                    // Referências diretas aos painéis de conteúdo
+                    const historicoContentDiv = document.getElementById('historico-content');
+                    const estatisticasContentDiv = document.getElementById('estatisticas-content');
+
+                    if (!historicoContentDiv || !estatisticasContentDiv) {
+                        console.error("ERRO: Um ou ambos os painéis de conteúdo (historico-content, estatisticas-content) não foram encontrados!");
+                        return;
+                    }
+
+                    console.log(`ANTES da alteração:`);
+                    console.log(`  Histórico: classes='${historicoContentDiv.className}', display='${window.getComputedStyle(historicoContentDiv).display}'`);
+                    console.log(`  Estatísticas: classes='${estatisticasContentDiv.className}', display='${window.getComputedStyle(estatisticasContentDiv).display}'`);
+
+                    // Determina qual aba deve ficar ativa e qual deve ser desativada
+                    const targetTabId = button.dataset.tab; // "historico" ou "estatisticas"
+
+                    if (targetTabId === 'historico') {
+                        historicoContentDiv.classList.add('active');
+                        estatisticasContentDiv.classList.remove('active');
+                    } else if (targetTabId === 'estatisticas') {
+                        estatisticasContentDiv.classList.add('active');
+                        historicoContentDiv.classList.remove('active');
+                    }
+
+                    console.log(`APÓS a alteração (alvo: ${targetTabId}):`);
+                    console.log(`  Histórico: classes='${historicoContentDiv.className}', display='${window.getComputedStyle(historicoContentDiv).display}'`);
+                    console.log(`  Estatísticas: classes='${estatisticasContentDiv.className}', display='${window.getComputedStyle(estatisticasContentDiv).display}'`);
+
+                    // Renderiza o conteúdo da aba que ficou ativa
+                    if (targetTabId === 'estatisticas') {
+                        console.log("Chamando renderizarEstatisticas a partir do clique na aba");
+                        renderizarEstatisticas();
+                    } else if (targetTabId === 'historico') {
+                        console.log("Chamando renderizarHistorico a partir do clique na aba");
+                        renderizarHistorico();
+                    }
+                    console.log("===================================");
                 });
             });
+            // FIM DO TRECHO CRÍTICO
+
             document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarEAtualizarFiltros);
             document.getElementById('btn-limpar-filtros').addEventListener('click', limparEAtualizarFiltros);
         }
 
-        // --- Funções de Filtros ---
+
         function popularFiltros() {
+            console.log("popularFiltros: Iniciando");
             const filtroAnoSelect = document.getElementById('filtro-ano');
             const filtroElementoSelect = document.getElementById('filtro-elemento');
-            if (!filtroAnoSelect || !filtroElementoSelect) return; 
-
+            if (!filtroAnoSelect || !filtroElementoSelect) {
+                console.warn("popularFiltros: Elementos de filtro não encontrados.");
+                return;
+            }
             const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a,b) => b-a);
             const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a,b) => a.localeCompare(b)); 
-
             filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
+            console.log("popularFiltros: Filtros populados.");
         }
 
         function aplicarEAtualizarFiltros() {
+            console.log("aplicarEAtualizarFiltros: Aplicando filtros.");
             const mes = document.getElementById('filtro-mes')?.value; 
             const ano = document.getElementById('filtro-ano')?.value;
             const elemento = document.getElementById('filtro-elemento')?.value;
-
             if(mes === undefined || ano === undefined || elemento === undefined) { 
                 designacoesFiltradas = [...designacoesDaPessoaAtual];
             } else {
@@ -557,13 +431,14 @@
                     return matchMes && matchAno && matchElemento;
                 });
             }
-            renderizarHistorico();
-            if (document.getElementById('estatisticas-content')?.classList.contains('active')) {
-                 renderizarEstatisticas(); 
-            }
+            const activeTabButton = document.querySelector('.tab-button.active');
+            console.log("aplicarEAtualizarFiltros - Aba ativa:", activeTabButton?.dataset.tab);
+            if (activeTabButton?.dataset.tab === 'historico') renderizarHistorico();
+            else if (activeTabButton?.dataset.tab === 'estatisticas') renderizarEstatisticas();
         }
         
         function limparEAtualizarFiltros() {
+            console.log("limparEAtualizarFiltros: Limpando filtros.");
             const filtroMes = document.getElementById('filtro-mes');
             const filtroAno = document.getElementById('filtro-ano');
             const filtroElemento = document.getElementById('filtro-elemento');
@@ -573,338 +448,202 @@
             aplicarEAtualizarFiltros(); 
         }
 
-        // --- Renderização ---
         function renderizarHistorico() {
+            console.log("renderizarHistorico: Iniciando");
             const historicoContent = document.getElementById('historico-content');
-            if (!historicoContent) return;
-            
+            if (!historicoContent) { console.error("renderizarHistorico: #historico-content não encontrado."); return; }
             historicoContent.innerHTML = ''; 
             if (designacoesFiltradas.length === 0) {
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Nenhuma designação encontrada com os filtros atuais.</p>';
                 return;
             }
-
             const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
                 const valA = parseInt(a.ano) * 10000 + parseInt(a.mes) * 100 + parseInt(a.dia);
                 const valB = parseInt(b.ano) * 10000 + parseInt(b.mes) * 100 + parseInt(b.dia);
                 return valB - valA; 
             });
-
             const ul = document.createElement('ul');
-            ul.style.listStyleType = 'none'; 
-            ul.style.paddingLeft = '0';    
-
             let mesAnoAtual = null; 
-
-            designacoesOrdenadas.forEach(desig => {
+            let primeiroSeparadorAdicionado = false;
+            designacoesOrdenadas.forEach((desig) => {
                 const dataFormatada = `${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}`;
                 const mesDaDesignacao = parseInt(desig.mes);
                 const anoDaDesignacao = parseInt(desig.ano);
                 const nomeMesAno = `${new Date(anoDaDesignacao, mesDaDesignacao - 1).toLocaleString('pt-BR', { month: 'long' })} de ${anoDaDesignacao}`;
-                
                 if (mesAnoAtual !== nomeMesAno) {
                     mesAnoAtual = nomeMesAno;
                     const separadorLi = document.createElement('li');
-                    separadorLi.style.padding = '15px 0 5px 0';
-                    separadorLi.style.fontWeight = 'bold';
-                    separadorLi.style.fontSize = '1.1em';
-                    separadorLi.style.color = '#0056b3'; 
-                    if (ul.childNodes.length > 0) { 
-                        separadorLi.style.borderTop = '2px solid #ddd';
-                        separadorLi.style.marginTop = '10px';
+                    separadorLi.classList.add('month-separator'); 
+                    if (!primeiroSeparadorAdicionado) {
+                        separadorLi.classList.add('first-month-separator');
+                        primeiroSeparadorAdicionado = true;
                     }
                     separadorLi.textContent = nomeMesAno.charAt(0).toUpperCase() + nomeMesAno.slice(1); 
                     ul.appendChild(separadorLi);
                 }
-
                 const li = document.createElement('li');
-                li.style.padding = '8px 0 8px 10px'; 
-                li.style.borderBottom = '1px solid #eee'; 
-
                 const nomeElemento = desig.nome || 'Elemento sem nome';
                 const participantesNomesArray = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean); 
                 const participantesString = participantesNomesArray.join(' - ');
-                
                 let textoFinal = `${dataFormatada} | ${nomeElemento}`;
-                if (participantesString) {
-                    textoFinal += `: ${participantesString}`;
-                }
-                
+                if (participantesString) textoFinal += `: ${participantesString}`;
                 li.textContent = textoFinal;
                 ul.appendChild(li);
             });
-            
             if (ul.childNodes.length > 0) {
-                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.textContent.includes('|')); 
-                if (ultimoItemDeDesignacao) {
-                    ultimoItemDeDesignacao.style.borderBottom = 'none'; 
-                }
+                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.textContent.includes('|') && !node.classList.contains('month-separator')); 
+                if (ultimoItemDeDesignacao) ultimoItemDeDesignacao.style.borderBottom = 'none'; 
                 historicoContent.appendChild(ul);
             } else if (designacoesFiltradas.length > 0) { 
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Erro ao exibir histórico.</p>';
             }
+            console.log("renderizarHistorico: Histórico renderizado.");
         }
         
         function renderizarEstatisticas() {
+            console.log("renderizarEstatisticas: Iniciando");
             const statsContent = document.getElementById('estatisticas-content');
-            if (!statsContent) return;
+            if (!statsContent) { console.error("renderizarEstatisticas: #estatisticas-content não encontrado."); return;}
             statsContent.innerHTML = ''; 
-
             if (!pessoaSelecionadaAtual || designacoesFiltradas.length === 0) {
+                console.log("renderizarEstatisticas: Sem dados para estatísticas.");
                 return;
             }
-
             const totalDesignacoes = designacoesFiltradas.length;
-            statsContent.innerHTML += `
-                <div class="stat-card">
-                    <h4>Total de Designações</h4>
-                    <span class="stat-value">${totalDesignacoes}</span>
-                    <span class="stat-label">(Com filtro aplicado)</span>
-                </div>`;
-
-            const contagemElementos = designacoesFiltradas.reduce((acc, d) => {
-                acc[d.nome] = (acc[d.nome] || 0) + 1; return acc;
-            }, {});
+            statsContent.innerHTML += `<div class="stat-card"><h4>Total de Designações</h4><span class="stat-value">${totalDesignacoes}</span><span class="stat-label">(Com filtro aplicado)</span></div>`;
+            const contagemElementos = designacoesFiltradas.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
             const elementosMaisFeitos = Object.entries(contagemElementos).sort(([,a], [,b]) => b - a).slice(0, 5);
             let elementosHtml = '<div class="stat-card"><h4>Elementos Mais Realizados</h4>';
             if (elementosMaisFeitos.length > 0) {
                 elementosHtml += '<ul>';
-                elementosMaisFeitos.forEach(([nome, count]) => {
-                    elementosHtml += `<li>${nome}: <span class="stat-value-inline">${count}</span></li>`;
-                });
+                elementosMaisFeitos.forEach(([nome, count]) => elementosHtml += `<li>${nome}: <span class="stat-value-inline">${count}</span></li>`);
                 elementosHtml += '</ul>';
             } else { elementosHtml += '<p>Nenhum dado de elemento.</p>'; }
             elementosHtml += '</div>';
             statsContent.innerHTML += elementosHtml;
-
             const contagemParceiros = designacoesFiltradas.reduce((acc, d) => {
-                [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome)
-                    .forEach(parceiro => acc[parceiro] = (acc[parceiro] || 0) + 1);
+                [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome).forEach(parceiro => acc[parceiro] = (acc[parceiro] || 0) + 1);
                 return acc;
             }, {});
             const parceiroMaisFrequente = Object.entries(contagemParceiros).sort(([,a], [,b]) => b - a);
             let parceirosHtml = '<div class="stat-card"><h4>Parceiros Mais Frequentes</h4>';
             if (parceiroMaisFrequente.length > 0) {
                 parceirosHtml += '<ul>';
-                parceiroMaisFrequente.slice(0,3).forEach(([nome, count]) => { 
-                     parceirosHtml += `<li>${nome}: <span class="stat-value-inline">${count}</span></li>`;
-                });
+                parceiroMaisFrequente.slice(0,3).forEach(([nome, count]) => parceirosHtml += `<li>${nome}: <span class="stat-value-inline">${count}</span></li>`);
                 parceirosHtml += '</ul>';
             } else { parceirosHtml += '<p>Nenhum parceiro frequente ou só fez designações sozinho(a).</p>'; }
             parceirosHtml += '</div>';
             statsContent.innerHTML += parceirosHtml;
-
-            statsContent.innerHTML += `
-                <div class="stat-card" id="verificacao-conjunta-container">
-                    <h4>Verificar Designação Conjunta</h4>
-                    <label for="select-outra-pessoa">Com:</label>
-                    <select id="select-outra-pessoa"><option value="">-- Selecione Pessoa --</option>
-                        ${todasPessoas.filter(p => p.id !== pessoaSelecionadaAtual.id).map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
-                    </select>
-                    <label for="select-elemento-verificacao">Elemento:</label>
-                    <select id="select-elemento-verificacao"><option value="">-- Selecione Elemento --</option>
-                        ${[...new Set(todosElementos.map(el => el.designacao))].sort().map(nomeEl => `<option value="${nomeEl}">${nomeEl}</option>`).join('')}
-                    </select>
-                    <button id="btn-verificar-conjunta">Verificar</button>
-                    <div id="resultado-verificacao-conjunta"></div>
-                </div>`;
-            // Adiciona o listener aqui, após o botão ser adicionado ao DOM
+            statsContent.innerHTML += `<div class="stat-card" id="verificacao-conjunta-container"><h4>Verificar Designação Conjunta</h4><label for="select-outra-pessoa">Com:</label><select id="select-outra-pessoa"><option value="">-- Selecione Pessoa --</option>${todasPessoas.filter(p => p.id !== pessoaSelecionadaAtual.id).map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}</select><label for="select-elemento-verificacao">Elemento:</label><select id="select-elemento-verificacao"><option value="">-- Selecione Elemento --</option>${[...new Set(todosElementos.map(el => el.designacao))].sort().map(nomeEl => `<option value="${nomeEl}">${nomeEl}</option>`).join('')}</select><button id="btn-verificar-conjunta">Verificar</button><div id="resultado-verificacao-conjunta"></div></div>`;
             const btnVerificar = document.getElementById('btn-verificar-conjunta');
-            if (btnVerificar) {
-                btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
-            } else {
-                console.error("Botão 'btn-verificar-conjunta' não encontrado após renderizar estatísticas!");
-            }
-        
+            if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
+            else console.error("Botão 'btn-verificar-conjunta' não encontrado!");
             statsContent.innerHTML += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
             if (designacoesChart) designacoesChart.destroy();
             const labels = Object.keys(contagemElementos);
             const dataCounts = Object.values(contagemElementos);
             if(labels.length > 0){
                 const ctx = document.getElementById('designacoesPorElementoChart').getContext('2d');
-                designacoesChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: { labels: labels, datasets: [{ label: 'Nº de Designações', data: dataCounts, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-                });
+                designacoesChart = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Nº de Designações', data: dataCounts, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
             } else {
                  const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
-                 if(chartContainer) {
-                    const canvas = chartContainer.querySelector('canvas');
-                    if(canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico.</p>";
-                 }
+                 if(chartContainer) { const canvas = chartContainer.querySelector('canvas'); if(canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico.</p>"; }
             }
+            console.log("renderizarEstatisticas: Estatísticas renderizadas.");
         }
         
-        function verificarDesignacaoConjunta() {
-            console.log("--- verificarDesignacaoConjunta CHAMADA ---"); 
+        function verificarDesignacaoConjunta() { /* ... (COPIE DA RESPOSTA ANTERIOR - com logs) ... */ }
 
-            const selectOutraPessoaElement = document.getElementById('select-outra-pessoa');
-            const selectElementoVerificacaoElement = document.getElementById('select-elemento-verificacao');
-            const resultadoDiv = document.getElementById('resultado-verificacao-conjunta');
-
-            if (!selectOutraPessoaElement) {
-                console.error("ERRO: Elemento select-outra-pessoa não encontrado!");
-                return;
-            }
-            if (!selectElementoVerificacaoElement) {
-                console.error("ERRO: Elemento select-elemento-verificacao não encontrado!");
-                return;
-            }
-            if (!resultadoDiv) {
-                console.error("ERRO: Elemento resultado-verificacao-conjunta não encontrado!");
-                return;
-            }
-
-            const nomeOutraPessoa = selectOutraPessoaElement.value;
-            const nomeElemento = selectElementoVerificacaoElement.value;
-
-            console.log("Pessoa Selecionada (pessoaSelecionadaAtual):", pessoaSelecionadaAtual ? pessoaSelecionadaAtual.nome : "Nenhuma");
-            console.log("Outra Pessoa Selecionada (dropdown):", nomeOutraPessoa); 
-            console.log("Elemento Selecionado (dropdown):", nomeElemento);    
-
-            resultadoDiv.className = ''; 
-            resultadoDiv.textContent = ''; 
-
-            if (!nomeOutraPessoa || !nomeElemento) {
-                resultadoDiv.textContent = "Por favor, selecione uma pessoa e um elemento para verificar.";
-                resultadoDiv.classList.add('info'); 
-                console.log("Mensagem: Por favor, selecione pessoa e elemento."); 
-                return;
-            }
-
-            if (!pessoaSelecionadaAtual || !pessoaSelecionadaAtual.nome) {
-                console.error("ERRO: pessoaSelecionadaAtual não está definida ou não tem nome.");
-                resultadoDiv.textContent = "Erro: Pessoa principal não selecionada.";
-                resultadoDiv.classList.add('error');
-                return;
-            }
-
-            console.log("Total de designações da pessoa atual:", designacoesDaPessoaAtual.length);
-            // console.log("Designações da pessoa atual (para verificação):", JSON.stringify(designacoesDaPessoaAtual, null, 2));
-
-            const designacoesRelevantes = designacoesDaPessoaAtual.filter(d => {
-                const elementoMatch = d.nome === nomeElemento;
-                const pessoaAtualParticipa = d.participantes && d.participantes[pessoaSelecionadaAtual.nome] === true;
-                const outraPessoaParticipa = d.participantes && d.participantes[nomeOutraPessoa] === true;
-                
-                // console.log(`  Verificando Desig ID ${d.id}: Elem: "${d.nome}" (Match: ${elementoMatch}), P.Atual: ${pessoaAtualParticipa}, Outra P: ${outraPessoaParticipa}`);
-                
-                return elementoMatch && pessoaAtualParticipa && outraPessoaParticipa;
+        // --- Modais e FAB ---
+        function abrirModal(modalElement) { if(modalElement) modalElement.style.display = 'block'; else console.error("abrirModal: Tentativa de abrir modal nulo");}
+        function fecharModal(modalElement) { if(modalElement) modalElement.style.display = 'none'; else console.error("fecharModal: Tentativa de fechar modal nulo");}
+        
+        if(fabMain) {
+            fabMain.addEventListener('click', () => { 
+                console.log("FAB principal clicado");
+                if(fabOptions) {
+                    fabOptions.classList.toggle('show');
+                    console.log("FAB options classList:", fabOptions.classList.toString());
+                } else {
+                    console.error("Elemento fabOptions não encontrado!");
+                }
             });
-            
-            const contagem = designacoesRelevantes.length;
-            console.log("Contagem de designações conjuntas encontradas:", contagem); 
-            // console.log("Designações conjuntas relevantes:", JSON.stringify(designacoesRelevantes, null, 2));
+        } else { console.error("Elemento fabMain não encontrado!"); }
 
-            if (contagem > 0) {
-                resultadoDiv.textContent = `Sim, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} fizeram "${nomeElemento}" juntos ${contagem} vez(es).`;
-                resultadoDiv.classList.add('success');
-            } else {
-                resultadoDiv.textContent = `Não, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} não fizeram "${nomeElemento}" juntos (com base nos dados carregados).`;
-                resultadoDiv.classList.add('error');
-            }
-            console.log("Resultado final exibido:", resultadoDiv.textContent); 
-        }
+        document.addEventListener('click', (event) => { if (fabMain && fabOptions && !fabMain.contains(event.target) && !fabOptions.contains(event.target) && fabOptions.classList.contains('show')) fabOptions.classList.remove('show'); });
+        
+        if(btnCriarPessoaFab) btnCriarPessoaFab.addEventListener('click', () => { 
+            if(formCriarPessoa) formCriarPessoa.reset(); 
+            if(pessoaIdEditInput) pessoaIdEditInput.value = ''; 
+            if(modalPessoaTitulo) modalPessoaTitulo.textContent = 'Criar Nova Pessoa'; 
+            if(btnSubmitPessoa) btnSubmitPessoa.textContent = 'Criar Pessoa';
+            abrirModal(modalPessoa); if(fabOptions) fabOptions.classList.remove('show'); 
+        }); else { console.error("Elemento btnCriarPessoaFab não encontrado!");}
 
+        if(btnCriarElementoFab) btnCriarElementoFab.addEventListener('click', () => { abrirModal(modalElemento); if(fabOptions) fabOptions.classList.remove('show'); });
+        else { console.error("Elemento btnCriarElementoFab não encontrado!");}
+        
+        if(btnCriarDesignacaoFab) btnCriarDesignacaoFab.addEventListener('click', () => { popularDropdownsElementosNoModal(); popularDropdownsPessoasNosModais(); abrirModal(modalDesignacao); if(fabOptions) fabOptions.classList.remove('show'); });
+        else { console.error("Elemento btnCriarDesignacaoFab não encontrado!");}
 
-        // --- Funções Principais ---
-        async function carregarPessoas() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "pessoas"));
-                todasPessoas = [];
-                querySnapshot.forEach((docSnap) => todasPessoas.push({ id: docSnap.id, ...docSnap.data() }));
-                
-                todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
-
-                listaPessoasUl.innerHTML = ''; 
-                todasPessoas.forEach(pessoa => {
-                    const li = document.createElement('li');
-                    li.textContent = pessoa.nome;
-                    li.dataset.pessoaId = pessoa.id; 
-                    li.addEventListener('click', () => {
-                        document.querySelectorAll('#lista-pessoas li').forEach(item => item.classList.remove('active'));
-                        li.classList.add('active');
-                        pessoaSelecionadaAtual = pessoa;
-                        carregarDesignacoesDaPessoa(pessoa.nome);
-                    });
-                    listaPessoasUl.appendChild(li);
-                });
-                popularDropdownsPessoasNosModais();
-            } catch (error) { console.error("Erro ao carregar pessoas: ", error); alert("Falha ao carregar pessoas."); }
-        }
-
-        async function carregarDesignacoesDaPessoa(nomePessoa) {
-            criarEstruturaDetalhes(); 
-            const nomePessoaDetalhe = document.getElementById('nome-pessoa-detalhe');
-            if(nomePessoaDetalhe) nomePessoaDetalhe.textContent = nomePessoa;
-            
-            const historicoContent = document.getElementById('historico-content');
-            if(historicoContent) historicoContent.innerHTML = '<p style="text-align:center;color:#777;margin-top:20px;">Carregando designações...</p>';
-
-            try {
-                const q = query(collection(db, "designacoes"), where(`participantes.${nomePessoa}`, "==", true));
-                const querySnapshot = await getDocs(q);
-                designacoesDaPessoaAtual = [];
-                querySnapshot.forEach((docSnap) => designacoesDaPessoaAtual.push({ id: docSnap.id, ...docSnap.data() }));
-                popularFiltros(); 
-                aplicarEAtualizarFiltros(); 
-                if (document.getElementById('estatisticas-content')?.classList.contains('active')) renderizarEstatisticas();
-            } catch (error) {
-                console.error(`Erro ao carregar designações para ${nomePessoa}: `, error);
-                if(historicoContent) historicoContent.innerHTML = `<p style="text-align:center;color:#777;margin-top:20px;">Erro ao carregar designações.</p>`;
-            }
-        }
-
-        // --- Funções para Popups (Modals) ---
-        function abrirModal(modalElement) { modalElement.style.display = 'block'; }
-        function fecharModal(modalElement) { modalElement.style.display = 'none'; }
-
-        fabMain.addEventListener('click', () => fabOptions.classList.toggle('show'));
-        document.addEventListener('click', (event) => {
-            if (!fabMain.contains(event.target) && !fabOptions.contains(event.target) && fabOptions.classList.contains('show')) {
-                fabOptions.classList.remove('show');
-            }
-        });
-        btnCriarPessoaFab.addEventListener('click', () => { abrirModal(modalPessoa); fabOptions.classList.remove('show'); });
-        btnCriarElementoFab.addEventListener('click', () => { abrirModal(modalElemento); fabOptions.classList.remove('show'); });
-        btnCriarDesignacaoFab.addEventListener('click', () => {
-            popularDropdownsElementosNoModal(); popularDropdownsPessoasNosModais();   
-            abrirModal(modalDesignacao); fabOptions.classList.remove('show');
-        });
-        closeButtons.forEach(button => button.addEventListener('click', () => fecharModal(document.getElementById(button.getAttribute('data-modal-id')))));
+        if(btnGerenciarPessoasFab) btnGerenciarPessoasFab.addEventListener('click', () => { abrirModalGerenciarPessoas(); if(fabOptions) fabOptions.classList.remove('show'); });
+        else { console.error("Elemento btnGerenciarPessoasFab não encontrado!");}
+        
+        closeButtons.forEach(button => button.addEventListener('click', () => { const modalId = button.getAttribute('data-modal-id'); if(modalId) fecharModal(document.getElementById(modalId)); }));
         window.addEventListener('click', (event) => { if (event.target.classList.contains('modal')) fecharModal(event.target); });
 
-        // --- Funções de Formulário ---
-        formCriarPessoa.addEventListener('submit', async (e) => { 
+        // --- Formulários ---
+        if(formCriarPessoa) formCriarPessoa.addEventListener('submit', async (e) => { 
             e.preventDefault();
+            console.log("Formulário Pessoa submetido.");
+            const pessoaId = pessoaIdEditInput.value; 
             const nome = nomePessoaInput.value.trim();
-            if (!nome) { alert("O nome da pessoa é obrigatório."); return; }
-            const q = query(collection(db, "pessoas"), where("nome", "==", nome));
-            const snap = await getDocs(q);
-            if (!snap.empty) { alert("Uma pessoa com este nome já existe."); return; }
-            try {
-                await addDoc(collection(db, "pessoas"), { nome: nome, createdAt: serverTimestamp() });
-                alert("Pessoa criada com sucesso!"); formCriarPessoa.reset(); fecharModal(modalPessoa); carregarPessoas();
-            } catch (error) { console.error("Erro ao criar pessoa: ", error); alert("Falha ao criar pessoa."); }
+            const idioma = idiomaPessoaSelect.value; const genero = generoPessoaSelect.value;
+            const cargo = cargoPessoaSelect.value; const pregacao = pregacaoPessoaSelect.value; 
+            if (!nome) { alert("O nome é obrigatório."); return; }
+            const dadosPessoa = { nome, idioma, genero, cargo };
+            if (pregacao) dadosPessoa.pregacao = pregacao; else dadosPessoa.pregacao = ""; // Salva string vazia se "Nenhum"
+            if (pessoaId) { 
+                console.log("Editando pessoa ID:", pessoaId);
+                try {
+                    await updateDoc(doc(db, "pessoas", pessoaId), dadosPessoa);
+                    alert("Pessoa atualizada!");
+                    const index = todasPessoas.findIndex(p => p.id === pessoaId);
+                    if (index > -1) todasPessoas[index] = { ...todasPessoas[index], ...dadosPessoa };
+                } catch (error) { console.error("Erro ao atualizar pessoa:", error); alert("Falha ao atualizar pessoa."); return; }
+            } else { 
+                console.log("Criando nova pessoa:", nome);
+                const q = query(collection(db, "pessoas"), where("nome", "==", nome));
+                const snap = await getDocs(q);
+                if (!snap.empty) { alert("Uma pessoa com este nome já existe."); return; }
+                dadosPessoa.createdAt = serverTimestamp(); dadosPessoa.estaVisivel = true;
+                try { await addDoc(collection(db, "pessoas"), dadosPessoa); alert("Pessoa criada!"); } 
+                catch (error) { console.error("Erro ao criar pessoa:", error); alert("Falha ao criar pessoa."); return; }
+            }
+            formCriarPessoa.reset(); fecharModal(modalPessoa); carregarPessoas(); 
+            if (modalGerenciarPessoas && modalGerenciarPessoas.style.display === 'block') abrirModalGerenciarPessoas();
         });
-        formCriarElemento.addEventListener('submit', async (e) => { 
+        else { console.error("Elemento formCriarPessoa não encontrado!");}
+        
+        if(formCriarElemento) formCriarElemento.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const designacaoNome = nomeElementoModalInput.value.trim();
             const tipo = tipoElementoSelect.value;
-            const genero = generoElementoSelect.value;
+            const generoElem = generoElementoSelectDoc.value; // Usar a variável correta
             if (!designacaoNome) { alert("O nome do elemento é obrigatório."); return; }
             const q = query(collection(db, "elementos"), where("designacao", "==", designacaoNome));
             const snap = await getDocs(q);
             if (!snap.empty) { alert("Um elemento com esta designação já existe."); return; }
             try {
-                await addDoc(collection(db, "elementos"), { designacao: designacaoNome, tipo: tipo, genero: genero, createdAt: serverTimestamp() });
+                await addDoc(collection(db, "elementos"), { designacao: designacaoNome, tipo: tipo, genero: generoElem, createdAt: serverTimestamp() });
                 alert("Elemento criado com sucesso!"); formCriarElemento.reset(); fecharModal(modalElemento); 
                 await carregarTodosElementosParaEstatisticas(); 
                 popularDropdownsElementosNoModal(); 
             } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Falha ao criar elemento."); }
         });
-        formCriarDesignacao.addEventListener('submit', async (e) => { 
+        else { console.error("Elemento formCriarElemento não encontrado!");}
+
+        if(formCriarDesignacao) formCriarDesignacao.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const elementoId = selectElementoDesignacao.value;
             const pessoaAId = selectPessoaA.value; const pessoaBId = selectPessoaB.value; const pessoaCId = selectPessoaC.value;
@@ -937,13 +676,79 @@
                 if(pessoaSelecionadaAtual) carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.nome);
             } catch (error) { console.error("Erro ao criar designação: ", error); alert("Falha ao criar designação."); }
         });
+        else { console.error("Elemento formCriarDesignacao não encontrado!");}
 
-        // --- Funções Auxiliares para Dropdowns nos Modais ---
+
+        // --- Modal Gerenciar Pessoas ---
+        function abrirModalGerenciarPessoas() {
+            console.log("abrirModalGerenciarPessoas: Iniciando");
+            if (!listaGerenciarPessoasUl) { console.error("Elemento listaGerenciarPessoasUl não encontrado!"); return;}
+            listaGerenciarPessoasUl.innerHTML = ''; 
+            console.log("abrirModalGerenciarPessoas: Populando lista com", todasPessoas.length, "pessoas.");
+            todasPessoas.forEach(pessoa => { 
+                const li = document.createElement('li');
+                const nomeSpan = document.createElement('span'); nomeSpan.classList.add('pessoa-nome'); nomeSpan.textContent = pessoa.nome;
+                const statusVisivelSpan = document.createElement('span'); statusVisivelSpan.classList.add('pessoa-status-visivel');
+                if (pessoa.estaVisivel === false) { nomeSpan.style.textDecoration = 'line-through'; statusVisivelSpan.textContent = '(Oculta)'; statusVisivelSpan.classList.add('oculta'); }
+                const actionsDiv = document.createElement('div'); actionsDiv.classList.add('pessoa-actions');
+                const btnToggle = document.createElement('button'); btnToggle.classList.add('btn-toggle-visibilidade');
+                btnToggle.textContent = pessoa.estaVisivel !== false ? 'Ocultar' : 'Mostrar';
+                btnToggle.classList.toggle('mostrar', pessoa.estaVisivel === false); // Adiciona 'mostrar' se estiver oculto
+                btnToggle.onclick = () => toggleVisibilidadePessoa(pessoa.id, pessoa.estaVisivel !== false);
+                const btnEdit = document.createElement('button'); btnEdit.classList.add('btn-editar-pessoa'); btnEdit.textContent = 'Editar'; btnEdit.onclick = () => prepararEdicaoPessoa(pessoa);
+                const btnRemove = document.createElement('button'); btnRemove.classList.add('btn-remover-pessoa'); btnRemove.textContent = 'Remover'; btnRemove.onclick = () => removerPessoa(pessoa.id, pessoa.nome);
+                actionsDiv.appendChild(btnToggle); actionsDiv.appendChild(btnEdit); actionsDiv.appendChild(btnRemove);
+                li.appendChild(nomeSpan); li.appendChild(statusVisivelSpan); li.appendChild(actionsDiv);
+                listaGerenciarPessoasUl.appendChild(li);
+            });
+            abrirModal(modalGerenciarPessoas);
+        }
+        async function toggleVisibilidadePessoa(pessoaId, atualmenteVisivel) {
+            const novoEstadoVisivel = !atualmenteVisivel;
+            console.log(`toggleVisibilidadePessoa: ID ${pessoaId}, de ${atualmenteVisivel} para ${novoEstadoVisivel}`);
+            try {
+                await updateDoc(doc(db, "pessoas", pessoaId), { estaVisivel: novoEstadoVisivel });
+                const index = todasPessoas.findIndex(p => p.id === pessoaId);
+                if (index > -1) todasPessoas[index].estaVisivel = novoEstadoVisivel;
+                abrirModalGerenciarPessoas(); carregarPessoas(); 
+                alert(`Visibilidade alterada.`);
+            } catch (error) { console.error("Erro ao alterar visibilidade:", error); alert("Falha ao alterar visibilidade."); }
+        }
+        function prepararEdicaoPessoa(pessoa) {
+            console.log("prepararEdicaoPessoa para:", pessoa.nome);
+            if(formCriarPessoa) formCriarPessoa.reset(); 
+            if(modalPessoaTitulo) modalPessoaTitulo.textContent = `Editar: ${pessoa.nome}`;
+            if(btnSubmitPessoa) btnSubmitPessoa.textContent = 'Salvar Alterações'; 
+            if(pessoaIdEditInput) pessoaIdEditInput.value = pessoa.id; 
+            if(nomePessoaInput) nomePessoaInput.value = pessoa.nome; 
+            if(idiomaPessoaSelect) idiomaPessoaSelect.value = pessoa.idioma || 'Português';
+            if(generoPessoaSelect) generoPessoaSelect.value = pessoa.genero || 'Masculino'; 
+            if(cargoPessoaSelect) cargoPessoaSelect.value = pessoa.cargo || 'Publicador';
+            if(pregacaoPessoaSelect) pregacaoPessoaSelect.value = pessoa.pregacao || '';
+            fecharModal(modalGerenciarPessoas); abrirModal(modalPessoa);
+        }
+        async function removerPessoa(pessoaId, nomePessoa) {
+            console.log("Tentando remover pessoa:", nomePessoa, pessoaId);
+            if (!confirm(`Tem certeza que deseja remover "${nomePessoa}"? Esta ação não pode ser desfeita.`)) return;
+            try {
+                await deleteDoc(doc(db, "pessoas", pessoaId));
+                todasPessoas = todasPessoas.filter(p => p.id !== pessoaId);
+                abrirModalGerenciarPessoas(); carregarPessoas(); 
+                if(pessoaSelecionadaAtual && pessoaSelecionadaAtual.id === pessoaId) {
+                    pessoaSelecionadaAtual = null; colunaDetalhesDiv.innerHTML = ''; 
+                    colunaDetalhesDiv.appendChild(colunaDetalhesContent); colunaDetalhesContent.style.display = 'flex';
+                }
+                alert(`"${nomePessoa}" removido(a) com sucesso.`);
+            } catch (error) { console.error("Erro ao remover pessoa:", error); alert("Falha ao remover pessoa."); }
+        }
+
+        // --- Funções Auxiliares de Dropdown ---
         function popularDropdownsPessoasNosModais() { 
             const selects = [selectPessoaA, selectPessoaB, selectPessoaC];
             selects.forEach(select => {
+                if (!select) return; // Pular se o select não existir no DOM
                 const currentValue = select.value; select.innerHTML = '<option value="">-- Nenhuma --</option>';
-                todasPessoas.forEach(pessoa => { 
+                todasPessoas.filter(p => p.estaVisivel !== false).forEach(pessoa => { // Apenas pessoas visíveis nos dropdowns de designação
                     const option = document.createElement('option'); option.value = pessoa.id; option.textContent = pessoa.nome; select.appendChild(option);
                 });
                 if (currentValue) select.value = currentValue;
@@ -952,6 +757,7 @@
         async function popularDropdownsElementosNoModal() { 
             try {
                 if(todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
+                if (!selectElementoDesignacao) return;
                 selectElementoDesignacao.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
                 const elementosOrdenados = [...todosElementos].sort((a,b) => a.designacao.localeCompare(b.designacao, 'pt-BR', {sensitivity: 'base'}));
                 elementosOrdenados.forEach(elemento => {
@@ -967,25 +773,27 @@
             } catch (error) { console.error("Erro ao carregar todos os elementos: ", error); }
         }
         function atualizarDropdownsPessoasDesignacaoModal() { 
-            const selecionados = [selectPessoaA.value, selectPessoaB.value, selectPessoaC.value].filter(Boolean);
+            const selecionados = [selectPessoaA?.value, selectPessoaB?.value, selectPessoaC?.value].filter(Boolean);
             [selectPessoaA, selectPessoaB, selectPessoaC].forEach(currentSelect => {
+                if (!currentSelect) return;
                 const valorAtual = currentSelect.value;
                 Array.from(currentSelect.options).forEach(option => {
                     option.disabled = (option.value && option.value !== valorAtual && selecionados.includes(option.value));
                 });
             });
         }
-        selectPessoaA.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
-        selectPessoaB.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
-        selectPessoaC.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+        if(selectPessoaA) selectPessoaA.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+        if(selectPessoaB) selectPessoaB.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+        if(selectPessoaC) selectPessoaC.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
 
         // --- Inicialização ---
         window.onload = () => {
+            console.log("Window onload: Iniciando aplicação.");
             carregarPessoas();
             carregarTodosElementosParaEstatisticas(); 
-            colunaDetalhesContent.style.display = 'flex'; 
             colunaDetalhesDiv.innerHTML = ''; 
             colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
+            colunaDetalhesContent.style.display = 'flex'; 
         };
     </script>
 </body>
