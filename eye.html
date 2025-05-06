@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Designações Avançado</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js CDN -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            flex-grow: 1;
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden; /* Para evitar scrollbars desnecessárias no container principal */
+        }
+
+        .coluna {
+            flex: 1;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .coluna#coluna-pessoas {
+             flex-basis: 30%; /* Coluna de pessoas um pouco menor */
+             max-width: 350px;
+        }
+        .coluna#coluna-detalhes {
+            flex-basis: 70%;
+        }
+
+
+        .coluna h2, .coluna h3 {
+            margin-top: 0;
+            color: #0056b3; /* Azul mais escuro */
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        #lista-pessoas {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #lista-pessoas li {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 0.95em;
+        }
+
+        #lista-pessoas li:hover {
+            background-color: #d3d9df;
+        }
+        #lista-pessoas li.active {
+            background-color: #007bff;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Abas */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+        .tab-button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1em;
+            margin-right: 5px;
+            border-bottom: 3px solid transparent;
+            color: #555;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #007bff;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .tab-content {
+            display: none;
+            flex-grow: 1; /* Faz o conteúdo da aba preencher o espaço */
+            overflow-y: auto; /* Scroll individual para conteúdo da aba */
+        }
+        .tab-content.active {
+            display: flex; /* Usar flex para layout interno se necessário */
+            flex-direction: column;
+        }
+
+        /* Filtros */
+        .filters-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            align-items: center;
+        }
+        .filters-container label {
+            font-size: 0.9em;
+            margin-right: 5px;
+        }
+        .filters-container select, .filters-container input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            font-size: 0.9em;
+        }
+
+        .designacao-card {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .designacao-card h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .designacao-card p {
+            margin: 4px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Estatísticas */
+        .stats-section {
+            margin-bottom: 20px;
+        }
+        .stats-section h4 {
+            color: #0069d9;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        .stats-section ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        .stats-section li {
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-weight: bold;
+            color: #28a745;
+        }
+        #verificacao-conjunta-container label,
+        #verificacao-conjunta-container select,
+        #verificacao-conjunta-container button {
+            margin-right: 8px;
+            margin-bottom: 8px; /* Para responsividade em telas menores */
+        }
+        #resultado-verificacao-conjunta {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* FAB (Floating Action Button) */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        .fab {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .fab:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .fab-options {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fab-options.show {
+            display: flex;
+        }
+        .fab-option {
+            background-color: #17a2b8; /* Info color */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 0.9em;
+            white-space: nowrap;
+            transition: background-color 0.2s ease;
+        }
+        .fab-option:hover {
+            background-color: #138496;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 8% auto;
+            padding: 25px;
+            border: 1px solid #bbb;
+            width: 90%;
+            max-width: 550px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .close-button {
+            color: #888;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #0056b3;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .modal-content form div {
+            margin-bottom: 18px;
+        }
+        .modal-content label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .modal-content input[type="text"],
+        .modal-content select,
+        .modal-content input[type="date"] /* For consistency if you add date picker */
+        {
+            width: calc(100% - 24px);
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        .modal-content button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+        .modal-content button[type="submit"]:hover {
+            background-color: #218838;
+        }
+        #coluna-detalhes-content { /* Placeholder for when no person is selected */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #777;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div id="coluna-pessoas" class="coluna">
+            <h2>Pessoas</h2>
+            <ul id="lista-pessoas">
+                <!-- Pessoas serão carregadas aqui -->
+            </ul>
+        </div>
+        <div id="coluna-detalhes" class="coluna">
+            <div id="coluna-detalhes-content">
+                 <p>Selecione uma pessoa para ver os detalhes.</p>
+            </div>
+            <!-- O conteúdo das abas e filtros será injetado aqui quando uma pessoa for selecionada -->
+        </div>
+    </div>
+
+    <!-- Botão Flutuante (FAB) -->
+    <div class="fab-container">
+        <button id="fab-main" class="fab">+</button>
+        <div id="fab-options" class="fab-options">
+            <button id="btn-criar-pessoa-fab" class="fab-option">Criar Pessoa</button>
+            <button id="btn-criar-elemento-fab" class="fab-option">Criar Elemento</button>
+            <button id="btn-criar-designacao-fab" class="fab-option">Criar Designação</button>
+        </div>
+    </div>
+
+    <!-- Modal Criar Pessoa -->
+    <div id="modal-pessoa" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="modal-pessoa">×</span>
+            <h3>Criar Nova Pessoa</h3>
+            <form id="form-criar-pessoa">
+                <div>
+                    <label for="nome-pessoa">Nome:</label>
+                    <input type="text" id="nome-pessoa" required>
+                </div>
+                <button type="submit">Criar Pessoa</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Criar Elemento -->
+    <div id="modal-elemento" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="modal-elemento">×</span>
+            <h3>Criar Novo Elemento</h3>
+            <form id="form-criar-elemento">
+                <div>
+                    <label for="nome-elemento-modal">Nome do Elemento:</label>
+                    <input type="text" id="nome-elemento-modal" required>
+                </div>
+                <div>
+                    <label for="tipo-elemento">Tipo:</label>
+                    <select id="tipo-elemento">
+                        <option value="reuniao">Reunião</option>
+                        <option value="pregacao">Pregação</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="genero-elemento">Gênero:</label>
+                    <select id="genero-elemento">
+                        <option value="semana">Semana</option>
+                        <option value="fim de semana">Fim de Semana</option>
+                        <option value="tecnico">Técnico</option>
+                    </select>
+                </div>
+                <button type="submit">Criar Elemento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Criar Designação -->
+    <div id="modal-designacao" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="modal-designacao">×</span>
+            <h3>Criar Nova Designação</h3>
+            <form id="form-criar-designacao">
+                <div>
+                    <label for="select-elemento-designacao">Elemento:</label>
+                    <select id="select-elemento-designacao" required>
+                        <option value="">-- Selecione um Elemento --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaA">Pessoa A:</label>
+                    <select id="select-pessoaA">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaB">Pessoa B:</label>
+                    <select id="select-pessoaB">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaC">Pessoa C:</label>
+                    <select id="select-pessoaC">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="data-designacao">Data (DD/MM/AAAA):</label>
+                    <input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}">
+                </div>
+                <button type="submit">Criar Designação</button>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { 
+            getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        // SUBSTITUA PELA SUA CONFIGURAÇÃO REAL DO FIREBASE
+        const firebaseConfig = {
+          apiKey: "SUA_API_KEY", // <<<<<<< IMPORTANTE: SUBSTITUA!
+          authDomain: "SEU_AUTH_DOMAIN",
+          projectId: "SEU_PROJECT_ID",
+          storageBucket: "SEU_STORAGE_BUCKET",
+          messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+          appId: "SEU_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const listaPessoasUl = document.getElementById('lista-pessoas');
+        const colunaDetalhesDiv = document.getElementById('coluna-detalhes');
+        const colunaDetalhesContent = document.getElementById('coluna-detalhes-content');
+
+        const fabMain = document.getElementById('fab-main');
+        const fabOptions = document.getElementById('fab-options');
+        const btnCriarPessoaFab = document.getElementById('btn-criar-pessoa-fab');
+        const btnCriarElementoFab = document.getElementById('btn-criar-elemento-fab');
+        const btnCriarDesignacaoFab = document.getElementById('btn-criar-designacao-fab');
+
+        const modalPessoa = document.getElementById('modal-pessoa');
+        const modalElemento = document.getElementById('modal-elemento');
+        const modalDesignacao = document.getElementById('modal-designacao');
+        const closeButtons = document.querySelectorAll('.close-button');
+
+        const formCriarPessoa = document.getElementById('form-criar-pessoa');
+        const nomePessoaInput = document.getElementById('nome-pessoa');
+
+        const formCriarElemento = document.getElementById('form-criar-elemento');
+        const nomeElementoModalInput = document.getElementById('nome-elemento-modal');
+        const tipoElementoSelect = document.getElementById('tipo-elemento');
+        const generoElementoSelect = document.getElementById('genero-elemento');
+
+        const formCriarDesignacao = document.getElementById('form-criar-designacao');
+        const selectElementoDesignacao = document.getElementById('select-elemento-designacao');
+        const selectPessoaA = document.getElementById('select-pessoaA');
+        const selectPessoaB = document.getElementById('select-pessoaB');
+        const selectPessoaC = document.getElementById('select-pessoaC');
+        const dataDesignacaoInput = document.getElementById('data-designacao');
+
+        // Globais para dados e estado
+        let todasPessoas = [];
+        let todosElementos = [];
+        let pessoaSelecionadaAtual = null;
+        let designacoesDaPessoaAtual = []; // Todas as designações da pessoa selecionada
+        let designacoesFiltradas = [];     // Designações após filtros aplicados
+
+        // --- Estrutura HTML da Coluna Detalhes (Abas e Filtros) ---
+        function criarEstruturaDetalhes() {
+            colunaDetalhesContent.style.display = 'none'; // Esconde mensagem placeholder
+            colunaDetalhesDiv.innerHTML = `
+                <h3>Detalhes de: <span id="nome-pessoa-detalhe"></span></h3>
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="historico">Histórico</button>
+                    <button class="tab-button" data-tab="estatisticas">Estatísticas</button>
+                </div>
+
+                <div class="filters-container">
+                    <label for="filtro-mes">Mês:</label>
+                    <select id="filtro-mes">
+                        <option value="">Todos</option>
+                        ${[...Array(12).keys()].map(i => `<option value="${i+1}">${new Date(0, i).toLocaleString('default', { month: 'long' })}</option>`).join('')}
+                    </select>
+                    <label for="filtro-ano">Ano:</label>
+                    <select id="filtro-ano"><option value="">Todos</option></select>
+                    <label for="filtro-elemento">Elemento:</label>
+                    <select id="filtro-elemento"><option value="">Todos</option></select>
+                    <button id="btn-aplicar-filtros">Aplicar Filtros</button>
+                    <button id="btn-limpar-filtros">Limpar</button>
+                </div>
+
+                <div id="historico-content" class="tab-content active">
+                    <!-- Cards de designações aqui -->
+                </div>
+                <div id="estatisticas-content" class="tab-content">
+                    <!-- Estatísticas aqui -->
+                </div>
+            `;
+
+            // Adicionar event listeners para abas e filtros
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
+                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas(); // Renderiza ao trocar para aba
+                });
+            });
+
+            document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarEAtualizarFiltros);
+            document.getElementById('btn-limpar-filtros').addEventListener('click', limparEAtualizarFiltros);
+        }
+
+        // --- Funções de Filtros ---
+        function popularFiltros() {
+            const filtroAnoSelect = document.getElementById('filtro-ano');
+            const filtroElementoSelect = document.getElementById('filtro-elemento');
+
+            const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a,b) => b-a);
+            const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort();
+
+            filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
+            filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
+        }
+
+        function aplicarEAtualizarFiltros() {
+            const mes = document.getElementById('filtro-mes').value;
+            const ano = document.getElementById('filtro-ano').value;
+            const elemento = document.getElementById('filtro-elemento').value;
+
+            designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
+                const matchMes = !mes || d.mes === mes;
+                const matchAno = !ano || d.ano === ano;
+                const matchElemento = !elemento || d.nome === elemento;
+                return matchMes && matchAno && matchElemento;
+            });
+            renderizarHistorico();
+            if (document.getElementById('estatisticas-content')?.classList.contains('active')) {
+                 renderizarEstatisticas(); // Re-renderiza estatísticas com dados filtrados
+            }
+        }
+        
+        function limparEAtualizarFiltros() {
+            document.getElementById('filtro-mes').value = "";
+            document.getElementById('filtro-ano').value = "";
+            document.getElementById('filtro-elemento').value = "";
+            aplicarEAtualizarFiltros(); // Aplica com filtros vazios, que é o mesmo que mostrar tudo
+        }
+
+        // --- Renderização ---
+        function renderizarHistorico() {
+            const historicoContent = document.getElementById('historico-content');
+            if (!historicoContent) return;
+            
+            historicoContent.innerHTML = '';
+            if (designacoesFiltradas.length === 0) {
+                historicoContent.innerHTML = '<p>Nenhuma designação encontrada com os filtros atuais.</p>';
+                return;
+            }
+
+            // Ordenar da mais recente para a mais antiga
+            const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
+                const dateA = new Date(a.ano, a.mes - 1, a.dia);
+                const dateB = new Date(b.ano, b.mes - 1, b.dia);
+                return dateB - dateA;
+            });
+
+            designacoesOrdenadas.forEach(desig => {
+                const card = document.createElement('div');
+                card.classList.add('designacao-card');
+                card.innerHTML = `
+                    <h4>${desig.nome || 'Elemento sem nome'}</h4>
+                    <p><strong>Data:</strong> ${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}</p>
+                    ${desig.pessoaA ? `<p><strong>Pessoa A:</strong> ${desig.pessoaA}</p>` : ''}
+                    ${desig.pessoaB ? `<p><strong>Pessoa B:</strong> ${desig.pessoaB}</p>` : ''}
+                    ${desig.pessoaC ? `<p><strong>Pessoa C:</strong> ${desig.pessoaC}</p>` : ''}
+                `;
+                historicoContent.appendChild(card);
+            });
+        }
+
+        let designacoesChart = null; // Variável para manter a instância do gráfico
+
+        function renderizarEstatisticas() {
+            const statsContent = document.getElementById('estatisticas-content');
+            if (!statsContent) return;
+
+            statsContent.innerHTML = ''; // Limpa conteúdo anterior
+
+            if (!pessoaSelecionadaAtual || designacoesFiltradas.length === 0) {
+                statsContent.innerHTML = "<p>Nenhuma designação para calcular estatísticas com os filtros atuais.</p>";
+                return;
+            }
+
+            // 1. Quantas designações ao todo
+            const totalDesignacoes = designacoesFiltradas.length;
+            statsContent.innerHTML += `<div class="stats-section"><h4>Total de Designações (com filtro aplicado)</h4><p><span class="stat-value">${totalDesignacoes}</span></p></div>`;
+
+            // 2. Lista de designações que a pessoa fez mais (por nome do elemento)
+            const contagemElementos = designacoesFiltradas.reduce((acc, d) => {
+                acc[d.nome] = (acc[d.nome] || 0) + 1;
+                return acc;
+            }, {});
+            const elementosMaisFeitos = Object.entries(contagemElementos)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5); // Top 5
+
+            let elementosHtml = '<div class="stats-section"><h4>Elementos Mais Realizados (Top 5)</h4>';
+            if (elementosMaisFeitos.length > 0) {
+                elementosHtml += '<ul>';
+                elementosMaisFeitos.forEach(([nome, count]) => {
+                    elementosHtml += `<li>${nome}: <span class="stat-value">${count}</span></li>`;
+                });
+                elementosHtml += '</ul></div>';
+            } else {
+                elementosHtml += '<p>Nenhum dado de elemento.</p></div>';
+            }
+            statsContent.innerHTML += elementosHtml;
+
+            // 3. Qual a pessoa que essa pessoa faz mais designações
+            const contagemParceiros = designacoesFiltradas.reduce((acc, d) => {
+                const parceirosNaDesignacao = [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome);
+                parceirosNaDesignacao.forEach(parceiro => {
+                    acc[parceiro] = (acc[parceiro] || 0) + 1;
+                });
+                return acc;
+            }, {});
+            const parceiroMaisFrequente = Object.entries(contagemParceiros)
+                .sort(([,a], [,b]) => b - a);
+            
+            let parceirosHtml = '<div class="stats-section"><h4>Parceiros Mais Frequentes</h4>';
+            if (parceiroMaisFrequente.length > 0) {
+                parceirosHtml += `<ul><li>${parceiroMaisFrequente[0][0]}: <span class="stat-value">${parceiroMaisFrequente[0][1]}</span> vezes</li></ul>`;
+                 if(parceiroMaisFrequente.length > 1) {
+                    parceirosHtml += `<p><small>(e outros...)</small></p>`
+                 }
+            } else {
+                parceirosHtml += '<p>Nenhum parceiro frequente encontrado ou só fez designações sozinho(a).</p>';
+            }
+            parceirosHtml += '</div>';
+            statsContent.innerHTML += parceirosHtml;
+
+            // 4. Verificação de designação conjunta
+            let verificacaoHtml = `
+                <div class="stats-section" id="verificacao-conjunta-container">
+                    <h4>Verificar Designação Conjunta</h4>
+                    <label for="select-outra-pessoa">Com:</label>
+                    <select id="select-outra-pessoa">
+                        <option value="">-- Selecione Pessoa --</option>
+                        ${todasPessoas.filter(p => p.id !== pessoaSelecionadaAtual.id).map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
+                    </select>
+                    <label for="select-elemento-verificacao">Elemento:</label>
+                    <select id="select-elemento-verificacao">
+                        <option value="">-- Selecione Elemento --</option>
+                        ${todosElementos.map(el => `<option value="${el.designacao}">${el.designacao}</option>`).join('')}
+                    </select>
+                    <button id="btn-verificar-conjunta">Verificar</button>
+                    <div id="resultado-verificacao-conjunta"></div>
+                </div>`;
+            statsContent.innerHTML += verificacaoHtml;
+            document.getElementById('btn-verificar-conjunta').addEventListener('click', verificarDesignacaoConjunta);
+        
+            // Gráfico de Designações por Elemento (usando dados filtrados)
+            let chartHtml = `<div class="stats-section"><h4>Designações por Tipo de Elemento (Gráfico)</h4><canvas id="designacoesPorElementoChart" width="400" height="200"></canvas></div>`;
+            statsContent.innerHTML += chartHtml;
+            
+            if (designacoesChart) { // Destrói gráfico anterior se existir
+                designacoesChart.destroy();
+            }
+
+            const labels = Object.keys(contagemElementos);
+            const dataCounts = Object.values(contagemElementos);
+            
+            if(labels.length > 0){
+                const ctx = document.getElementById('designacoesPorElementoChart').getContext('2d');
+                designacoesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Nº de Designações',
+                            data: dataCounts,
+                            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1 // Garante que o eixo Y mostre apenas inteiros
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                 document.getElementById('designacoesPorElementoChart').outerHTML = "<p>Sem dados para exibir gráfico.</p>";
+            }
+        }
+        
+        function verificarDesignacaoConjunta() {
+            const nomeOutraPessoa = document.getElementById('select-outra-pessoa').value;
+            const nomeElemento = document.getElementById('select-elemento-verificacao').value;
+            const resultadoDiv = document.getElementById('resultado-verificacao-conjunta');
+
+            if (!nomeOutraPessoa || !nomeElemento) {
+                resultadoDiv.textContent = "Selecione uma pessoa e um elemento para verificar.";
+                resultadoDiv.style.color = "orange";
+                return;
+            }
+
+            const contagem = designacoesDaPessoaAtual.filter(d => { // Usa todas, não as filtradas para esta verificação específica
+                const elementoMatch = d.nome === nomeElemento;
+                const pessoaMatch = d.participantes && d.participantes[nomeOutraPessoa];
+                return elementoMatch && pessoaMatch;
+            }).length;
+
+            if (contagem > 0) {
+                resultadoDiv.textContent = `Sim, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} fizeram "${nomeElemento}" juntos ${contagem} vez(es).`;
+                resultadoDiv.style.color = "green";
+            } else {
+                resultadoDiv.textContent = `Não, ${pessoaSelecionadaAtual.nome} e ${nomeOutraPessoa} não fizeram "${nomeElemento}" juntos (com base nos dados carregados).`;
+                resultadoDiv.style.color = "red";
+            }
+        }
+
+
+        // --- Funções Principais ---
+        async function carregarPessoas() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "pessoas"));
+                listaPessoasUl.innerHTML = ''; 
+                todasPessoas = [];
+                querySnapshot.forEach((docSnap) => {
+                    const pessoa = { id: docSnap.id, ...docSnap.data() };
+                    todasPessoas.push(pessoa);
+                    const li = document.createElement('li');
+                    li.textContent = pessoa.nome;
+                    li.dataset.pessoaId = docSnap.id;
+                    li.addEventListener('click', () => {
+                        document.querySelectorAll('#lista-pessoas li').forEach(item => item.classList.remove('active'));
+                        li.classList.add('active');
+                        pessoaSelecionadaAtual = pessoa;
+                        carregarDesignacoesDaPessoa(pessoa.nome);
+                    });
+                    listaPessoasUl.appendChild(li);
+                });
+                popularDropdownsPessoasNosModais();
+            } catch (error) {
+                console.error("Erro ao carregar pessoas: ", error);
+                alert("Falha ao carregar pessoas.");
+            }
+        }
+
+        async function carregarDesignacoesDaPessoa(nomePessoa) {
+            criarEstruturaDetalhes(); // Cria a estrutura de abas e filtros
+            document.getElementById('nome-pessoa-detalhe').textContent = nomePessoa;
+            const historicoContent = document.getElementById('historico-content');
+            if(historicoContent) historicoContent.innerHTML = '<p>Carregando designações...</p>';
+
+            try {
+                const q = query(collection(db, "designacoes"), where(`participantes.${nomePessoa}`, "==", true));
+                const querySnapshot = await getDocs(q);
+                
+                designacoesDaPessoaAtual = [];
+                querySnapshot.forEach((docSnap) => {
+                    designacoesDaPessoaAtual.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                
+                popularFiltros(); // Popula filtros com base nas designações carregadas
+                aplicarEAtualizarFiltros(); // Aplica filtros (inicialmente mostra tudo) e renderiza histórico
+                
+                // Se a aba de estatísticas estiver ativa (ou para pré-carregar)
+                if (document.getElementById('estatisticas-content')?.classList.contains('active')) {
+                    renderizarEstatisticas();
+                }
+
+            } catch (error) {
+                console.error(`Erro ao carregar designações para ${nomePessoa}: `, error);
+                if(historicoContent) historicoContent.innerHTML = `<p>Erro ao carregar designações. Detalhes: ${error.message}</p>`;
+            }
+        }
+
+        // --- Funções para Popups (Modals) ---
+        function abrirModal(modalElement) {
+            modalElement.style.display = 'block';
+        }
+        function fecharModal(modalElement) {
+            modalElement.style.display = 'none';
+        }
+
+        fabMain.addEventListener('click', () => fabOptions.classList.toggle('show'));
+        document.addEventListener('click', (event) => {
+            if (!fabMain.contains(event.target) && !fabOptions.contains(event.target)) {
+                fabOptions.classList.remove('show');
+            }
+        });
+
+        btnCriarPessoaFab.addEventListener('click', () => { abrirModal(modalPessoa); fabOptions.classList.remove('show'); });
+        btnCriarElementoFab.addEventListener('click', () => { abrirModal(modalElemento); fabOptions.classList.remove('show'); });
+        btnCriarDesignacaoFab.addEventListener('click', () => {
+            popularDropdownsElementosNoModal(); 
+            popularDropdownsPessoasNosModais();   
+            abrirModal(modalDesignacao);
+            fabOptions.classList.remove('show');
+        });
+
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                fecharModal(document.getElementById(button.getAttribute('data-modal-id')));
+            });
+        });
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                fecharModal(event.target);
+            }
+        });
+
+        // --- Funções de Formulário ---
+        formCriarPessoa.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = nomePessoaInput.value.trim();
+            if (!nome) { alert("O nome da pessoa é obrigatório."); return; }
+
+            const q = query(collection(db, "pessoas"), where("nome", "==", nome));
+            const snap = await getDocs(q);
+            if (!snap.empty) { alert("Uma pessoa com este nome já existe."); return; }
+
+            try {
+                await addDoc(collection(db, "pessoas"), { nome: nome, createdAt: serverTimestamp() });
+                alert("Pessoa criada com sucesso!");
+                formCriarPessoa.reset();
+                fecharModal(modalPessoa);
+                carregarPessoas();
+            } catch (error) { console.error("Erro ao criar pessoa: ", error); alert("Falha ao criar pessoa."); }
+        });
+
+        formCriarElemento.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const designacaoNome = nomeElementoModalInput.value.trim(); // Corrigido para usar o ID correto
+            const tipo = tipoElementoSelect.value;
+            const genero = generoElementoSelect.value;
+
+            if (!designacaoNome) { alert("O nome do elemento é obrigatório."); return; }
+            
+            const q = query(collection(db, "elementos"), where("designacao", "==", designacaoNome));
+            const snap = await getDocs(q);
+            if (!snap.empty) { alert("Um elemento com esta designação já existe."); return; }
+
+            try {
+                await addDoc(collection(db, "elementos"), { 
+                    designacao: designacaoNome, 
+                    tipo: tipo, 
+                    genero: genero,
+                    createdAt: serverTimestamp() 
+                });
+                alert("Elemento criado com sucesso!");
+                formCriarElemento.reset();
+                fecharModal(modalElemento);
+                popularDropdownsElementosNoModal(); // Atualiza dropdown de elementos no modal de designação
+                carregarTodosElementosParaEstatisticas(); // E para as estatísticas
+            } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Falha ao criar elemento."); }
+        });
+
+        formCriarDesignacao.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const elementoId = selectElementoDesignacao.value;
+            const pessoaAId = selectPessoaA.value;
+            const pessoaBId = selectPessoaB.value;
+            const pessoaCId = selectPessoaC.value;
+            const dataStr = dataDesignacaoInput.value;
+
+            if (!elementoId) { alert("Selecione um elemento."); return; }
+            if (!dataStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) { alert("Formato de data inválido. Use DD/MM/AAAA."); return; }
+
+            const [dia, mes, ano] = dataStr.split('/');
+            if (parseInt(dia,10) < 1 || parseInt(dia,10) > 31 || parseInt(mes,10) < 1 || parseInt(mes,10) > 12 || parseInt(ano,10) < 1900 ) {
+                alert("Data inválida."); return;
+            }
+            
+            const participantes = {};
+            let nomePessoaA = null, nomePessoaB = null, nomePessoaC = null;
+
+            const pessoasSelecionadasNomes = [];
+            if (pessoaAId) {
+                const pA = todasPessoas.find(p => p.id === pessoaAId);
+                if (pA) { participantes[pA.nome] = true; nomePessoaA = pA.nome; pessoasSelecionadasNomes.push(pA.nome); }
+            }
+            if (pessoaBId) {
+                const pB = todasPessoas.find(p => p.id === pessoaBId);
+                if (pB) { participantes[pB.nome] = true; nomePessoaB = pB.nome; pessoasSelecionadasNomes.push(pB.nome); }
+            }
+            if (pessoaCId) {
+                const pC = todasPessoas.find(p => p.id === pessoaCId);
+                if (pC) { participantes[pC.nome] = true; nomePessoaC = pC.nome; pessoasSelecionadasNomes.push(pC.nome); }
+            }
+
+            if (Object.keys(participantes).length === 0) { alert("Selecione pelo menos uma pessoa."); return; }
+            if (new Set(pessoasSelecionadasNomes.filter(Boolean)).size !== pessoasSelecionadasNomes.filter(Boolean).length) {
+                 alert("Uma pessoa não pode ser selecionada em múltiplos campos (A, B, C)."); return;
+            }
+            
+            let nomeElementoDesignado = "Elemento";
+            const elemDocSnap = await getDoc(doc(db, "elementos", elementoId));
+            if (elemDocSnap.exists()) { nomeElementoDesignado = elemDocSnap.data().designacao; }
+
+            try {
+                await addDoc(collection(db, "designacoes"), {
+                    elementoId: elementoId,
+                    nome: nomeElementoDesignado, 
+                    pessoaA: nomePessoaA,
+                    pessoaB: nomePessoaB,
+                    pessoaC: nomePessoaC,
+                    dia: dia, // armazenar como string para consistência com o pedido, mas numérico seria melhor para o DB
+                    mes: mes,
+                    ano: ano,
+                    dataCompleta: `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`, // Para ordenação facilitada
+                    participantes: participantes,
+                    createdAt: serverTimestamp()
+                });
+                alert("Designação criada com sucesso!");
+                formCriarDesignacao.reset();
+                fecharModal(modalDesignacao);
+                if(pessoaSelecionadaAtual) {
+                    carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.nome);
+                }
+            } catch (error) { console.error("Erro ao criar designação: ", error); alert("Falha ao criar designação."); }
+        });
+
+        // --- Funções Auxiliares para Dropdowns nos Modais ---
+        function popularDropdownsPessoasNosModais() {
+            const selects = [selectPessoaA, selectPessoaB, selectPessoaC];
+            selects.forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">-- Nenhuma --</option>';
+                todasPessoas.forEach(pessoa => {
+                    const option = document.createElement('option');
+                    option.value = pessoa.id;
+                    option.textContent = pessoa.nome;
+                    select.appendChild(option);
+                });
+                if (currentValue) select.value = currentValue;
+            });
+        }
+
+        async function popularDropdownsElementosNoModal() {
+            try {
+                // Reutiliza todosElementos se já carregado, senão carrega
+                if(todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
+
+                selectElementoDesignacao.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
+                todosElementos.forEach(elemento => {
+                    const option = document.createElement('option');
+                    option.value = elemento.id;
+                    option.textContent = elemento.designacao;
+                    selectElementoDesignacao.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar elementos para dropdown do modal: ", error);
+            }
+        }
+        
+        async function carregarTodosElementosParaEstatisticas() { // E para modais
+            try {
+                const querySnapshot = await getDocs(collection(db, "elementos"));
+                todosElementos = [];
+                querySnapshot.forEach((docSnap) => {
+                    todosElementos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+            } catch (error) {
+                console.error("Erro ao carregar todos os elementos: ", error);
+            }
+        }
+
+
+        function atualizarDropdownsPessoasDesignacaoModal() {
+            const selecionados = [selectPessoaA.value, selectPessoaB.value, selectPessoaC.value].filter(Boolean);
+            
+            [selectPessoaA, selectPessoaB, selectPessoaC].forEach(currentSelect => {
+                const valorAtual = currentSelect.value;
+                // Desabilitar opções que já estão selecionadas nos outros selects
+                Array.from(currentSelect.options).forEach(option => {
+                    if (option.value && option.value !== valorAtual && selecionados.includes(option.value)) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            });
+        }
+
+        selectPessoaA.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+        selectPessoaB.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+        selectPessoaC.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
+
+        // --- Inicialização ---
+        window.onload = () => {
+            carregarPessoas();
+            carregarTodosElementosParaEstatisticas(); // Carrega todos os elementos para uso nos dropdowns de estatísticas/modais
+            colunaDetalhesContent.style.display = 'flex'; // Garante que o placeholder está visível
+            colunaDetalhesDiv.innerHTML = ''; // Limpa a coluna de detalhes inicialmente
+            colunaDetalhesDiv.appendChild(colunaDetalhesContent); // Readiciona o placeholder
+        };
+
+    </script>
+</body>
+</html>
