@@ -438,13 +438,14 @@
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { 
             getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc, serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
+        // SUBSTITUA PELA SUA CONFIGURAÇÃO REAL DO FIREBASE
         const firebaseConfig = {
-         apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
+          apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
   authDomain: "theeye-c3ace.firebaseapp.com",
   projectId: "theeye-c3ace",
   storageBucket: "theeye-c3ace.firebasestorage.app",
@@ -452,27 +453,34 @@
   appId: "1:742355525459:web:fbe84a9594be4bedc28ba6"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // DOM Elements
         const listaPessoasUl = document.getElementById('lista-pessoas');
         const colunaDetalhesDiv = document.getElementById('coluna-detalhes');
         const colunaDetalhesContent = document.getElementById('coluna-detalhes-content');
+
         const fabMain = document.getElementById('fab-main');
         const fabOptions = document.getElementById('fab-options');
         const btnCriarPessoaFab = document.getElementById('btn-criar-pessoa-fab');
         const btnCriarElementoFab = document.getElementById('btn-criar-elemento-fab');
         const btnCriarDesignacaoFab = document.getElementById('btn-criar-designacao-fab');
+
         const modalPessoa = document.getElementById('modal-pessoa');
         const modalElemento = document.getElementById('modal-elemento');
         const modalDesignacao = document.getElementById('modal-designacao');
         const closeButtons = document.querySelectorAll('.close-button');
+
         const formCriarPessoa = document.getElementById('form-criar-pessoa');
         const nomePessoaInput = document.getElementById('nome-pessoa');
+
         const formCriarElemento = document.getElementById('form-criar-elemento');
         const nomeElementoModalInput = document.getElementById('nome-elemento-modal');
         const tipoElementoSelect = document.getElementById('tipo-elemento');
         const generoElementoSelect = document.getElementById('genero-elemento');
+
         const formCriarDesignacao = document.getElementById('form-criar-designacao');
         const selectElementoDesignacao = document.getElementById('select-elemento-designacao');
         const selectPessoaA = document.getElementById('select-pessoaA');
@@ -480,15 +488,17 @@
         const selectPessoaC = document.getElementById('select-pessoaC');
         const dataDesignacaoInput = document.getElementById('data-designacao');
 
+        // Globais para dados e estado
         let todasPessoas = [];
         let todosElementos = [];
         let pessoaSelecionadaAtual = null;
         let designacoesDaPessoaAtual = []; 
         let designacoesFiltradas = [];     
-        let designacoesChart = null; 
+        let designacoesChart = null; // Variável para manter a instância do gráfico
 
+        // --- Estrutura HTML da Coluna Detalhes (Abas e Filtros) ---
         function criarEstruturaDetalhes() {
-            colunaDetalhesContent.style.display = 'none'; 
+            colunaDetalhesContent.style.display = 'none'; // Esconde mensagem placeholder
             colunaDetalhesDiv.innerHTML = `
                 <h3>Detalhes de: <span id="nome-pessoa-detalhe"></span></h3>
                 <div class="tabs">
@@ -506,42 +516,48 @@
                 <div id="historico-content" class="tab-content active"></div>
                 <div id="estatisticas-content" class="tab-content"></div>`;
 
+            // Adicionar event listeners para abas e filtros
             document.querySelectorAll('.tab-button').forEach(button => {
                 button.addEventListener('click', () => {
                     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
                     document.getElementById(`${button.dataset.tab}-content`).classList.add('active');
-                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas();
+                    if (button.dataset.tab === 'estatisticas') renderizarEstatisticas(); // Renderiza ao trocar para aba
                 });
             });
             document.getElementById('btn-aplicar-filtros').addEventListener('click', aplicarEAtualizarFiltros);
             document.getElementById('btn-limpar-filtros').addEventListener('click', limparEAtualizarFiltros);
         }
 
+        // --- Funções de Filtros ---
         function popularFiltros() {
             const filtroAnoSelect = document.getElementById('filtro-ano');
             const filtroElementoSelect = document.getElementById('filtro-elemento');
-            if (!filtroAnoSelect || !filtroElementoSelect) return;
+            if (!filtroAnoSelect || !filtroElementoSelect) return; // Elementos podem não existir se pessoa não selecionada
 
             const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a,b) => b-a);
-            const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a,b) => a.localeCompare(b));
+            const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a,b) => a.localeCompare(b)); // Ordena alfabeticamente
 
             filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
         }
 
         function aplicarEAtualizarFiltros() {
-            const mes = document.getElementById('filtro-mes').value;
-            const ano = document.getElementById('filtro-ano').value;
-            const elemento = document.getElementById('filtro-elemento').value;
+            const mes = document.getElementById('filtro-mes')?.value; // Adiciona ? para segurança se o elemento não existir
+            const ano = document.getElementById('filtro-ano')?.value;
+            const elemento = document.getElementById('filtro-elemento')?.value;
 
-            designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
-                const matchMes = !mes || d.mes === mes;
-                const matchAno = !ano || d.ano === ano;
-                const matchElemento = !elemento || d.nome === elemento;
-                return matchMes && matchAno && matchElemento;
-            });
+            if(mes === undefined || ano === undefined || elemento === undefined) { // Se os filtros não existem (ex: antes de selecionar pessoa)
+                designacoesFiltradas = [...designacoesDaPessoaAtual];
+            } else {
+                 designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
+                    const matchMes = !mes || d.mes === mes;
+                    const matchAno = !ano || d.ano === ano;
+                    const matchElemento = !elemento || d.nome === elemento;
+                    return matchMes && matchAno && matchElemento;
+                });
+            }
             renderizarHistorico();
             if (document.getElementById('estatisticas-content')?.classList.contains('active')) {
                  renderizarEstatisticas(); 
@@ -558,34 +574,57 @@
             aplicarEAtualizarFiltros(); 
         }
 
+        // --- Renderização ---
         function renderizarHistorico() {
             const historicoContent = document.getElementById('historico-content');
             if (!historicoContent) return;
             
-            historicoContent.innerHTML = '';
+            historicoContent.innerHTML = ''; // Limpa conteúdo antigo
             if (designacoesFiltradas.length === 0) {
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Nenhuma designação encontrada com os filtros atuais.</p>';
                 return;
             }
 
+            // Ordenar da mais recente para a mais antiga
             const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
                 const valA = parseInt(a.ano) * 10000 + parseInt(a.mes) * 100 + parseInt(a.dia);
                 const valB = parseInt(b.ano) * 10000 + parseInt(b.mes) * 100 + parseInt(b.dia);
-                return valB - valA; 
+                return valB - valA; // Mais recente primeiro
             });
+
+            const ul = document.createElement('ul');
+            ul.style.listStyleType = 'none'; 
+            ul.style.paddingLeft = '0';    
 
             designacoesOrdenadas.forEach(desig => {
-                const card = document.createElement('div');
-                card.classList.add('designacao-card');
-                const participantesNomes = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean); // Filtra nulos/vazios
+                const li = document.createElement('li');
+                li.style.padding = '8px 0'; 
+                li.style.borderBottom = '1px solid #eee'; 
 
-                card.innerHTML = `
-                    <h4>${desig.nome || 'Elemento sem nome'}</h4>
-                    <p><strong>Data:</strong> ${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}</p>
-                    ${participantesNomes.length > 0 ? `<p>${participantesNomes.join(' - ')}</p>` : ''}
-                `;
-                historicoContent.appendChild(card);
+                const nomeElemento = desig.nome || 'Elemento sem nome';
+                const participantesNomesArray = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean); 
+                const participantesString = participantesNomesArray.join(' - ');
+                const dataFormatada = `${String(desig.dia).padStart(2,'0')}/${String(desig.mes).padStart(2,'0')}/${desig.ano}`;
+                
+                let textoFinal = `${nomeElemento}`;
+                if (participantesString) {
+                    textoFinal += `: ${participantesString}`;
+                }
+                textoFinal += ` (${dataFormatada})`;
+                
+                li.textContent = textoFinal;
+                ul.appendChild(li);
             });
+            
+            if (ul.childNodes.length > 0) {
+                const ultimoItem = ul.lastChild;
+                if (ultimoItem) {
+                    ultimoItem.style.borderBottom = 'none'; 
+                }
+                historicoContent.appendChild(ul);
+            } else if (designacoesFiltradas.length > 0) { 
+                historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Erro ao exibir histórico.</p>';
+            }
         }
         
         function renderizarEstatisticas() {
@@ -594,10 +633,7 @@
             statsContent.innerHTML = ''; 
 
             if (!pessoaSelecionadaAtual || designacoesFiltradas.length === 0) {
-                // A mensagem de "sem dados" é tratada pelo CSS via :empty ou :has(> p:only-child)
-                // para permitir o layout de grid não colapsar.
-                // Pode adicionar um <p> se quiser que JS explicitamente controle
-                // statsContent.innerHTML = "<p>Nenhuma designação para calcular estatísticas com os filtros atuais.</p>";
+                // A mensagem é tratada pelo CSS agora
                 return;
             }
 
@@ -674,7 +710,8 @@
                     options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
                 });
             } else {
-                 document.getElementById('designacoesPorElementoChart').outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para exibir gráfico.</p>";
+                 const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
+                 if(chartContainer) chartContainer.querySelector('canvas').outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico.</p>";
             }
         }
         
@@ -688,6 +725,7 @@
                 resultadoDiv.textContent = "Selecione pessoa e elemento.";
                 resultadoDiv.classList.add('info'); return;
             }
+            // Usa designacoesDaPessoaAtual para esta verificação específica, não as filtradas
             const contagem = designacoesDaPessoaAtual.filter(d => d.nome === nomeElemento && d.participantes && d.participantes[nomeOutraPessoa]).length;
             if (contagem > 0) {
                 resultadoDiv.textContent = `Sim, ${contagem} vez(es) juntos em "${nomeElemento}".`;
@@ -698,6 +736,7 @@
             }
         }
 
+        // --- Funções Principais ---
         async function carregarPessoas() {
             try {
                 const querySnapshot = await getDocs(collection(db, "pessoas"));
@@ -711,7 +750,7 @@
                 todasPessoas.forEach(pessoa => {
                     const li = document.createElement('li');
                     li.textContent = pessoa.nome;
-                    li.dataset.pessoaId = pessoa.id; // Usar pessoa.id que já está no objeto
+                    li.dataset.pessoaId = pessoa.id; 
                     li.addEventListener('click', () => {
                         document.querySelectorAll('#lista-pessoas li').forEach(item => item.classList.remove('active'));
                         li.classList.add('active');
@@ -742,10 +781,11 @@
                 if (document.getElementById('estatisticas-content')?.classList.contains('active')) renderizarEstatisticas();
             } catch (error) {
                 console.error(`Erro ao carregar designações para ${nomePessoa}: `, error);
-                if(historicoContent) historicoContent.innerHTML = `<p>Erro ao carregar designações.</p>`;
+                if(historicoContent) historicoContent.innerHTML = `<p style="text-align:center;color:#777;margin-top:20px;">Erro ao carregar designações.</p>`;
             }
         }
 
+        // --- Funções para Popups (Modals) ---
         function abrirModal(modalElement) { modalElement.style.display = 'block'; }
         function fecharModal(modalElement) { modalElement.style.display = 'none'; }
 
@@ -764,7 +804,8 @@
         closeButtons.forEach(button => button.addEventListener('click', () => fecharModal(document.getElementById(button.getAttribute('data-modal-id')))));
         window.addEventListener('click', (event) => { if (event.target.classList.contains('modal')) fecharModal(event.target); });
 
-        formCriarPessoa.addEventListener('submit', async (e) => { /* ... (sem alterações) ... */ 
+        // --- Funções de Formulário ---
+        formCriarPessoa.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const nome = nomePessoaInput.value.trim();
             if (!nome) { alert("O nome da pessoa é obrigatório."); return; }
@@ -776,7 +817,7 @@
                 alert("Pessoa criada com sucesso!"); formCriarPessoa.reset(); fecharModal(modalPessoa); carregarPessoas();
             } catch (error) { console.error("Erro ao criar pessoa: ", error); alert("Falha ao criar pessoa."); }
         });
-        formCriarElemento.addEventListener('submit', async (e) => { /* ... (sem alterações) ... */ 
+        formCriarElemento.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const designacaoNome = nomeElementoModalInput.value.trim();
             const tipo = tipoElementoSelect.value;
@@ -788,11 +829,11 @@
             try {
                 await addDoc(collection(db, "elementos"), { designacao: designacaoNome, tipo: tipo, genero: genero, createdAt: serverTimestamp() });
                 alert("Elemento criado com sucesso!"); formCriarElemento.reset(); fecharModal(modalElemento); 
-                await carregarTodosElementosParaEstatisticas(); // Recarrega para garantir que o novo elemento esteja disponível
+                await carregarTodosElementosParaEstatisticas(); 
                 popularDropdownsElementosNoModal(); 
             } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Falha ao criar elemento."); }
         });
-        formCriarDesignacao.addEventListener('submit', async (e) => { /* ... (sem alterações, exceto dataCompleta) ... */ 
+        formCriarDesignacao.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const elementoId = selectElementoDesignacao.value;
             const pessoaAId = selectPessoaA.value; const pessoaBId = selectPessoaB.value; const pessoaCId = selectPessoaC.value;
@@ -818,7 +859,7 @@
                     elementoId: elementoId, nome: nomeElementoDesignado, 
                     pessoaA: nomePessoaA, pessoaB: nomePessoaB, pessoaC: nomePessoaC,
                     dia: String(dia).padStart(2,'0'), mes: String(mes).padStart(2,'0'), ano: ano,
-                    dataCompleta: `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`, // Para ordenação
+                    dataCompleta: `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`,
                     participantes: participantes, createdAt: serverTimestamp()
                 });
                 alert("Designação criada com sucesso!"); formCriarDesignacao.reset(); fecharModal(modalDesignacao);
@@ -826,35 +867,35 @@
             } catch (error) { console.error("Erro ao criar designação: ", error); alert("Falha ao criar designação."); }
         });
 
-        function popularDropdownsPessoasNosModais() { /* ... (sem alterações) ... */ 
+        // --- Funções Auxiliares para Dropdowns nos Modais ---
+        function popularDropdownsPessoasNosModais() { 
             const selects = [selectPessoaA, selectPessoaB, selectPessoaC];
             selects.forEach(select => {
                 const currentValue = select.value; select.innerHTML = '<option value="">-- Nenhuma --</option>';
-                todasPessoas.forEach(pessoa => { // já está ordenada
+                todasPessoas.forEach(pessoa => { 
                     const option = document.createElement('option'); option.value = pessoa.id; option.textContent = pessoa.nome; select.appendChild(option);
                 });
                 if (currentValue) select.value = currentValue;
             });
         }
-        async function popularDropdownsElementosNoModal() { /* ... (sem alterações) ... */ 
+        async function popularDropdownsElementosNoModal() { 
             try {
                 if(todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
                 selectElementoDesignacao.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
-                // Ordenar elementos alfabeticamente para o dropdown
                 const elementosOrdenados = [...todosElementos].sort((a,b) => a.designacao.localeCompare(b.designacao, 'pt-BR', {sensitivity: 'base'}));
                 elementosOrdenados.forEach(elemento => {
                     const option = document.createElement('option'); option.value = elemento.id; option.textContent = elemento.designacao; selectElementoDesignacao.appendChild(option);
                 });
             } catch (error) { console.error("Erro ao carregar elementos para dropdown do modal: ", error); }
         }
-        async function carregarTodosElementosParaEstatisticas() { /* ... (sem alterações) ... */ 
+        async function carregarTodosElementosParaEstatisticas() { 
             try {
                 const querySnapshot = await getDocs(collection(db, "elementos"));
                 todosElementos = [];
                 querySnapshot.forEach((docSnap) => todosElementos.push({ id: docSnap.id, ...docSnap.data() }));
             } catch (error) { console.error("Erro ao carregar todos os elementos: ", error); }
         }
-        function atualizarDropdownsPessoasDesignacaoModal() { /* ... (sem alterações) ... */ 
+        function atualizarDropdownsPessoasDesignacaoModal() { 
             const selecionados = [selectPessoaA.value, selectPessoaB.value, selectPessoaC.value].filter(Boolean);
             [selectPessoaA, selectPessoaB, selectPessoaC].forEach(currentSelect => {
                 const valorAtual = currentSelect.value;
@@ -867,6 +908,7 @@
         selectPessoaB.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
         selectPessoaC.addEventListener('change', atualizarDropdownsPessoasDesignacaoModal);
 
+        // --- Inicialização ---
         window.onload = () => {
             carregarPessoas();
             carregarTodosElementosParaEstatisticas(); 
