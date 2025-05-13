@@ -64,28 +64,99 @@
         .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
         .tab-button { padding: 10px 15px; cursor: pointer; border: none; background-color: transparent; font-size: 1em; margin-right: 5px; border-bottom: 3px solid transparent; color: #555; }
         .tab-button.active { border-bottom: 3px solid #007bff; font-weight: bold; color: #007bff; }
+        /* Estilo para o botão de "Editar Designações" quando o modo está ativo */
+        .tab-button#tab-btn-editar-modo.active-edit-mode {
+            background-color: #ffe082; /* Um amarelo claro, por exemplo */
+            color: #212529;
+            font-weight: bold;
+            border-bottom: 3px solid #ffc107 !important; /* !important para sobrescrever .active normal */
+        }
+
 
         .tab-content {
-            display: none; 
+            display: none;
             flex-grow: 1;
             overflow-y: auto;
         }
-        #coluna-detalhes .tab-content.active { 
-            display: flex; 
+        #coluna-detalhes .tab-content.active {
+            display: flex;
             flex-direction: column;
         }
-        #coluna-detalhes #estatisticas-content.active { 
-            display: grid; 
+        #coluna-detalhes #estatisticas-content.active {
+            display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 15px;
             padding-top: 10px;
         }
-      
+
         .filters-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 6px; align-items: center; }
         .filters-container label { font-size: 0.9em; margin-right: 5px; }
         .filters-container select, .filters-container input, .filters-container button { padding: 8px; border-radius: 4px; border: 1px solid #ced4da; font-size: 0.9em; }
         .filters-container button { background-color: #007bff; color: white; cursor: pointer; }
         .filters-container button#btn-limpar-filtros { background-color: #6c757d; }
+
+        /* Estilos para o botão de toggle dos filtros da pessoa */
+        .btn-toggle-filtros {
+            display: none; /* Começa oculto, será mostrado apenas em mobile pela media query */
+            width: 100%;
+            padding: 10px 15px;
+            background-color: #f0f2f5; /* Cor de fundo suave */
+            color: #0056b3; /* Cor do texto principal */
+            border: 1px solid #d1d9e0; /* Borda sutil */
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-align: left; /* O alinhamento interno será controlado por flex */
+            font-size: 0.95em;
+            /* display: flex; Será ativado na media query */
+            align-items: center;
+        }
+
+        .btn-toggle-filtros .fa-filter {
+            margin-right: 8px;
+            color: #007bff; /* Cor do ícone de filtro */
+        }
+
+        .btn-toggle-filtros .btn-toggle-text {
+            flex-grow: 1; /* O texto ocupa o espaço disponível */
+        }
+
+        .btn-toggle-filtros .toggle-icon {
+            margin-left: 10px; /* Espaço antes do ícone de chevron */
+            transition: transform 0.3s ease; /* Animação para rotação do chevron */
+        }
+
+        .btn-toggle-filtros.active .toggle-icon {
+            transform: rotate(180deg); /* Rotaciona o chevron quando ativo */
+        }
+
+        /* Media Query para comportamento mobile dos filtros da pessoa */
+        @media (max-width: 768px) {
+            #btn-toggle-filtros-pessoa.btn-toggle-filtros { /* Usando ID para especificidade */
+                display: flex; /* Mostrar o botão em mobile e ativar flex */
+            }
+
+            /* Container de filtros da pessoa */
+            #coluna-detalhes #filtros-pessoa-container {
+                max-height: 0; /* Começa colapsado */
+                overflow: hidden;
+                padding-top: 0;
+                padding-bottom: 0;
+                margin-bottom: 0;
+                opacity: 0;
+                transition: max-height 0.35s ease-out, opacity 0.3s ease-in-out, padding 0.35s ease-out, margin-bottom 0.35s ease-out;
+            }
+
+            #coluna-detalhes #filtros-pessoa-container.filtros-visiveis {
+                max-height: 500px; /* Altura suficiente para mostrar os filtros. Ajuste se necessário. */
+                opacity: 1;
+                /* Restaura os paddings e margins originais do .filters-container */
+                padding-top: 10px;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+        }
+
 
         #historico-content ul { list-style-type: none; padding-left: 0; }
         #historico-content li { padding: 8px 10px; border-bottom: 1px solid #eee; transition: background-color 0.3s ease; /* For week color hover */ }
@@ -93,6 +164,24 @@
         #historico-content li.month-separator.first-month-separator { border-top: none; margin-top: 0; }
         #historico-content li.month-separator:not(.first-month-separator) { border-top: 2px solid #ddd; margin-top: 10px;}
         #historico-content li:last-child:not(.month-separator) { border-bottom: none; }
+        /* Estilo para botões de edição nas linhas do histórico */
+        #historico-content ul li button {
+            background-color: #17a2b8; /* ciano informativo */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #historico-content ul li button:hover {
+            background-color: #138496;
+        }
+        #historico-content ul li button .fas { /* Ícone dentro do botão */
+            margin-right: 4px;
+        }
+
 
         #coluna-detalhes #estatisticas-content .stat-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-shadow: 0 3px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
         #coluna-detalhes #estatisticas-content .stat-card h4 { margin-top: 0; margin-bottom: 15px; color: #0056b3; font-size: 1.15em; border-bottom: 1px solid #eef; padding-bottom: 10px; }
@@ -102,8 +191,8 @@
         #coluna-detalhes #estatisticas-content .stat-card ul { padding-left: 20px; list-style-type: "– "; }
         #coluna-detalhes #estatisticas-content .stat-card li { margin-bottom: 6px; }
         #coluna-detalhes #estatisticas-content .stat-card li .stat-value-inline { font-weight: bold; color: #28a745; }
-        #coluna-detalhes #verificacao-conjunta-container.stat-card label, 
-        #coluna-detalhes #verificacao-conjunta-container.stat-card select, 
+        #coluna-detalhes #verificacao-conjunta-container.stat-card label,
+        #coluna-detalhes #verificacao-conjunta-container.stat-card select,
         #coluna-detalhes #verificacao-conjunta-container.stat-card button { display: block; width: calc(100% - 16px); margin-bottom: 12px; box-sizing: border-box; }
         #coluna-detalhes #verificacao-conjunta-container.stat-card button { width: auto; padding: 10px 18px; background-color: #17a2b8; border-color: #17a2b8; color: white; cursor: pointer; }
         #coluna-detalhes #resultado-verificacao-conjunta { margin-top: 12px; font-weight: 500; padding: 10px; border-radius: 5px; text-align: center; }
@@ -112,20 +201,20 @@
         #coluna-detalhes #resultado-verificacao-conjunta.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;}
         #coluna-detalhes #designacoesPorElementoChartContainer.stat-card,
         #coluna-detalhes .stats-chart-container-pessoa.stat-card { /* Applied to new chart containers for person details */
-             min-height: 300px; 
+             min-height: 300px;
         }
         #coluna-detalhes #designacoesPorElementoChartContainer.stat-card canvas,
         #coluna-detalhes .stats-chart-container-pessoa.stat-card canvas { /* Applied to new chart canvases */
-            width: 100% !important; max-height: 320px; 
+            width: 100% !important; max-height: 320px;
         }
-        #coluna-detalhes #estatisticas-content:empty::before, 
+        #coluna-detalhes #estatisticas-content:empty::before,
         #coluna-detalhes #estatisticas-content:has(> p:only-child)::before { content: "Nenhuma designação para calcular estatísticas com os filtros atuais."; display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%; color: #777; font-size: 1.1em; }
         #coluna-detalhes #estatisticas-content > p:only-child { display: none; }
 
 
         .fab-container { position: fixed; bottom: 30px; right: 30px; z-index: 1000; display: flex; flex-direction: column; align-items: flex-end; }
-        .fab-stats-button {
-            background-color: #17a2b8;
+        .fab-stats-button { /* Estilo genérico para botões no FAB que não são o principal */
+            background-color: #17a2b8; /* Ciano padrão */
             color: white;
             border: none;
             width: 48px;
@@ -138,15 +227,29 @@
             align-items: center;
             justify-content: center;
             transition: transform 0.2s ease, background-color 0.2s ease;
-            margin-bottom: 10px;
+            margin-bottom: 10px; /* Espaço entre os botões FAB */
         }
         .fab-stats-button:hover {
-            background-color: #138496;
             transform: translateY(-2px);
         }
+        /* Específico para o botão de Ranking */
+        #btn-ranking-popup {
+            background-color: #ff9800; /* Laranja */
+        }
+        #btn-ranking-popup:hover {
+            background-color: #e68a00; /* Laranja mais escuro */
+        }
+        /* Específico para o botão de Stats Globais (se precisar de cor diferente do padrão) */
+        #btn-global-stats {
+             background-color: #17a2b8; /* Mantém ciano ou muda se desejar */
+        }
+        #btn-global-stats:hover {
+            background-color: #138496;
+        }
+
         .fab { background-color: #007bff; color: white; border: none; width: 56px; height: 56px; border-radius: 50%; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease, background-color 0.2s ease; }
         .fab:hover { background-color: #0056b3; transform: translateY(-2px); }
-        .fab-options { display: none; position: absolute; bottom: 70px; right: 0; flex-direction: column; gap: 10px; }
+        .fab-options { display: none; position: absolute; bottom: 70px; /* Ajustado para mais botões no FAB */ right: 0; flex-direction: column; gap: 10px; }
         .fab-options.show { display: flex; }
         .fab-option { background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; font-size: 0.9em; white-space: nowrap; transition: background-color 0.2s ease; }
         .fab-option:hover { background-color: #138496; }
@@ -254,7 +357,7 @@
             align-items: center;
         }
         .stats-icon { margin-right: 10px; color: #007bff; font-size: 1.05em; width: 20px; text-align: center; }
-        .stats-filters { 
+        .stats-filters {
             background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;
             border: 1px solid #e9ecef; display: flex; flex-wrap: wrap; align-items: center; gap: 15px;
         }
@@ -288,7 +391,7 @@
         .stats-result-text strong { color: #212529; }
         .stats-result-text .acima-media { color: #28a745; font-weight: bold; }
         .stats-result-text .abaixo-media { color: #dc3545; font-weight: bold; }
-        .stats-result-text .na-media { color: #ffc107; font-weight: bold; } 
+        .stats-result-text .na-media { color: #ffc107; font-weight: bold; }
         .stats-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stats-kpi-card { background-color: #fff; padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; }
         .stats-kpi-card .kpi-value { font-size: 1.8em; font-weight: 600; color: #007bff; display: block; margin-bottom: 5px; }
@@ -302,7 +405,7 @@
         .mostrar-todos-link:hover { text-decoration: underline; color: #0056b3; }
         .loading-spinner {
             border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%;
-            width: 36px; height: 36px; animation: spin 0.8s linear infinite; margin: 25px auto; 
+            width: 36px; height: 36px; animation: spin 0.8s linear infinite; margin: 25px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .stats-result-list:empty::before,
@@ -319,6 +422,190 @@
         .pessoa-comparison-card ul { list-style-type: none; padding: 0; }
         .pessoa-comparison-card li { font-size: 0.9em; margin-bottom: 6px; }
         .pessoa-comparison-card .stat-value { font-weight: bold; color: #333; }
+
+        /* Custom Multi-select for "Comparar Desempenho de Pessoas" */
+        .custom-multiselect-container {
+            position: relative;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            min-height: 38px; /* Approx height of a select input */
+            width: 250px; /* Match original select width or adjust as needed */
+            box-sizing: border-box;
+            margin-bottom: 10px; /* Spacing */
+        }
+
+        .selected-pessoas-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            flex-grow: 1; /* Allow tags to take up space */
+        }
+
+        .pessoa-tag {
+            background-color: #007bff;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .pessoa-tag .remove-tag-btn {
+            margin-left: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            background: none;
+            border: none;
+            color: white;
+            padding: 0 2px;
+        }
+        .pessoa-tag .remove-tag-btn:hover {
+            opacity: 0.8;
+        }
+
+        #gs-pessoas-search-input-custom {
+            border: none;
+            outline: none;
+            padding: 6px;
+            font-size: 0.9em;
+            flex-grow: 1; /* Allow input to take remaining space */
+            min-width: 100px; /* Minimum width for the input field */
+            box-sizing: border-box;
+        }
+        .custom-multiselect-container:focus-within { /* Style when container or input has focus */
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+
+        #gs-pessoas-dropdown-custom {
+            position: absolute;
+            top: 100%; /* Position below the container */
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-top: none; /* Avoid double border */
+            border-radius: 0 0 5px 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1050; /* Ensure it's above other content in modal */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none; /* Hidden by default */
+        }
+
+        #gs-pessoas-dropdown-custom ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #gs-pessoas-dropdown-custom li {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        #gs-pessoas-dropdown-custom li:hover {
+            background-color: #e9ecef;
+        }
+        #gs-pessoas-dropdown-custom li.disabled { /* For already selected items in dropdown */
+            color: #adb5bd;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+        }
+
+        /* Estilos para o Modal de Ranking */
+        .ranking-list-container {
+            margin-top: 20px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fdfdfd;
+        }
+
+        #lista-ranking-designacoes {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #lista-ranking-designacoes li {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+        }
+        #lista-ranking-designacoes li:last-child {
+            border-bottom: none;
+        }
+
+        #lista-ranking-designacoes .designacao-nome {
+            font-weight: 500;
+            color: #333;
+            flex-grow: 1;
+        }
+        #lista-ranking-designacoes .designacao-participantes {
+            color: #0056b3;
+            font-style: italic;
+            margin-left: 10px;
+            text-align: right;
+            min-width: 150px; /* Para evitar quebra de linha fácil */
+        }
+        #lista-ranking-designacoes .designacao-participantes.ninguem {
+            color: #888;
+        }
+
+
+        /* Separadores no Ranking */
+        .ranking-section-separator {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 86, 179, 0), rgba(0, 86, 179, 0.75), rgba(0, 86, 179, 0));
+            margin: 12px 0;
+        }
+        .ranking-paragraph-separator { /* Se usar como <li> */
+            height: 10px; /* Apenas um espaço, sem linha visível */
+            border-bottom: none !important; /* Garante que não haja borda de li */
+            background-color: transparent !important; /* Garante que não haja cor de fundo de li */
+            padding: 5px 0 !important;
+        }
+         /* Garante que o HR não tenha padding de LI se for um elemento HR dentro da UL */
+        #lista-ranking-designacoes hr.ranking-section-separator {
+            padding: 0;
+            border-bottom: none; /* Se for um HR, não precisa de border-bottom */
+        }
+
+
+        /* Botões de reordenar no Ranking */
+        .reorder-buttons button {
+            background: none;
+            border: 1px solid #ccc;
+            color: #555;
+            padding: 3px 6px;
+            margin-left: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        .reorder-buttons button:hover {
+            background-color: #e9ecef;
+            border-color: #bbb;
+        }
+        .reorder-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -332,6 +619,9 @@
     </div>
 
     <div class="fab-container">
+        <button id="btn-ranking-popup" class="fab-stats-button" title="Ranking da Reunião">
+            <i class="fas fa-list-ol"></i>
+        </button>
         <button id="btn-global-stats" class="fab-stats-button" title="Estatísticas Globais">📊</button>
         <button id="fab-main" class="fab">+</button>
         <div id="fab-options" class="fab-options">
@@ -346,6 +636,57 @@
     <div id="modal-gerenciar-pessoas" class="modal"><div class="modal-content modal-gerenciar"><span class="close-button" data-modal-id="modal-gerenciar-pessoas">×</span><h3>Gerenciar Pessoas</h3><p><small>Aqui você pode editar, remover ou ocultar pessoas da lista principal do site.</small></p><ul id="lista-gerenciar-pessoas"></ul></div></div>
     <div id="modal-elemento" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-elemento">×</span><h3>Criar Novo Elemento</h3><form id="form-criar-elemento"><div><label for="nome-elemento-modal">Nome do Elemento:</label><input type="text" id="nome-elemento-modal" required></div><div><label for="tipo-elemento">Tipo:</label><select id="tipo-elemento"><option value="reuniao">Reunião</option><option value="pregacao">Pregação</option></select></div><div><label for="genero-elemento">Gênero (Reunião):</label><select id="genero-elemento"><option value="semana">Semana</option><option value="fim de semana">Fim de Semana</option><option value="tecnico">Técnico</option></select></div><button type="submit">Criar Elemento</button></form></div></div>
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
+
+    <!-- MODAL EDITAR DESIGNAÇÃO -->
+    <div id="modal-editar-designacao" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="modal-editar-designacao">×</span>
+            <h3>Editar Designação</h3>
+            <form id="form-editar-designacao">
+                <input type="hidden" id="designacao-id-edit">
+                <div>
+                    <label for="data-designacao-edit">Data (DD/MM/AAAA):</label>
+                    <input type="text" id="data-designacao-edit" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}">
+                </div>
+                <div>
+                    <label for="select-elemento-designacao-edit">Elemento:</label>
+                    <select id="select-elemento-designacao-edit" required>
+                        <option value="">-- Selecione um Elemento --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaA-edit">Pessoa A:</label>
+                    <select id="select-pessoaA-edit">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaB-edit">Pessoa B:</label>
+                    <select id="select-pessoaB-edit">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="select-pessoaC-edit">Pessoa C:</label>
+                    <select id="select-pessoaC-edit">
+                        <option value="">-- Nenhuma --</option>
+                    </select>
+                </div>
+                <div id="campos-orador-publico-edit" style="display:none;">
+                    <div>
+                        <label for="tema-orador-edit">Tema:</label>
+                        <input type="text" id="tema-orador-edit">
+                    </div>
+                    <div>
+                        <label for="congregacao-orador-edit">Congregação:</label>
+                        <input type="text" id="congregacao-orador-edit">
+                    </div>
+                </div>
+                <button type="submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
 
     <!-- MODAL DE ESTATÍSTICAS GLOBAIS - ATUALIZADO -->
     <div id="modal-global-stats" class="modal">
@@ -417,7 +758,7 @@
                     <p>Total de elementos encontrados: <span id="gs-total-elementos-count">0</span></p>
                     <ul id="gs-total-elementos-list" class="stats-result-list"></ul>
                 </div>
-                
+
                 <h4><i class="fas fa-chart-line stats-icon"></i> Gráficos de Tendência (Filtrado por Ano/Mês acima)</h4>
                 <div class="stats-chart-container">
                     <canvas id="gs-total-chart-designacoes-mes"></canvas>
@@ -526,20 +867,32 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Conteúdo da Aba: Pessoas -->
             <div id="gs-pessoas-content" class="global-stats-tab-content">
                 <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
                 <div class="stats-filters">
-                    <label for="gs-pessoas-select-multi">Selecionar Pessoas:</label>
-                    <select id="gs-pessoas-select-multi" multiple style="min-width: 250px; height: 100px;"></select>
+                    <!-- CUSTOM MULTI-SELECT IMPLEMENTATION -->
+                    <label for="gs-pessoas-search-input-custom" style="display: block; margin-bottom: 5px;">Selecionar Pessoas:</label>
+                    <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
+                        <div class="selected-pessoas-area">
+                            <!-- Selected person tags will go here -->
+                        </div>
+                        <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
+                        <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
+                            <!-- Filtered people list will appear here -->
+                        </div>
+                    </div>
+                    <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select> <!-- Original select, now hidden -->
+                    <!-- END OF CUSTOM MULTI-SELECT -->
+
                     <label for="gs-pessoas-filtro-ano">Ano:</label>
                     <select id="gs-pessoas-filtro-ano"><option value="">Todos</option></select>
                     <label for="gs-pessoas-filtro-mes">Mês:</label>
                     <select id="gs-pessoas-filtro-mes"><option value="">Todos</option></select>
                     <label for="gs-pessoas-filtro-semana">Semana (Nº):</label>
                     <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: 80px;">
-                    <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label> <!-- Filtro sobre o gênero das designações ou dos participantes -->
+                    <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
                     <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
                      <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
                     <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
@@ -597,6 +950,33 @@
         </div>
     </div>
 
+    <!-- MODAL DE RANKING DA REUNIÃO -->
+    <div id="modal-ranking" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close-button" data-modal-id="modal-ranking">×</span>
+            <h3><i class="fas fa-list-ol"></i> Ranking da Reunião/Semana</h3>
+
+            <div class="filters-container stats-filters" id="ranking-filters-container">
+                <label for="ranking-filtro-mes">Mês:</label>
+                <select id="ranking-filtro-mes"></select>
+                <label for="ranking-filtro-ano">Ano:</label>
+                <select id="ranking-filtro-ano"></select>
+                <label for="ranking-filtro-semana">Semana (ISO):</label>
+                <select id="ranking-filtro-semana"></select>
+                <button id="btn-ranking-aplicar-filtros" class="stats-apply-button">
+                    <i class="fas fa-sync-alt stats-btn-icon"></i> Ver Ranking
+                </button>
+            </div>
+
+            <div class="ranking-list-container">
+                <p><small>Use os botões <i class="fas fa-arrow-up"></i>/<i class="fas fa-arrow-down"></i> para reordenar os itens apenas para esta visualização.</small></p>
+                <ul id="lista-ranking-designacoes">
+                    <!-- Designações serão listadas aqui -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         // Firebase SDK imports
@@ -609,7 +989,7 @@
         // CUIDADO: Expor API Key no cliente não é o ideal para produção crítica.
         // Considere usar Firebase Functions para proteger suas credenciais ou configurar regras de segurança robustas.
         const firebaseConfig = {
-            apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io", 
+            apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io", // Substitua pela sua API Key real
             authDomain: "theeye-c3ace.firebaseapp.com",
             projectId: "theeye-c3ace",
             storageBucket: "theeye-c3ace.firebasestorage.app",
@@ -634,7 +1014,7 @@
         const modalElemento = document.getElementById('modal-elemento');
         const modalDesignacao = document.getElementById('modal-designacao');
         const modalGerenciarPessoas = document.getElementById('modal-gerenciar-pessoas');
-        const modalInstanciasDesignacao = document.getElementById('modal-instancias-designacao'); 
+        const modalInstanciasDesignacao = document.getElementById('modal-instancias-designacao');
         const modalInstanciasTitulo = document.getElementById('modal-instancias-titulo');
         const modalInstanciasListUl = document.getElementById('modal-instancias-list');
         const listaGerenciarPessoasUl = document.getElementById('lista-gerenciar-pessoas');
@@ -658,7 +1038,20 @@
         const selectPessoaB = document.getElementById('select-pessoaB');
         const selectPessoaC = document.getElementById('select-pessoaC');
         const dataDesignacaoInput = document.getElementById('data-designacao');
-        
+
+        // --- MODAL EDITAR DESIGNAÇÃO ELEMENTOS ---
+        const modalEditarDesignacao = document.getElementById('modal-editar-designacao');
+        const formEditarDesignacao = document.getElementById('form-editar-designacao');
+        const designacaoIdEditInput = document.getElementById('designacao-id-edit');
+        const dataDesignacaoEditInput = document.getElementById('data-designacao-edit');
+        const selectElementoDesignacaoEdit = document.getElementById('select-elemento-designacao-edit');
+        const selectPessoaAEdit = document.getElementById('select-pessoaA-edit');
+        const selectPessoaBEdit = document.getElementById('select-pessoaB-edit');
+        const selectPessoaCEdit = document.getElementById('select-pessoaC-edit');
+        const camposOradorPublicoEditDiv = document.getElementById('campos-orador-publico-edit');
+        const temaOradorEditInput = document.getElementById('tema-orador-edit');
+        const congregacaoOradorEditInput = document.getElementById('congregacao-orador-edit');
+
         // Elementos do Modal de Estatísticas Globais
         const btnGlobalStats = document.getElementById('btn-global-stats');
         const modalGlobalStats = document.getElementById('modal-global-stats');
@@ -710,7 +1103,7 @@
         const gsTotalMediaDesigOutroSpan = document.getElementById('gs-total-media-desig-outro');
 
         // Elementos da Aba "Pessoas" (gs-pessoas-content)
-        const gsPessoasSelectMulti = document.getElementById('gs-pessoas-select-multi');
+        const gsPessoasSelectMulti = document.getElementById('gs-pessoas-select-multi'); // Original hidden select
         const gsPessoasFiltroAnoSelect = document.getElementById('gs-pessoas-filtro-ano');
         const gsPessoasFiltroMesSelect = document.getElementById('gs-pessoas-filtro-mes');
         const gsPessoasFiltroSemanaInput = document.getElementById('gs-pessoas-filtro-semana');
@@ -719,6 +1112,11 @@
         const btnGsPessoasComparar = document.getElementById('btn-gs-pessoas-comparar');
         const gsPessoasLoading = document.getElementById('gs-pessoas-loading');
         const gsPessoasComparisonAreaDiv = document.getElementById('gs-pessoas-comparison-area');
+        const gsPessoasCustomMultiselectDiv = document.getElementById('gs-pessoas-custom-multiselect');
+        const gsPessoasSearchInputCustom = document.getElementById('gs-pessoas-search-input-custom');
+        const gsPessoasDropdownCustomDiv = document.getElementById('gs-pessoas-dropdown-custom');
+        const gsSelectedPessoasAreaDiv = document.querySelector('#gs-pessoas-custom-multiselect .selected-pessoas-area');
+
 
         // Elementos da Aba "Designações" (gs-designacoes-content)
         const gsDesignacoesFiltroDiaInput = document.getElementById('gs-designacoes-filtro-dia');
@@ -731,22 +1129,32 @@
         const gsDesignacoesTiposLoading = document.getElementById('gs-designacoes-tipos-loading');
         const gsDesignacoesTiposListUl = document.getElementById('gs-designacoes-tipos-list');
 
+        // --- ELEMENTOS DOM PARA O MODAL DE RANKING ---
+        const btnRankingPopup = document.getElementById('btn-ranking-popup');
+        const modalRanking = document.getElementById('modal-ranking');
+        const rankingFiltroMesSelect = document.getElementById('ranking-filtro-mes');
+        const rankingFiltroAnoSelect = document.getElementById('ranking-filtro-ano');
+        const rankingFiltroSemanaSelect = document.getElementById('ranking-filtro-semana');
+        const btnRankingAplicarFiltros = document.getElementById('btn-ranking-aplicar-filtros');
+        const listaRankingDesignacoesUl = document.getElementById('lista-ranking-designacoes');
+
+
         // Globais
         let todasPessoas = [];
         let todosElementos = [];
         let pessoaSelecionadaAtual = null;
         let designacoesDaPessoaAtual = [];
-        let designacoesFiltradas = []; 
-        
+        let designacoesFiltradas = [];
+
         // Charts para a coluna de detalhes da pessoa
-        let designacoesChart = null; 
+        let designacoesChart = null;
         let designacoesPorMesChart = null;
         let designacoesPorSemanaChart = null;
         let designacoesPorAnoChart = null;
-        
+
         let todasDesignacoesGlobais = [];
         let todasDesignacoesGlobaisCarregadas = false;
-        
+
         // Para estatísticas globais - aba "Análises Anteriores"
         let topPessoasDadosCompletos = [];
         let topElementosAgrupadosDadosCompletos = [];
@@ -760,47 +1168,70 @@
         let mostrandoTodosElementosPessoa = false;
         let mostrandoTodosParceirosPessoa = false;
 
+        // Estado para o modo de edição e designação atual para edição
+        let editModeActive = false;
+        let designacaoAtualParaEdicao = null;
+
+        // Helper para custom multiselect
+        let availablePessoasForCustomSelect = [];
+
+        // --- ESTADO PARA O RANKING ---
+        let ordemAtualElementosRanking = [];
+        const ORDEM_PADRAO_ELEMENTOS_RANKING = [
+            "Presidente Semana", "Oração Inicial Semana", "Tesouros", "Pérolas",
+            "---SEP---", // Separador visual
+            "Leitura da Bíblia", "Iniciar Conversas", "Cultivar o Interesse", "Fazer Discípulos", "Explicar Crenças", "Discurso", // "Discurso" genérico aqui
+            "---SEP---",
+            "Viver como Cristãos", "Estudo Bíblico", "Leitor do Estudo Bíblico", "Oração Final Semana",
+            "---SEP---",
+            "Presidente Fim de Semana", "Oração Inicial Fim de Semana", "Orador Público",
+            "---PARAGRAPH_SEP---", // Separador de parágrafo (apenas espaço)
+            "Dirigente Sentinela", "Leitor da Sentinela", "Oração Final Fim de Semana",
+            "---SEP---",
+            "Áudio/Vídeo", "Zoom", "Micro Palco", "Micro 2", "Indicador"
+        ];
+
 
         // --- FUNÇÃO HELPER PARA LOADING ---
         function setSectionLoadingState(sectionIdPrefix, isLoading, specificButtonId = null) {
             const loadingSpinner = document.getElementById(`${sectionIdPrefix}-loading`);
             let applyButton = specificButtonId ? document.getElementById(specificButtonId) : null;
-            
+
             if (!applyButton && sectionIdPrefix) {
-                const sectionElement = document.getElementById(`${sectionIdPrefix}-list`)?.closest('.stats-card-section, .global-stats-tab-content') || 
+                const sectionElement = document.getElementById(`${sectionIdPrefix}-list`)?.closest('.stats-card-section, .global-stats-tab-content') ||
                                      document.getElementById(`${sectionIdPrefix}-results`)?.closest('.stats-card-section, .global-stats-tab-content') ||
-                                     document.getElementById(sectionIdPrefix)?.closest('.stats-card-section, .global-stats-tab-content'); 
+                                     document.getElementById(sectionIdPrefix)?.closest('.stats-card-section, .global-stats-tab-content');
                 if (sectionElement) {
-                    applyButton = sectionElement.querySelector('.stats-apply-button'); 
+                    applyButton = sectionElement.querySelector('.stats-apply-button');
                 }
             }
-            
+
             const resultList = document.getElementById(`${sectionIdPrefix}-list`) || document.getElementById(`${sectionIdPrefix}-tipos-list`);
             const resultText = document.getElementById(`${sectionIdPrefix}-results`);
-            const resultArea = document.getElementById(`${sectionIdPrefix}-comparison-area`); 
+            const resultArea = document.getElementById(`${sectionIdPrefix}-comparison-area`);
             const agrupadoContainer = document.getElementById(`gs-todas-desig-agrupado-container`);
 
             if (loadingSpinner) loadingSpinner.style.display = isLoading ? 'block' : 'none';
-            
+
             const sectionToDisableButtons = (resultList || resultText || resultArea || loadingSpinner)?.closest('.stats-card-section, .global-stats-tab-content');
             if (sectionToDisableButtons) {
                 sectionToDisableButtons.querySelectorAll('.stats-apply-button, .stats-filters select, .stats-filters input').forEach(interactiveEl => {
                     interactiveEl.disabled = isLoading;
                 });
-            } else if (applyButton) { 
+            } else if (applyButton) {
                  applyButton.disabled = isLoading;
             }
 
             if (isLoading) {
                 if (resultList) resultList.innerHTML = '';
                 if (resultText) resultText.innerHTML = '';
-                if (resultArea) resultArea.innerHTML = ''; 
+                if (resultArea) resultArea.innerHTML = '';
                 if (agrupadoContainer && sectionIdPrefix === 'gs-todas-desig') {
                     agrupadoContainer.style.display = 'none';
                     const agrupadoList = document.getElementById('gs-todas-desig-agrupado-list');
                     if (agrupadoList) agrupadoList.innerHTML = '';
                 }
-                const mostrarTodosLink = document.getElementById(`${sectionIdPrefix}-mostrar-todos`) || 
+                const mostrarTodosLink = document.getElementById(`${sectionIdPrefix}-mostrar-todos`) ||
                                          (sectionIdPrefix === 'gs-todas-desig' ? document.getElementById(`gs-todas-desig-agrupado-mostrar-todos`) : null);
                 if(mostrarTodosLink) mostrarTodosLink.style.display = 'none';
             }
@@ -810,15 +1241,16 @@
         function getISOWeek(date) {
             if (!(date instanceof Date) || isNaN(date.getTime())) {
                 console.warn("getISOWeek recebeu data inválida:", date);
-                return null; 
+                return null;
             }
             const dt = new Date(date.valueOf());
-            dt.setDate(dt.getDate() + 4 - (dt.getDay() || 7)); 
+            dt.setDate(dt.getDate() + 4 - (dt.getDay() || 7)); // Ajusta para quinta-feira da semana
             const yearStart = new Date(dt.getFullYear(), 0, 1);
+            // Calcula o número da semana
             const weekNumber = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
             return weekNumber;
         }
-        
+
         // --- Barra de Pesquisa Pessoas ---
         if (searchPessoaInput) {
             searchPessoaInput.addEventListener('input', (e) => {
@@ -839,19 +1271,19 @@
                 querySnapshot.forEach((docSnap) => todosElementos.push({ id: docSnap.id, ...docSnap.data() }));
                 todosElementos.sort((a, b) => (a.designacao || a.nome || '').localeCompare(b.designacao || b.nome || '', 'pt-BR', { sensitivity: 'base' }));
                 console.log(`carregarTodosElementosParaEstatisticas: ${todosElementos.length} elementos carregados.`);
-                
+
                 if (selectElementoDesignacao) {
                     selectElementoDesignacao.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
                     todosElementos.forEach(el => {
                         const option = document.createElement('option');
-                        option.value = el.designacao || el.nome; 
-                        option.textContent = el.designacao || el.nome; 
+                        option.value = el.designacao || el.nome;
+                        option.textContent = el.designacao || el.nome;
                         selectElementoDesignacao.appendChild(option);
                     });
                 }
-                
-                if (todasDesignacoesGlobaisCarregadas) { 
-                    popularFiltrosStatsGlobais(); 
+
+                if (todasDesignacoesGlobaisCarregadas) {
+                    popularFiltrosStatsGlobais();
                 }
                 if (gsDesignacoesTiposListUl) popularListaElementosAbaDesignacoes();
 
@@ -860,7 +1292,7 @@
                 alert("Falha ao carregar elementos.");
             }
         }
-        
+
         function popularDropdownsPessoasNosModais() {
             console.log("popularDropdownsPessoasNosModais: Iniciando");
             const pessoasVisiveis = todasPessoas.filter(p => p.estaVisivel !== false);
@@ -872,21 +1304,27 @@
 
             if (gsPessoaEspSelect) {
                  const currentVal = gsPessoaEspSelect.value;
-                gsPessoaEspSelect.innerHTML = '<option value="">-- Selecione --</option>' + todasPessoas.map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); 
+                gsPessoaEspSelect.innerHTML = '<option value="">-- Selecione --</option>' + todasPessoas.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
                 if (Array.from(gsPessoaEspSelect.options).some(opt => opt.value === currentVal)) gsPessoaEspSelect.value = currentVal; else gsPessoaEspSelect.value = "";
             }
-            if (gsPessoasSelectMulti) {
+            if (gsPessoasSelectMulti) { // Populates the hidden original select for the custom component
+                const currentSelectedIds = Array.from(gsPessoasSelectMulti.selectedOptions).map(opt => opt.value);
                 gsPessoasSelectMulti.innerHTML = todasPessoas
-                    .filter(p => p.estaVisivel !== false) 
-                    .map(p => `<option value="${p.id}">${p.nome}</option>`) 
+                    .filter(p => p.estaVisivel !== false)
+                    .map(p => `<option value="${p.id}">${p.nome}</option>`)
                     .join('');
+                currentSelectedIds.forEach(id => {
+                     const opt = Array.from(gsPessoasSelectMulti.options).find(o => o.value === id);
+                     if (opt) opt.selected = true;
+                });
             }
+
 
             const selectOutraPessoaDetalhes = document.getElementById('select-outra-pessoa');
             if (selectOutraPessoaDetalhes && pessoaSelecionadaAtual) {
                  const pessoasDisponiveisParaConjunta = todasPessoas
                     .filter(p => p.id !== pessoaSelecionadaAtual.id && p.estaVisivel !== false)
-                    .map(p => `<option value="${p.id}">${p.nome}</option>`).join(''); 
+                    .map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
                 selectOutraPessoaDetalhes.innerHTML = `<option value="">-- Selecione Pessoa --</option>${pessoasDisponiveisParaConjunta}`;
             }
             console.log("popularDropdownsPessoasNosModais: Dropdowns populados.");
@@ -899,14 +1337,14 @@
                 todasPessoas = [];
                 querySnapshot.forEach((docSnap) => todasPessoas.push({ id: docSnap.id, ...docSnap.data() }));
                 todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
-                
+
                 if (listaPessoasUl) listaPessoasUl.innerHTML = '';
                 else { console.error("ERRO CRÍTICO: listaPessoasUl não encontrado em carregarPessoas."); return; }
 
                 if (searchPessoaInput) searchPessoaInput.value = '';
                 const pessoasVisiveis = todasPessoas.filter(p => p.estaVisivel !== false);
                 console.log(`carregarPessoas: Encontradas ${todasPessoas.length} pessoas, ${pessoasVisiveis.length} visíveis.`);
-                
+
                 pessoasVisiveis.forEach(pessoa => {
                     const li = document.createElement('li');
                     li.textContent = pessoa.nome;
@@ -917,45 +1355,46 @@
                         li.classList.add('active');
                         pessoaSelecionadaAtual = pessoa;
                         // Reset states for "show more" when a new person is selected
-                        mostrandoTodosElementosPessoa = false; 
+                        mostrandoTodosElementosPessoa = false;
                         mostrandoTodosParceirosPessoa = false;
-                        carregarDesignacoesDaPessoa(pessoa.id); 
+                        editModeActive = false; // Reset edit mode when changing person
+                        carregarDesignacoesDaPessoa(pessoa.id);
                     });
                     listaPessoasUl.appendChild(li);
                 });
-                popularDropdownsPessoasNosModais(); 
-                if (todasDesignacoesGlobaisCarregadas) { 
+                popularDropdownsPessoasNosModais();
+                if (todasDesignacoesGlobaisCarregadas) {
                     popularFiltrosStatsGlobais();
                 }
             } catch (error) { console.error("Erro ao carregar pessoas: ", error); alert("Falha ao carregar pessoas."); }
         }
 
-        async function carregarDesignacoesDaPessoa(pessoaId) { 
+        async function carregarDesignacoesDaPessoa(pessoaId) {
             console.log("carregarDesignacoesDaPessoa para ID:", pessoaId);
-            pessoaSelecionadaAtual = todasPessoas.find(p => p.id === pessoaId); 
+            pessoaSelecionadaAtual = todasPessoas.find(p => p.id === pessoaId);
             if (!pessoaSelecionadaAtual) {
                 console.error("Não foi possível encontrar a pessoa selecionada para carregar designações.");
                 if(colunaDetalhesDiv && colunaDetalhesContent) {
-                    colunaDetalhesDiv.innerHTML = ''; 
-                    colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
-                    colunaDetalhesContent.style.display = 'flex'; 
+                    colunaDetalhesDiv.innerHTML = '';
+                    colunaDetalhesDiv.appendChild(colunaDetalhesContent);
+                    colunaDetalhesContent.style.display = 'flex';
                 }
                 return;
             }
-            const nomePessoa = pessoaSelecionadaAtual.nome; 
+            const nomePessoa = pessoaSelecionadaAtual.nome;
 
-            criarEstruturaDetalhes();
+            criarEstruturaDetalhes(); // This will also reset editModeActive visually
             const historicoContent = document.getElementById('historico-content');
             if (historicoContent) historicoContent.innerHTML = '<p style="text-align:center;color:#777;margin-top:20px;">Carregando designações...</p>';
             else { console.error("Elemento #historico-content não encontrado após criarEstruturaDetalhes."); return; }
-            
+
             try {
                 const q = query(collection(db, "designacoes"), where(`participantes.${nomePessoa}`, "==", true));
                 const querySnapshot = await getDocs(q);
                 designacoesDaPessoaAtual = [];
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    if (!data.semanaISO && data.data) { 
+                    if (!data.semanaISO && data.data) {
                         try {
                             const [dia, mes, ano] = data.data.split('/');
                             const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
@@ -963,7 +1402,7 @@
                                  data.semanaISO = getISOWeek(dateObj);
                             } else {
                                 console.warn("Data inválida para designação (carregarDesignacoesDaPessoa), não foi possível calcular semanaISO:", data.data, docSnap.id);
-                                data.semanaISO = null; 
+                                data.semanaISO = null;
                             }
                         } catch (e) {
                             console.warn("Erro ao converter data para semanaISO (carregarDesignacoesDaPessoa):", data.data, docSnap.id, e);
@@ -1000,12 +1439,20 @@
                 <div class="tabs">
                     <button class="tab-button active" data-tab="historico">Histórico</button>
                     <button class="tab-button" data-tab="estatisticas">Estatísticas</button>
+                    <button class="tab-button" id="tab-btn-editar-modo" data-tab="editar-modo">Editar Designações</button>
                 </div>
-                <div class="filters-container">
+
+                <button id="btn-toggle-filtros-pessoa" class="btn-toggle-filtros">
+                    <i class="fas fa-filter"></i>
+                    <span class="btn-toggle-text">Mostrar Filtros</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </button>
+
+                <div class="filters-container" id="filtros-pessoa-container">
                     <label for="filtro-mes">Mês:</label>
                     <select id="filtro-mes"><option value="">Todos</option>${[...Array(12).keys()].map(i => `<option value="${String(i + 1).padStart(2, '0')}">${new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}</option>`).join('')}</select>
                     <label for="filtro-ano">Ano:</label><select id="filtro-ano"><option value="">Todos</option></select>
-                    <label for="filtro-semana">Semana:</label><select id="filtro-semana"><option value="">Todas</option></select> 
+                    <label for="filtro-semana">Semana:</label><select id="filtro-semana"><option value="">Todas</option></select>
                     <label for="filtro-elemento">Elemento:</label><select id="filtro-elemento"><option value="">Todos</option></select>
                     <button id="btn-aplicar-filtros">Aplicar</button>
                     <button id="btn-limpar-filtros">Limpar</button>
@@ -1014,56 +1461,167 @@
                 <div id="estatisticas-content" class="tab-content"></div>`;
             console.log("criarEstruturaDetalhes: Estrutura da segunda coluna criada.");
 
-            document.querySelectorAll('#coluna-detalhes .tab-button').forEach(button => { 
+            const tabBtnEditarModo = document.getElementById('tab-btn-editar-modo');
+
+            document.querySelectorAll('#coluna-detalhes .tab-button').forEach(button => {
                 button.addEventListener('click', () => {
-                    console.log("Tab Detalhes Clicada:", button.dataset.tab);
-                    document.querySelectorAll('#coluna-detalhes .tab-button').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    const historicoContentDiv = document.getElementById('historico-content');
-                    const estatisticasContentDiv = document.getElementById('estatisticas-content');
-                    if (!historicoContentDiv || !estatisticasContentDiv) {
-                        console.error("ERRO: Painéis de conteúdo de detalhes não encontrados!");
-                        return;
-                    }
                     const targetTabId = button.dataset.tab;
-                    if (targetTabId === 'historico') {
-                        historicoContentDiv.classList.add('active');
-                        estatisticasContentDiv.classList.remove('active');
-                        renderizarHistorico();
-                    } else if (targetTabId === 'estatisticas') {
-                        estatisticasContentDiv.classList.add('active');
-                        historicoContentDiv.classList.remove('active');
-                        renderizarEstatisticas();
+
+                    if (targetTabId === 'editar-modo') {
+                        editModeActive = !editModeActive;
+                        tabBtnEditarModo.classList.toggle('active-edit-mode', editModeActive);
+                        tabBtnEditarModo.textContent = editModeActive ? "Modo Edição Ativado" : "Editar Designações";
+
+                        if (document.getElementById('historico-content')?.classList.contains('active')) {
+                            renderizarHistorico();
+                        }
+                        return;
+                    } else {
+                        document.querySelectorAll('#coluna-detalhes .tab-button:not(#tab-btn-editar-modo)').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+
+                        const historicoContentDiv = document.getElementById('historico-content');
+                        const estatisticasContentDiv = document.getElementById('estatisticas-content');
+                        if (!historicoContentDiv || !estatisticasContentDiv) {
+                            console.error("ERRO: Painéis de conteúdo de detalhes não encontrados!");
+                            return;
+                        }
+                        if (targetTabId === 'historico') {
+                            historicoContentDiv.classList.add('active');
+                            estatisticasContentDiv.classList.remove('active');
+                            renderizarHistorico();
+                        } else if (targetTabId === 'estatisticas') {
+                            estatisticasContentDiv.classList.add('active');
+                            historicoContentDiv.classList.remove('active');
+                            renderizarEstatisticas();
+                        }
                     }
                 });
             });
+
+            editModeActive = false;
+            if (tabBtnEditarModo) {
+                tabBtnEditarModo.classList.remove('active-edit-mode');
+                tabBtnEditarModo.textContent = "Editar Designações";
+            }
+
             const btnAplicar = document.getElementById('btn-aplicar-filtros');
             const btnLimpar = document.getElementById('btn-limpar-filtros');
             if(btnAplicar) btnAplicar.addEventListener('click', aplicarEAtualizarFiltros);
             else console.error("Botão btn-aplicar-filtros não encontrado");
-            if(btnLimpar) btnLimpar.addEventListener('click', limparEAtualizarFiltros);
+            if(btnLimpar) {
+                btnLimpar.addEventListener('click', () => {
+                    editModeActive = false; // Reset edit mode on filter clear
+                    if (tabBtnEditarModo) {
+                        tabBtnEditarModo.classList.remove('active-edit-mode');
+                        tabBtnEditarModo.textContent = "Editar Designações";
+                    }
+                    limparEAtualizarFiltros();
+                });
+            }
             else console.error("Botão btn-limpar-filtros não encontrado");
+
+            // Lógica para o botão de toggle dos filtros da pessoa
+            const btnToggleFiltrosPessoa = document.getElementById('btn-toggle-filtros-pessoa');
+            const filtrosPessoaContainer = document.getElementById('filtros-pessoa-container');
+
+            if (btnToggleFiltrosPessoa && filtrosPessoaContainer) {
+                const btnTextElement = btnToggleFiltrosPessoa.querySelector('.btn-toggle-text');
+                const btnToggleIconElement = btnToggleFiltrosPessoa.querySelector('.toggle-icon');
+
+                btnToggleFiltrosPessoa.addEventListener('click', () => {
+                    filtrosPessoaContainer.classList.toggle('filtros-visiveis');
+                    btnToggleFiltrosPessoa.classList.toggle('active'); // Controla a rotação do ícone via CSS
+
+                    if (filtrosPessoaContainer.classList.contains('filtros-visiveis')) {
+                        if (btnTextElement) btnTextElement.textContent = "Ocultar Filtros";
+                        if (btnToggleIconElement) {
+                            btnToggleIconElement.classList.remove('fa-chevron-down');
+                            btnToggleIconElement.classList.add('fa-chevron-up');
+                        }
+                    } else {
+                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros";
+                        if (btnToggleIconElement) {
+                            btnToggleIconElement.classList.remove('fa-chevron-up');
+                            btnToggleIconElement.classList.add('fa-chevron-down');
+                        }
+                    }
+                });
+
+                function adjustFilterDisplayOnLoadOrResize() {
+                    const isMobile = window.innerWidth <= 768;
+
+                    if (!isMobile) {
+                        filtrosPessoaContainer.classList.remove('filtros-visiveis'); // Garante que esteja visível por padrão em desktop
+                        btnToggleFiltrosPessoa.classList.remove('active');
+                        return;
+                    }
+                    // Em mobile, respeita o estado atual (se já foi aberto ou está colapsado)
+                    const isCurrentlyVisible = filtrosPessoaContainer.classList.contains('filtros-visiveis');
+                    btnToggleFiltrosPessoa.classList.toggle('active', isCurrentlyVisible);
+
+                    if (isCurrentlyVisible) {
+                        if (btnTextElement) btnTextElement.textContent = "Ocultar Filtros";
+                        if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-down'); btnToggleIconElement.classList.add('fa-chevron-up');}
+                    } else { // Colapsado por padrão em mobile
+                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros";
+                        if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-up'); btnToggleIconElement.classList.add('fa-chevron-down');}
+                    }
+                }
+                adjustFilterDisplayOnLoadOrResize(); // Chama na criação da estrutura
+                window.addEventListener('resize', adjustFilterDisplayOnLoadOrResize); // E ajusta ao redimensionar a janela
+            }
         }
 
         function popularFiltros() {
             console.log("popularFiltros: Iniciando");
             const filtroAnoSelect = document.getElementById('filtro-ano');
             const filtroElementoSelect = document.getElementById('filtro-elemento');
-            const filtroSemanaSelect = document.getElementById('filtro-semana'); 
+            const filtroSemanaSelect = document.getElementById('filtro-semana');
 
-            if (!filtroAnoSelect || !filtroElementoSelect || !filtroSemanaSelect) { 
+            if (!filtroAnoSelect || !filtroElementoSelect || !filtroSemanaSelect) {
                 console.warn("popularFiltros: Elementos de filtro não encontrados.");
                 return;
             }
             const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a, b) => b - a);
             const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a, b) => a.localeCompare(b));
-            const semanas = [...new Set(designacoesDaPessoaAtual.map(d => d.semanaISO).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
+
+            const semanasUnicasComDatas = designacoesDaPessoaAtual
+                .filter(d => d.semana && typeof d.semana === 'string')
+                .map(d => ({
+                    semanaStr: d.semana,
+                    ano: parseInt(d.ano),
+                    mes: parseInt(d.mes),
+                    dia: parseInt(d.dia)
+                }))
+                .reduce((acc, current) => {
+                    const existing = acc.find(item => item.semanaStr === current.semanaStr);
+                    if (!existing) {
+                        acc.push(current);
+                    } else {
+                        const currentDate = new Date(current.ano, current.mes - 1, current.dia);
+                        const existingDate = new Date(existing.ano, existing.mes - 1, existing.dia);
+                        if (currentDate < existingDate) {
+                            existing.ano = current.ano;
+                            existing.mes = current.mes;
+                            existing.dia = current.dia;
+                        }
+                    }
+                    return acc;
+                }, [])
+                .sort((a, b) => {
+                    const dateA = new Date(a.ano, a.mes - 1, a.dia);
+                    const dateB = new Date(b.ano, b.mes - 1, b.dia);
+                    return dateA - dateB;
+                });
+
+            const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.semanaStr}">${item.semanaStr}</option>`).join('');
 
             filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
-            filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanas.map(sem => `<option value="${sem}">${sem}</option>`).join('');
-            
-            console.log("popularFiltros: Filtros de detalhes populados.");
+            filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
+
+            console.log("popularFiltros: Filtros de detalhes populados com semanas descritivas.");
         }
 
         function aplicarEAtualizarFiltros() {
@@ -1071,24 +1629,25 @@
             const mesEl = document.getElementById('filtro-mes');
             const anoEl = document.getElementById('filtro-ano');
             const elemEl = document.getElementById('filtro-elemento');
-            const semanaEl = document.getElementById('filtro-semana'); 
+            const semanaEl = document.getElementById('filtro-semana');
 
             const mes = mesEl ? mesEl.value : "";
             const ano = anoEl ? anoEl.value : "";
             const elemento = elemEl ? elemEl.value : "";
-            const semana = semanaEl ? semanaEl.value : ""; 
+            const semana = semanaEl ? semanaEl.value : "";
 
             designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
                 const matchMes = !mes || d.mes === mes;
                 const matchAno = !ano || d.ano === ano;
                 const matchElemento = !elemento || d.nome === elemento;
-                const matchSemana = !semana || (d.semanaISO && d.semanaISO.toString() === semana);
-                return matchMes && matchAno && matchElemento && matchSemana; 
+                const matchSemana = !semana || d.semana === semana;
+                return matchMes && matchAno && matchElemento && matchSemana;
             });
-            
-            const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active');
+
+            const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)'); // Ensure we don't pick the edit mode button
             if (activeTabButton?.dataset.tab === 'historico') renderizarHistorico();
             else if (activeTabButton?.dataset.tab === 'estatisticas') renderizarEstatisticas();
+            else if (document.getElementById('historico-content')?.classList.contains('active')) renderizarHistorico(); // Fallback if no content tab explicitly active
         }
 
         function limparEAtualizarFiltros() {
@@ -1096,16 +1655,16 @@
             const filtroMes = document.getElementById('filtro-mes');
             const filtroAno = document.getElementById('filtro-ano');
             const filtroElemento = document.getElementById('filtro-elemento');
-            const filtroSemana = document.getElementById('filtro-semana'); 
+            const filtroSemana = document.getElementById('filtro-semana');
             if (filtroMes) filtroMes.value = "";
             if (filtroAno) filtroAno.value = "";
             if (filtroElemento) filtroElemento.value = "";
-            if (filtroSemana) filtroSemana.value = ""; 
+            if (filtroSemana) filtroSemana.value = "";
             aplicarEAtualizarFiltros();
         }
 
         function renderizarHistorico() {
-            console.log("renderizarHistorico: Iniciando");
+            console.log("renderizarHistorico: Iniciando. Modo Edição:", editModeActive);
             const historicoContent = document.getElementById('historico-content');
             if (!historicoContent) { console.error("renderizarHistorico: #historico-content não encontrado."); return; }
             historicoContent.innerHTML = '';
@@ -1123,7 +1682,7 @@
             let currentMonthYearForColor = null;
             let currentWeekForColor = null;
             let colorIndex = 0;
-            const weekColors = ['#f8f9fa', '#e9ecef']; 
+            const weekColors = ['#f8f9fa', '#e9ecef'];
 
             let mesAnoAtualSeparador = null;
             let primeiroSeparadorAdicionado = false;
@@ -1145,14 +1704,17 @@
                     separadorLi.textContent = nomeMesAnoSeparador.charAt(0).toUpperCase() + nomeMesAnoSeparador.slice(1);
                     ul.appendChild(separadorLi);
                     currentMonthYearForColor = `${desig.mes}/${desig.ano}`;
-                    currentWeekForColor = null; 
-                    colorIndex = 0; 
+                    currentWeekForColor = null;
+                    colorIndex = 0;
                 }
 
                 const li = document.createElement('li');
-                
+                li.style.display = 'flex';
+                li.style.justifyContent = 'space-between';
+                li.style.alignItems = 'center';
+
                 const desigMonthYear = `${desig.mes}/${desig.ano}`;
-                if (desig.semanaISO) {
+                if (desig.semanaISO) { // Still use semanaISO for coloring if available
                     if (currentMonthYearForColor !== desigMonthYear) {
                         currentMonthYearForColor = desigMonthYear;
                         currentWeekForColor = desig.semanaISO;
@@ -1162,50 +1724,212 @@
                         colorIndex = (colorIndex + 1) % weekColors.length;
                     }
                     li.style.backgroundColor = weekColors[colorIndex];
+                } else if (desig.semana) { // Fallback to descriptive week for coloring
+                     if (currentMonthYearForColor !== desigMonthYear) {
+                        currentMonthYearForColor = desigMonthYear;
+                        currentWeekForColor = desig.semana; // Use the string itself
+                        colorIndex = 0;
+                    } else if (currentWeekForColor !== desig.semana) {
+                        currentWeekForColor = desig.semana;
+                        colorIndex = (colorIndex + 1) % weekColors.length;
+                    }
+                    li.style.backgroundColor = weekColors[colorIndex];
                 }
 
-                const nomeElementoDesig = desig.nome; 
+
+                const nomeElementoDesig = desig.nome;
                 const elementoCorrespondente = todosElementos.find(el => (el.designacao || el.nome) === nomeElementoDesig);
-                
+
                 let emojiPrefixo = "";
                 if (elementoCorrespondente && elementoCorrespondente.tipo === 'reuniao') {
                     switch (elementoCorrespondente.generoReuniao) {
-                        case 'tecnico':
-                            emojiPrefixo = "⚙️ ";
-                            break;
-                        case 'semana':
-                            emojiPrefixo = "💎 ";
-                            break;
-                        case 'fim de semana':
-                            emojiPrefixo = "💬 ";
-                            break;
-                        default:
-                            emojiPrefixo = ""; 
-                            break;
+                        case 'tecnico': emojiPrefixo = "⚙️ "; break;
+                        case 'semana': emojiPrefixo = "💎 "; break;
+                        case 'fim de semana': emojiPrefixo = "💬 "; break;
+                        default: emojiPrefixo = ""; break;
                     }
                 }
-                
+
                 const nomeElementoDisplay = desig.nome || 'Elemento sem nome';
                 const participantesNomesArray = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean);
                 const participantesString = participantesNomesArray.join(' - ');
-                
+
                 let textoFinal = `${dataFormatada} | ${emojiPrefixo}${nomeElementoDisplay}`;
                 if (participantesString) {
                     textoFinal += `: ${participantesString}`;
                 }
-                li.textContent = textoFinal;
+
+                const textSpan = document.createElement('span');
+                textSpan.textContent = textoFinal;
+                li.appendChild(textSpan);
+
+                if (editModeActive) {
+                    const editBtn = document.createElement('button');
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i> Editar';
+                    editBtn.dataset.designacaoId = desig.id;
+                    editBtn.addEventListener('click', () => abrirModalEdicaoDesignacao(desig.id));
+                    li.appendChild(editBtn);
+                }
                 ul.appendChild(li);
             });
 
             if (ul.childNodes.length > 0) {
-                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.textContent.includes('|') && !node.classList.contains('month-separator'));
+                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.querySelector('span') && !node.classList.contains('month-separator'));
                 if (ultimoItemDeDesignacao) ultimoItemDeDesignacao.style.borderBottom = 'none';
                 historicoContent.appendChild(ul);
-            } else if (designacoesFiltradas.length > 0) { 
+            } else if (designacoesFiltradas.length > 0) {
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Erro ao exibir histórico.</p>';
             }
-            console.log("renderizarHistorico: Histórico renderizado com cores por semana e emojis.");
+            console.log("renderizarHistorico: Histórico renderizado.");
         }
+
+        async function abrirModalEdicaoDesignacao(designacaoId) {
+            designacaoAtualParaEdicao = designacoesDaPessoaAtual.find(d => d.id === designacaoId);
+            if (!designacaoAtualParaEdicao) {
+                alert("Erro: Designação não encontrada para edição.");
+                return;
+            }
+
+            formEditarDesignacao.reset();
+            designacaoIdEditInput.value = designacaoId;
+            dataDesignacaoEditInput.value = designacaoAtualParaEdicao.data;
+
+            selectElementoDesignacaoEdit.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
+            todosElementos.forEach(el => {
+                const option = document.createElement('option');
+                const elNome = el.designacao || el.nome;
+                option.value = elNome;
+                option.textContent = elNome;
+                option.selected = elNome === designacaoAtualParaEdicao.nome;
+                selectElementoDesignacaoEdit.appendChild(option);
+            });
+
+            const pessoasVisiveis = todasPessoas.filter(p => p.estaVisivel !== false);
+            const optionsHtml = pessoasVisiveis.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+
+            selectPessoaAEdit.innerHTML = '<option value="">-- Nenhuma --</option>' + optionsHtml;
+            selectPessoaBEdit.innerHTML = '<option value="">-- Nenhuma --</option>' + optionsHtml;
+            selectPessoaCEdit.innerHTML = '<option value="">-- Nenhuma --</option>' + optionsHtml;
+
+            if (designacaoAtualParaEdicao.pessoaA) selectPessoaAEdit.value = designacaoAtualParaEdicao.pessoaA;
+            if (designacaoAtualParaEdicao.pessoaB) selectPessoaBEdit.value = designacaoAtualParaEdicao.pessoaB;
+            if (designacaoAtualParaEdicao.pessoaC) selectPessoaCEdit.value = designacaoAtualParaEdicao.pessoaC;
+
+            const toggleOradorFieldsEdit = () => {
+                if (selectElementoDesignacaoEdit.value === "Orador Público") {
+                    camposOradorPublicoEditDiv.style.display = 'block';
+                } else {
+                    camposOradorPublicoEditDiv.style.display = 'none';
+                }
+            };
+
+            selectElementoDesignacaoEdit.onchange = toggleOradorFieldsEdit;
+            toggleOradorFieldsEdit(); // Call once to set initial state
+
+            if (designacaoAtualParaEdicao.nome === "Orador Público") {
+                temaOradorEditInput.value = designacaoAtualParaEdicao.tema || '';
+                congregacaoOradorEditInput.value = designacaoAtualParaEdicao.congregacao || '';
+            } else {
+                temaOradorEditInput.value = '';
+                congregacaoOradorEditInput.value = '';
+            }
+            abrirModal(modalEditarDesignacao);
+        }
+
+        if (formEditarDesignacao) {
+            formEditarDesignacao.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = designacaoIdEditInput.value;
+                const dataStr = dataDesignacaoEditInput.value;
+                const nomeElemento = selectElementoDesignacaoEdit.value;
+                const pA = selectPessoaAEdit.value;
+                const pB = selectPessoaBEdit.value;
+                const pC = selectPessoaCEdit.value;
+
+                if (!id) { alert("Erro: ID da designação não encontrado."); return; }
+                if (!nomeElemento) { alert("Selecione um elemento."); return; }
+                if (!pA && !pB && !pC) { alert("Selecione pelo menos uma pessoa."); return; }
+                if (!dataStr.match(/\d{2}\/\d{2}\/\d{4}/)) { alert("Formato de data inválido. Use DD/MM/AAAA."); return; }
+
+                const [dia, mes, ano] = dataStr.split('/');
+                const participantes = {};
+                if (pA) participantes[pA] = true;
+                if (pB) participantes[pB] = true;
+                if (pC) participantes[pC] = true;
+
+                const pessoasSelecionadasNomes = [pA, pB, pC].filter(pNome => pNome !== "");
+                if (new Set(pessoasSelecionadasNomes).size !== pessoasSelecionadasNomes.length) {
+                    alert("Pessoas duplicadas selecionadas. Cada pessoa deve ser única."); return;
+                }
+
+                const elementoOriginalObj = todosElementos.find(el => (el.designacao || el.nome) === nomeElemento);
+                if (!elementoOriginalObj) {
+                    alert("Elemento selecionado não encontrado na base de dados de elementos.");
+                    return;
+                }
+
+                const updateData = {
+                    nome: nomeElemento,
+                    elementoId: elementoOriginalObj.id,
+                    pessoaA: pA || null,
+                    pessoaB: pB || null,
+                    pessoaC: pC || null,
+                    participantes: participantes,
+                    data: dataStr,
+                    dia: dia.padStart(2, '0'),
+                    mes: mes.padStart(2, '0'),
+                    ano: ano,
+                    ultimaModificacao: serverTimestamp()
+                };
+                 // Manter o campo 'semana' (descritivo)
+                if (designacaoAtualParaEdicao && designacaoAtualParaEdicao.semana) {
+                    if (designacaoAtualParaEdicao.data !== dataStr) {
+                        // Se data mudou, idealmente recalcular 'semana'. Por simplicidade, mantemos ou limpamos.
+                        // console.warn("Data da designação alterada. O campo 'semana' descritivo pode precisar ser ajustado.");
+                        // updateData.semana = gerarStringSemanaDescritiva(new Date(ano, mes-1, dia)); // Se tiver essa função
+                    } else {
+                         updateData.semana = designacaoAtualParaEdicao.semana;
+                    }
+                }
+
+
+                try {
+                    const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
+                    if (!isNaN(dateObj.getTime())) {
+                        updateData.semanaISO = getISOWeek(dateObj);
+                    } else {
+                        console.warn("Data inválida ao editar designação, semanaISO não será atualizada:", dataStr);
+                        updateData.semanaISO = designacaoAtualParaEdicao?.semanaISO || null;
+                    }
+                } catch(err) {
+                     console.warn("Erro ao calcular semanaISO na edição da designação:", err);
+                     updateData.semanaISO = designacaoAtualParaEdicao?.semanaISO || null;
+                }
+
+                if (nomeElemento === "Orador Público") {
+                    updateData.tema = temaOradorEditInput.value.trim() || null;
+                    updateData.congregacao = congregacaoOradorEditInput.value.trim() || null;
+                } else {
+                    updateData.tema = null; // Firebase SDK v9 não tem deleteField, usar null
+                    updateData.congregacao = null;
+                }
+
+                try {
+                    const designacaoRef = doc(db, "designacoes", id);
+                    await updateDoc(designacaoRef, updateData);
+                    alert("Designação atualizada com sucesso!");
+                    fecharModal(modalEditarDesignacao);
+
+                    await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id);
+                    todasDesignacoesGlobaisCarregadas = false; // Forçar recarregamento das stats globais se necessário
+
+                } catch (error) {
+                    console.error("Erro ao atualizar designação: ", error);
+                    alert("Erro ao atualizar designação: " + error.message);
+                }
+            });
+        }
+
 
         function renderizarEstatisticas() {
             console.log("renderizarEstatisticas: Iniciando");
@@ -1224,7 +1948,7 @@
 
             // Card: Elementos Mais Realizados
             const contagemElementos = designacoesFiltradas.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
-            const todosElementosRealizados = Object.entries(contagemElementos).sort(([, a], [, b]) => b - a || (a.nome || '').localeCompare(b.nome || '')); 
+            const todosElementosRealizados = Object.entries(contagemElementos).sort(([, a], [, b]) => b - a || (a.nome || '').localeCompare(b.nome || ''));
 
             let elementosHtml = `<div class="stat-card">
                                     <h4>Elementos Mais Realizados</h4>
@@ -1258,7 +1982,7 @@
                     link.style.display = 'none';
                 }
             }
-            renderListaElementosPessoa(); 
+            renderListaElementosPessoa();
             const linkElementos = document.getElementById('link-mostrar-todos-elementos-pessoa');
             if (linkElementos) {
                 linkElementos.addEventListener('click', (e) => {
@@ -1281,14 +2005,14 @@
                                     <a href="#" id="link-mostrar-todos-parceiros-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
                                  </div>`;
             statsContent.innerHTML += parceirosHtml;
-            
+
             function renderListaParceirosPessoa() {
                 const listaUl = document.getElementById('lista-parceiros-pessoa');
                 const link = document.getElementById('link-mostrar-todos-parceiros-pessoa');
                 if (!listaUl || !link) return;
 
                 listaUl.innerHTML = '';
-                const dadosParaRenderizar = mostrandoTodosParceirosPessoa ? todosParceirosFrequentes : todosParceirosFrequentes.slice(0, 3); 
+                const dadosParaRenderizar = mostrandoTodosParceirosPessoa ? todosParceirosFrequentes : todosParceirosFrequentes.slice(0, 3);
 
                 if (dadosParaRenderizar.length > 0) {
                     dadosParaRenderizar.forEach(([nome, count]) => {
@@ -1300,7 +2024,7 @@
                     listaUl.innerHTML = '<li>Nenhum parceiro frequente ou só fez designações sozinho(a).</li>';
                 }
 
-                if (todosParceirosFrequentes.length > 3) { 
+                if (todosParceirosFrequentes.length > 3) {
                     link.style.display = 'inline-block';
                     link.textContent = mostrandoTodosParceirosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosParceirosFrequentes.length})`;
                 } else {
@@ -1323,11 +2047,11 @@
             statsContent.innerHTML += `<div class="stat-card" id="verificacao-conjunta-container"><h4>Verificar Designação Conjunta</h4><label for="select-outra-pessoa">Com:</label><select id="select-outra-pessoa"><option value="">-- Selecione Pessoa --</option>${pessoasDisponiveisParaConjunta}</select><label for="select-elemento-verificacao">Elemento:</label><select id="select-elemento-verificacao"><option value="">-- Selecione Elemento --</option>${elementosDisponiveisParaConjunta}</select><button id="btn-verificar-conjunta">Verificar</button><div id="resultado-verificacao-conjunta"></div></div>`;
             const btnVerificar = document.getElementById('btn-verificar-conjunta');
             if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
-            
+
             // Card: Média de Participações (vs Global)
             let mediaGlobalDesignacoes = 0;
             let comparacaoStr = "Não foi possível calcular a média global (dados globais de designações ou pessoas não carregados).";
-            const countPessoaAtual = designacoesFiltradas.length; 
+            const countPessoaAtual = designacoesFiltradas.length;
 
             const filtroMesVal = document.getElementById('filtro-mes')?.value || "";
             const filtroAnoVal = document.getElementById('filtro-ano')?.value || "";
@@ -1339,22 +2063,14 @@
                     const matchMes = !filtroMesVal || d.mes === filtroMesVal;
                     const matchAno = !filtroAnoVal || d.ano === filtroAnoVal;
                     const matchElemento = !filtroElementoVal || d.nome === filtroElementoVal;
-                    let dSemanaISO = d.semanaISO;
-                    if (!dSemanaISO && d.data) {
-                        try {
-                            const [dia, mes, ano] = d.data.split('/');
-                            const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
-                            if(!isNaN(dateObj.getTime())) dSemanaISO = getISOWeek(dateObj);
-                        } catch (e) { dSemanaISO = null; }
-                    }
-                    const matchSemana = !filtroSemanaVal || (dSemanaISO && dSemanaISO.toString() === filtroSemanaVal);
+                    const matchSemana = !filtroSemanaVal || d.semana === filtroSemanaVal; // Using descriptive week string
                     return matchMes && matchAno && matchElemento && matchSemana;
                 });
 
                 const participacoesContagemGlobal = {};
                 designacoesParaMedia.forEach(desig => {
                     Object.keys(desig.participantes || {}).forEach(nomeP => {
-                        if (desig.participantes[nomeP]) { 
+                        if (desig.participantes[nomeP]) {
                             participacoesContagemGlobal[nomeP] = (participacoesContagemGlobal[nomeP] || 0) + 1;
                         }
                     });
@@ -1370,7 +2086,7 @@
                     if (diferenca > 0.01) statusMedia = `<strong style="color:green;">acima da média</strong> por ${diferenca.toFixed(1)}`;
                     else if (diferenca < -0.01) statusMedia = `<strong style="color:red;">abaixo da média</strong> por ${Math.abs(diferenca).toFixed(1)}`;
                     else statusMedia = `<strong style="color:orange;">na média</strong>`;
-                    
+
                     comparacaoStr = `Esta pessoa tem <strong>${countPessoaAtual}</strong> designações (com filtros atuais).<br>
                                      A média entre <strong>${numPessoasComParticipacaoGlobal}</strong> pessoas participantes (com os mesmos filtros) é <strong>${mediaGlobalDesignacoes.toFixed(1)}</strong> designações.<br>
                                      Status: ${statusMedia}.`;
@@ -1384,37 +2100,37 @@
                     <p style="font-size:0.9em; line-height:1.5;">${comparacaoStr}</p>
                 </div>`;
 
-            // GRÁFICOS 
+            // GRÁFICOS
             statsContent.innerHTML += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
             if (designacoesChart && typeof designacoesChart.destroy === 'function') designacoesChart.destroy();
-            const labelsElementos = Object.keys(contagemElementos); 
+            const labelsElementos = Object.keys(contagemElementos);
             const dataCountsElementos = Object.values(contagemElementos);
             if (labelsElementos.length > 0) {
-                designacoesChart = renderChart(designacoesChart, 'designacoesPorElementoChart', 'bar', 
+                designacoesChart = renderChart(designacoesChart, 'designacoesPorElementoChart', 'bar',
                     { labels: labelsElementos, datasets: [{ label: 'Nº de Designações', data: dataCountsElementos, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] }
                 );
             } else {
                 const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
                 if (chartContainer) { const canvas = chartContainer.querySelector('canvas'); if (canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico de elementos.</p>"; }
             }
-            
+
             const desigPorMes = {};
-            const desigPorSemana = {};
+            const desigPorSemana = {}; // For descriptive week strings
             const desigPorAno = {};
 
             designacoesFiltradas.forEach(d => {
                 const mesAnoKey = `${d.ano}-${String(d.mes).padStart(2, '0')}`;
                 desigPorMes[mesAnoKey] = (desigPorMes[mesAnoKey] || 0) + 1;
-                if (d.semanaISO) {
-                    const semanaAnoKey = `${d.ano}-S${String(d.semanaISO).padStart(2, '0')}`;
-                    desigPorSemana[semanaAnoKey] = (desigPorSemana[semanaAnoKey] || 0) + 1;
+
+                if (d.semana) { // Using descriptive week string
+                    desigPorSemana[d.semana] = (desigPorSemana[d.semana] || 0) + 1;
                 }
                 desigPorAno[d.ano.toString()] = (desigPorAno[d.ano.toString()] || 0) + 1;
             });
 
             statsContent.innerHTML += `
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Mês</h4><canvas id="chartDesigPorMes"></canvas></div>
-                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana</h4><canvas id="chartDesigPorSemana"></canvas></div>
+                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana (Descritiva)</h4><canvas id="chartDesigPorSemana"></canvas></div>
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Ano</h4><canvas id="chartDesigPorAno"></canvas></div>
             `;
 
@@ -1426,13 +2142,18 @@
                 });
             } else { const el = document.getElementById('chartDesigPorMes'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico mensal.</p>"; }
 
-            const labelsSemana = Object.keys(desigPorSemana).sort();
+            const labelsSemana = Object.keys(desigPorSemana).sort((a, b) => {
+                const partsA = a.split(' | ')[0];
+                const partsB = b.split(' | ')[0];
+                return partsA.localeCompare(partsB);
+            });
             if (labelsSemana.length > 0) {
-                 designacoesPorSemanaChart = renderChart(designacoesPorSemanaChart, 'chartDesigPorSemana', 'line', {
-                    labels: labelsSemana.map(l => { const [y,s] = l.split('-'); return `${s.replace('S','')}/${y}`;}), 
-                    datasets: [{ label: 'Nº Designações', data: labelsSemana.map(k => desigPorSemana[k]), backgroundColor: 'rgba(153, 102, 255, 0.2)', borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 }]
-                });
+                 designacoesPorSemanaChart = renderChart(designacoesPorSemanaChart, 'chartDesigPorSemana', 'bar', {
+                    labels: labelsSemana,
+                    datasets: [{ label: 'Nº Designações', data: labelsSemana.map(k => desigPorSemana[k]), backgroundColor: 'rgba(153, 102, 255, 0.2)', borderColor: 'rgba(153, 102, 255, 1)'}]
+                }, { scales: { x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 } } } });
             } else { const el = document.getElementById('chartDesigPorSemana'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico semanal.</p>"; }
+
 
             const labelsAno = Object.keys(desigPorAno).sort();
             if (labelsAno.length > 0) {
@@ -1441,7 +2162,7 @@
                     datasets: [{ label: 'Nº Designações', data: labelsAno.map(k => desigPorAno[k]), backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)' }]
                 });
             } else { const el = document.getElementById('chartDesigPorAno'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico anual.</p>"; }
-            
+
             console.log("renderizarEstatisticas: Estatísticas renderizadas com 'mostrar mais' e média.");
         }
 
@@ -1458,7 +2179,7 @@
             }
 
             const idOutraPessoa = selectOutraPessoaEl.value;
-            const nomeOutraPessoa = selectOutraPessoaEl.options[selectOutraPessoaEl.selectedIndex]?.text; 
+            const nomeOutraPessoa = selectOutraPessoaEl.options[selectOutraPessoaEl.selectedIndex]?.text;
             const nomeElemento = selectElementoVerificacao.value;
 
             resultadoDiv.textContent = "";
@@ -1489,22 +2210,22 @@
         }
 
         // --- Modais e FAB ---
-        function abrirModal(modalElement) { 
+        function abrirModal(modalElement) {
             if (modalElement) modalElement.style.display = 'block';
             else console.error("abrirModal: Tentativa de abrir modal nulo.");
         }
-        function fecharModal(modalElement) { 
+        function fecharModal(modalElement) {
             if (modalElement) modalElement.style.display = 'none';
             else console.error("fecharModal: Tentativa de fechar modal nulo.");
         }
 
         if (fabMain) {
             fabMain.addEventListener('click', (event) => {
-                event.stopPropagation(); 
+                event.stopPropagation();
                 fabOptions.classList.toggle('show');
             });
         } else { console.warn("Elemento fabMain não encontrado."); }
-        
+
         document.addEventListener('click', (event) => {
             if (fabOptions && fabOptions.classList.contains('show')) {
                 if (!fabMain.contains(event.target) && !fabOptions.contains(event.target)) {
@@ -1523,7 +2244,7 @@
                 fabOptions.classList.remove('show');
             });
         } else { console.warn("Elemento btnCriarPessoaFab não encontrado.");}
-        
+
         if (btnCriarElementoFab) {
             btnCriarElementoFab.addEventListener('click', () => {
                 formCriarElemento.reset();
@@ -1531,16 +2252,16 @@
                 fabOptions.classList.remove('show');
             });
         } else { console.warn("Elemento btnCriarElementoFab não encontrado.");}
-        
+
         if (btnCriarDesignacaoFab) {
              btnCriarDesignacaoFab.addEventListener('click', async () => {
                 formCriarDesignacao.reset();
-                popularDropdownsPessoasNosModais(); 
+                popularDropdownsPessoasNosModais();
                 abrirModal(modalDesignacao);
                 fabOptions.classList.remove('show');
             });
         } else { console.warn("Elemento btnCriarDesignacaoFab não encontrado.");}
-       
+
         if (btnGerenciarPessoasFab) {
             btnGerenciarPessoasFab.addEventListener('click', () => {
                 abrirModalGerenciarPessoas();
@@ -1549,22 +2270,23 @@
         } else { console.warn("Elemento btnGerenciarPessoasFab não encontrado.");}
 
         if(closeButtons.length > 0) {
-            closeButtons.forEach(button => button.addEventListener('click', () => { 
-                const modalId = button.getAttribute('data-modal-id'); 
+            closeButtons.forEach(button => button.addEventListener('click', () => {
+                const modalId = button.getAttribute('data-modal-id');
                 if (modalId) {
                     const modalToClose = document.getElementById(modalId);
                     if (modalToClose) fecharModal(modalToClose);
                 } else {
+                    // Fallback para fechar o modal pai mais próximo se data-modal-id não estiver presente
                     const parentModal = button.closest('.modal');
                     if (parentModal) fecharModal(parentModal);
                 }
             }));
         } else { console.warn("Nenhum elemento '.close-button' encontrado."); }
 
-        window.addEventListener('click', (event) => { 
+        window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
-                if (event.target.style.display === 'block') {
-                    fecharModal(event.target); 
+                if (event.target.style.display === 'block') { // Só fecha se estiver visível
+                    fecharModal(event.target);
                 }
             }
         });
@@ -1585,25 +2307,26 @@
                 try {
                     if (editId) {
                         const docRef = doc(db, "pessoas", editId);
-                        await updateDoc(docRef, pessoaData); 
+                        await updateDoc(docRef, pessoaData);
                         alert("Pessoa atualizada com sucesso!");
                     } else {
-                        pessoaData.estaVisivel = true; 
+                        pessoaData.estaVisivel = true; // Default para novas pessoas
                         await addDoc(collection(db, "pessoas"), pessoaData);
                         alert("Pessoa criada com sucesso!");
                     }
                     formCriarPessoa.reset();
                     fecharModal(modalPessoa);
-                    await carregarPessoas(); 
+                    await carregarPessoas(); // Recarrega a lista principal
                     if (editId && pessoaSelecionadaAtual && pessoaSelecionadaAtual.id === editId) {
+                        // Se a pessoa editada era a selecionada, recarrega seus detalhes
                         const pessoaAtualizada = todasPessoas.find(p => p.id === editId);
                         if (pessoaAtualizada) {
-                            pessoaSelecionadaAtual = pessoaAtualizada;
-                            carregarDesignacoesDaPessoa(pessoaAtualizada.id);
-                        } else { 
-                             colunaDetalhesDiv.innerHTML = ''; 
+                            pessoaSelecionadaAtual = pessoaAtualizada; // Atualiza o objeto global
+                            carregarDesignacoesDaPessoa(pessoaAtualizada.id); // Recarrega designações e renderiza
+                        } else { // Pessoa pode ter sido removida por outro processo (improvável aqui)
+                             colunaDetalhesDiv.innerHTML = ''; // Limpa
                              colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                             colunaDetalhesContent.style.display = 'flex';
+                             colunaDetalhesContent.style.display = 'flex'; // Mostra placeholder
                         }
                     }
                 } catch (error) { console.error("Erro ao salvar pessoa: ", error); alert("Erro: " + error.message); }
@@ -1618,7 +2341,8 @@
                 const generoReuniao = generoElementoSelect.value;
                 if (!nomeElemento) { alert("O nome do elemento é obrigatório."); return; }
                 const elementoData = {
-                    designacao: nomeElemento, tipo: tipo,
+                    designacao: nomeElemento, // Usar 'designacao' para o nome do elemento
+                    tipo: tipo,
                     generoReuniao: tipo === 'reuniao' ? generoReuniao : null,
                     criadoEm: serverTimestamp()
                 };
@@ -1627,11 +2351,11 @@
                     alert("Elemento criado com sucesso!");
                     formCriarElemento.reset();
                     fecharModal(modalElemento);
-                    await carregarTodosElementosParaEstatisticas(); 
+                    await carregarTodosElementosParaEstatisticas(); // Recarrega para dropdowns e stats
                 } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Erro: " + error.message); }
             });
         }
-        
+
         if (formCriarDesignacao) {
             formCriarDesignacao.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1650,27 +2374,35 @@
                 if (pA) participantes[pA] = true;
                 if (pB) participantes[pB] = true;
                 if (pC) participantes[pC] = true;
-                
+
                 const pessoasSelecionadasNomes = [pA, pB, pC].filter(pNome => pNome !== "");
                 if (new Set(pessoasSelecionadasNomes).size !== pessoasSelecionadasNomes.length) {
                     alert("Pessoas duplicadas selecionadas. Cada pessoa deve ser única."); return;
                 }
+                const elementoOriginalObj = todosElementos.find(el => (el.designacao || el.nome) === nomeElemento);
+                if (!elementoOriginalObj) {
+                    alert("Elemento selecionado não encontrado na base de dados de elementos."); return;
+                }
+
 
                 const designacaoData = {
-                    nome: nomeElemento, pessoaA: pA || null, pessoaB: pB || null, pessoaC: pC || null,
+                    nome: nomeElemento, // Nome do elemento da designação
+                    elementoId: elementoOriginalObj.id, // ID do elemento original
+                    pessoaA: pA || null, pessoaB: pB || null, pessoaC: pC || null,
                     participantes: participantes, data: dataStr, dia: dia.padStart(2, '0'),
                     mes: mes.padStart(2, '0'), ano: ano, criadoEm: serverTimestamp()
                 };
+                // Adicionar semanaISO
                 try {
                     const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                      if (!isNaN(dateObj.getTime())) {
                         designacaoData.semanaISO = getISOWeek(dateObj);
-                    } else {
+                     } else {
                         console.warn("Data inválida ao criar designação, semanaISO não será definida:", dataStr);
                         designacaoData.semanaISO = null;
-                    }
-                } catch(e) {
-                     console.warn("Erro ao calcular semanaISO na criação da designação:", e);
+                     }
+                } catch(error) {
+                     console.warn("Erro ao calcular semanaISO na criação da designação:", error);
                      designacaoData.semanaISO = null;
                 }
 
@@ -1679,10 +2411,11 @@
                     alert("Designação criada com sucesso!");
                     formCriarDesignacao.reset();
                     fecharModal(modalDesignacao);
+                    // Se a pessoa atualmente selecionada participou, recarrega seus detalhes
                     if (pessoaSelecionadaAtual && (pessoaSelecionadaAtual.nome === pA || pessoaSelecionadaAtual.nome === pB || pessoaSelecionadaAtual.nome === pC)) {
                         await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id);
                     }
-                    if (todasDesignacoesGlobaisCarregadas) todasDesignacoesGlobaisCarregadas = false; 
+                    if (todasDesignacoesGlobaisCarregadas) todasDesignacoesGlobaisCarregadas = false; // Forçar recarregamento
                 } catch (error) { console.error("Erro ao criar designação: ", error); alert("Erro: " + error.message); }
             });
         }
@@ -1696,7 +2429,7 @@
 
         function renderListaGerenciarPessoas() {
             if (!listaGerenciarPessoasUl) return;
-            listaGerenciarPessoasUl.innerHTML = ''; 
+            listaGerenciarPessoasUl.innerHTML = ''; // Limpa antes de repopular
             todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(pessoa => {
                 const li = document.createElement('li');
                 li.innerHTML = `
@@ -1714,6 +2447,7 @@
                 `;
                 listaGerenciarPessoasUl.appendChild(li);
             });
+            // Reatribuir event listeners
             listaGerenciarPessoasUl.querySelectorAll('.btn-toggle-visibilidade').forEach(btn => btn.addEventListener('click', async (e) => {
                 await toggleVisibilidadePessoa(e.target.dataset.id, !(e.target.dataset.visivel === 'true'));
             }));
@@ -1726,11 +2460,11 @@
         async function toggleVisibilidadePessoa(pessoaId, novoEstadoVisibilidade) {
             try {
                 await updateDoc(doc(db, "pessoas", pessoaId), { estaVisivel: novoEstadoVisibilidade });
-                await carregarPessoas(); 
-                renderListaGerenciarPessoas(); 
+                await carregarPessoas(); // Recarrega todas as pessoas para atualizar a lista principal
+                renderListaGerenciarPessoas(); // Re-renderiza a lista no modal de gerenciamento
             } catch (error) { console.error("Erro ao alterar visibilidade: ", error); alert("Erro."); }
         }
-        
+
         function editarPessoa(pessoaId) {
             const pessoa = todasPessoas.find(p => p.id === pessoaId);
             if (!pessoa) { alert("Pessoa não encontrada."); return; }
@@ -1743,8 +2477,8 @@
             pregacaoPessoaSelect.value = pessoa.pregacao || '';
             modalPessoaTitulo.textContent = 'Editar Pessoa';
             btnSubmitPessoa.textContent = 'Salvar Alterações';
-            fecharModal(modalGerenciarPessoas); 
-            abrirModal(modalPessoa);
+            fecharModal(modalGerenciarPessoas); // Fecha o modal de gerenciar
+            abrirModal(modalPessoa); // Abre o modal de criar/editar pessoa
         }
 
         async function removerPessoa(pessoaId) {
@@ -1753,17 +2487,134 @@
                 alert("Pessoa removida.");
                 await carregarPessoas();
                 renderListaGerenciarPessoas();
+                 // Se a pessoa removida era a selecionada, limpa a coluna de detalhes
                  if (pessoaSelecionadaAtual && pessoaSelecionadaAtual.id === pessoaId) {
                     pessoaSelecionadaAtual = null;
-                    colunaDetalhesDiv.innerHTML = ''; 
-                    colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                    colunaDetalhesContent.style.display = 'flex';
+                    colunaDetalhesDiv.innerHTML = ''; // Limpa
+                    colunaDetalhesDiv.appendChild(colunaDetalhesContent); // Readiciona o placeholder
+                    colunaDetalhesContent.style.display = 'flex'; // Mostra o placeholder
                 }
             } catch (error) { console.error("Erro ao remover pessoa: ", error); alert("Erro."); }
         }
 
+        // --- FUNÇÕES PARA O CUSTOM MULTI-SELECT DE PESSOAS ---
+        function initGsPessoasCustomMultiselect() {
+            if (!gsPessoasSelectMulti || !gsPessoasSearchInputCustom || !gsPessoasDropdownCustomDiv || !gsSelectedPessoasAreaDiv) {
+                console.warn("Elementos do custom multi-select de pessoas não encontrados.");
+                return;
+            }
+
+            availablePessoasForCustomSelect = Array.from(gsPessoasSelectMulti.options).map(opt => ({
+                id: opt.value,
+                nome: opt.textContent
+            }));
+
+            gsPessoasSearchInputCustom.removeEventListener('input', handleGsPessoasSearch); // Remove previous if any
+            gsPessoasSearchInputCustom.addEventListener('input', handleGsPessoasSearch);
+
+            gsPessoasSearchInputCustom.removeEventListener('focus', openDropdownAndRender); // Remove previous
+            gsPessoasSearchInputCustom.addEventListener('focus', openDropdownAndRender);
+
+            // Clear previous selections in the hidden select and update visual tags
+            Array.from(gsPessoasSelectMulti.options).forEach(opt => opt.selected = false);
+            updateSelectedPessoasTagsDisplay();
+        }
+
+        function openDropdownAndRender() {
+            renderGsPessoasDropdown(gsPessoasSearchInputCustom.value);
+            gsPessoasDropdownCustomDiv.style.display = 'block';
+        }
+
+
+        function handleGsPessoasSearch(event) {
+            const searchTerm = event.target.value.toLowerCase().trim();
+            renderGsPessoasDropdown(searchTerm);
+            gsPessoasDropdownCustomDiv.style.display = 'block';
+        }
+
+        function renderGsPessoasDropdown(searchTerm = "") {
+            if (!gsPessoasDropdownCustomDiv) return;
+
+            const selectedPessoaIds = Array.from(gsPessoasSelectMulti.selectedOptions).map(opt => opt.value);
+
+            const filteredPessoas = availablePessoasForCustomSelect.filter(pessoa =>
+                pessoa.nome.toLowerCase().includes(searchTerm)
+            );
+
+            gsPessoasDropdownCustomDiv.innerHTML = '';
+            const ul = document.createElement('ul');
+
+            if (filteredPessoas.length === 0 && searchTerm) {
+                const li = document.createElement('li');
+                li.textContent = 'Nenhuma pessoa encontrada.';
+                li.style.color = '#777';
+                ul.appendChild(li);
+            } else {
+                 filteredPessoas.forEach(pessoa => {
+                    const li = document.createElement('li');
+                    li.textContent = pessoa.nome;
+                    li.dataset.pessoaId = pessoa.id;
+
+                    if (selectedPessoaIds.includes(pessoa.id)) {
+                        li.classList.add('disabled');
+                    } else {
+                        li.addEventListener('click', () => selectPessoaForComparison(pessoa));
+                    }
+                    ul.appendChild(li);
+                });
+            }
+            gsPessoasDropdownCustomDiv.appendChild(ul);
+        }
+
+        function selectPessoaForComparison(pessoa) {
+            if (!gsPessoasSelectMulti) return;
+            const option = Array.from(gsPessoasSelectMulti.options).find(opt => opt.value === pessoa.id);
+            if (option) {
+                option.selected = true;
+            }
+            updateSelectedPessoasTagsDisplay();
+            gsPessoasSearchInputCustom.value = '';
+            gsPessoasDropdownCustomDiv.style.display = 'none';
+            gsPessoasSearchInputCustom.focus();
+        }
+
+        function removePessoaFromComparison(pessoaId) {
+            if (!gsPessoasSelectMulti) return;
+            const option = Array.from(gsPessoasSelectMulti.options).find(opt => opt.value === pessoaId);
+            if (option) {
+                option.selected = false;
+            }
+            updateSelectedPessoasTagsDisplay();
+        }
+
+        function updateSelectedPessoasTagsDisplay() {
+            if (!gsSelectedPessoasAreaDiv || !gsPessoasSelectMulti) return;
+            gsSelectedPessoasAreaDiv.innerHTML = '';
+
+            const selectedOptions = Array.from(gsPessoasSelectMulti.selectedOptions);
+            selectedOptions.forEach(option => {
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'pessoa-tag';
+                tagDiv.textContent = option.textContent;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-tag-btn';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.type = 'button';
+                removeBtn.title = `Remover ${option.textContent}`;
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removePessoaFromComparison(option.value);
+                });
+
+                tagDiv.appendChild(removeBtn);
+                gsSelectedPessoasAreaDiv.appendChild(tagDiv);
+            });
+        }
+
+
         // --- Funções para o NOVO MODAL DE ESTATÍSTICAS GLOBAIS ---
-        
+
         globalStatsTabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
@@ -1776,14 +2627,24 @@
                     }
                 });
                 if (targetContentId === 'gs-total-content') {
-                    atualizarAbaTotalGlobalStats(); 
+                    atualizarAbaTotalGlobalStats();
                 } else if (targetContentId === 'gs-pessoas-content') {
-                    // Funções específicas para popular esta aba se necessário
+                    if (gsPessoasSelectMulti && gsPessoasSelectMulti.options.length === 0 && todasPessoas.length > 0) {
+                         popularDropdownsPessoasNosModais(); // Make sure the hidden select is populated
+                    }
+                    initGsPessoasCustomMultiselect(); // Initialize/re-initialize custom select
                 } else if (targetContentId === 'gs-designacoes-content') {
                     popularListaElementosAbaDesignacoes();
                 }
             });
         });
+         // Close custom dropdown if clicked outside
+        document.addEventListener('click', (e) => {
+            if (gsPessoasCustomMultiselectDiv && !gsPessoasCustomMultiselectDiv.contains(e.target) && gsPessoasDropdownCustomDiv) {
+                gsPessoasDropdownCustomDiv.style.display = 'none';
+            }
+        });
+
 
         async function carregarTodasDesignacoesParaStatsGlobais() {
             if (todasDesignacoesGlobaisCarregadas) {
@@ -1813,13 +2674,13 @@
                     }
                     todasDesignacoesGlobais.push({ id: docSnap.id, ...data });
                 });
-                todasDesignacoesGlobaisCarregadas = true; 
+                todasDesignacoesGlobaisCarregadas = true;
                 console.log(`carregarTodasDesignacoesParaStatsGlobais: ${todasDesignacoesGlobais.length} designações.`);
             } catch (error) {
                 console.error("Erro ao carregar todas as designações globais: ", error);
                 alert("Falha ao carregar dados para estatísticas globais.");
-                todasDesignacoesGlobaisCarregadas = false; 
-            } 
+                todasDesignacoesGlobaisCarregadas = false;
+            }
         }
 
         function popularFiltrosStatsGlobais() {
@@ -1856,24 +2717,24 @@
                 elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
-            
+
             console.log("Filtros do modal de estatísticas globais populados/atualizados.");
         }
 
         function getPessoaById(id) {
             return todasPessoas.find(p => p.id === id);
         }
-        
-        function getElementoByNome(nome) { 
+
+        function getElementoByNome(nome) {
             return todosElementos.find(el => (el.designacao || el.nome) === nome);
         }
 
         async function atualizarAbaTotalGlobalStats() {
             if (!todasDesignacoesGlobaisCarregadas) {
-                await carregarTodasDesignacoesParaStatsGlobais(); 
-                if (!todasDesignacoesGlobaisCarregadas) return; 
+                await carregarTodasDesignacoesParaStatsGlobais();
+                if (!todasDesignacoesGlobaisCarregadas) return;
             }
-             setSectionLoadingState('gs-total-elementos', true); 
+             setSectionLoadingState('gs-total-elementos', true);
 
             const anoFiltro = gsTotalFiltroAnoSelect.value;
             const mesFiltro = gsTotalFiltroMesSelect.value;
@@ -1886,10 +2747,10 @@
 
             gsTotalNumDesignacoesSpan.textContent = designacoesFiltradas.length;
             let countMasc = 0, countFem = 0, countPt = 0, countIt = 0, countOutroIdioma = 0;
-            
+
             designacoesFiltradas.forEach(desig => {
                 Object.keys(desig.participantes || {}).forEach(nomeParticipante => {
-                    const pessoa = todasPessoas.find(p => p.nome === nomeParticipante); 
+                    const pessoa = todasPessoas.find(p => p.nome === nomeParticipante);
                     if (pessoa) {
                         if (pessoa.genero === 'Masculino') countMasc++;
                         if (pessoa.genero === 'Feminino') countFem++;
@@ -1907,9 +2768,9 @@
 
             renderListaTiposDesignacaoTotal();
 
-            const dadosGraficoTotal = {}; 
-            const dadosGraficoGenero = { Masculino: {}, Feminino: {} }; 
-            const dadosGraficoIdioma = { Português: {}, Italiano: {}, Outro: {} }; 
+            const dadosGraficoTotal = {};
+            const dadosGraficoGenero = { Masculino: {}, Feminino: {} };
+            const dadosGraficoIdioma = { Português: {}, Italiano: {}, Outro: {} };
 
             designacoesFiltradas.forEach(d => {
                 const chaveMesAno = `${d.ano}-${d.mes}`;
@@ -1933,19 +2794,19 @@
                      }
                 });
             });
-            
+
             const sortedLabels = Object.keys(dadosGraficoTotal).sort();
-            
-            gsTotalChartDesignacoesMes = renderChart(gsTotalChartDesignacoesMes, 'gs-total-chart-designacoes-mes', 'line', 
+
+            gsTotalChartDesignacoesMes = renderChart(gsTotalChartDesignacoesMes, 'gs-total-chart-designacoes-mes', 'line',
                 { labels: sortedLabels, datasets: [{ label: 'Total Designações/Mês', data: sortedLabels.map(l => dadosGraficoTotal[l] || 0), tension: 0.1, borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.1)'}] }
             );
-            gsTotalChartDesignacoesGeneroMes = renderChart(gsTotalChartDesignacoesGeneroMes, 'gs-total-chart-designacoes-genero-mes', 'bar', 
+            gsTotalChartDesignacoesGeneroMes = renderChart(gsTotalChartDesignacoesGeneroMes, 'gs-total-chart-designacoes-genero-mes', 'bar',
                 { labels: sortedLabels, datasets: [
                     { label: 'Masculino', data: sortedLabels.map(l => dadosGraficoGenero.Masculino[l] || 0), backgroundColor: '#007bff' },
                     { label: 'Feminino', data: sortedLabels.map(l => dadosGraficoGenero.Feminino[l] || 0), backgroundColor: '#fd7e14' }
                 ]}, { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } }
             );
-             gsTotalChartDesignacoesIdiomaMes = renderChart(gsTotalChartDesignacoesIdiomaMes, 'gs-total-chart-designacoes-idioma-mes', 'bar', 
+             gsTotalChartDesignacoesIdiomaMes = renderChart(gsTotalChartDesignacoesIdiomaMes, 'gs-total-chart-designacoes-idioma-mes', 'bar',
                 { labels: sortedLabels, datasets: [
                     { label: 'Português', data: sortedLabels.map(l => dadosGraficoIdioma.Português[l] || 0), backgroundColor: '#28a745' },
                     { label: 'Italiano', data: sortedLabels.map(l => dadosGraficoIdioma.Italiano[l] || 0), backgroundColor: '#ffc107' },
@@ -1953,7 +2814,7 @@
                 ]}, { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } }
             );
 
-            const numMesesConsiderados = sortedLabels.length || 1; 
+            const numMesesConsiderados = sortedLabels.length || 1;
             gsTotalMediaDesignacoesSpan.textContent = (designacoesFiltradas.length / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigMascSpan.textContent = (countMasc / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigFemSpan.textContent = (countFem / numMesesConsiderados).toFixed(1);
@@ -1967,13 +2828,13 @@
         function renderListaTiposDesignacaoTotal() {
             setSectionLoadingState('gs-total-elementos', true);
             const tipoReuniaoFiltro = gsTotalFiltroElementoTipoSelect.value;
-            
+
             const elementosFiltrados = todosElementos.filter(el => {
                 if (tipoReuniaoFiltro && el.tipo === 'reuniao') {
                     return el.generoReuniao === tipoReuniaoFiltro;
                 }
                 if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false;
-                return true; 
+                return true;
             });
 
             gsTotalElementosListUl.innerHTML = '';
@@ -1986,8 +2847,8 @@
 
             elementosFiltrados.forEach(el => {
                 const nomeEl = el.designacao || el.nome;
-                const countDesigElemento = todasDesignacoesGlobais.filter(d => d.nome === nomeEl).length; 
-                
+                const countDesigElemento = todasDesignacoesGlobais.filter(d => d.nome === nomeEl).length;
+
                 const li = document.createElement('li');
                 li.classList.add('clickable');
                 li.innerHTML = `${nomeEl} <span class="count">${countDesigElemento} ocorrências</span>`;
@@ -1999,7 +2860,7 @@
 
         async function compararPessoasSelecionadas() {
             setSectionLoadingState('gs-pessoas', true, 'btn-gs-pessoas-comparar');
-            
+
             const idsPessoasSelecionadas = Array.from(gsPessoasSelectMulti.selectedOptions).map(opt => opt.value);
             if (idsPessoasSelecionadas.length === 0) {
                 gsPessoasComparisonAreaDiv.innerHTML = '<p style="text-align:center; color:#777;">Selecione pelo menos uma pessoa para comparar.</p>';
@@ -2010,8 +2871,8 @@
             const anoFiltro = gsPessoasFiltroAnoSelect.value;
             const mesFiltro = gsPessoasFiltroMesSelect.value;
             const semanaFiltro = gsPessoasFiltroSemanaInput.value;
-            const generoFiltro = gsPessoasFiltroGeneroSelect.value; 
-            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value; 
+            const generoFiltro = gsPessoasFiltroGeneroSelect.value;
+            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value;
 
             gsPessoasComparisonAreaDiv.innerHTML = '';
 
@@ -2020,18 +2881,18 @@
                 if (!pessoaObj) continue;
 
                 let designacoesDaPessoaFiltradas = todasDesignacoesGlobais.filter(d => {
-                    if (!d.participantes || !d.participantes[pessoaObj.nome]) return false; 
+                    if (!d.participantes || !d.participantes[pessoaObj.nome]) return false;
 
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
                     const matchMes = !mesFiltro || d.mes === mesFiltro;
-                    
+
                     let matchSemana = true;
                     if (semanaFiltro) {
-                         matchSemana = d.semanaISO === parseInt(semanaFiltro);
+                         matchSemana = d.semanaISO === parseInt(semanaFiltro); // Assumes gs-pessoas-filtro-semana is ISO week number
                     }
                     const matchGenero = !generoFiltro || pessoaObj.genero === generoFiltro;
                     const matchIdioma = !idiomaFiltro || pessoaObj.idioma === idiomaFiltro;
-                    
+
                     return matchAno && matchMes && matchSemana && matchGenero && matchIdioma;
                 });
 
@@ -2039,13 +2900,13 @@
                 card.className = 'pessoa-comparison-card';
                 let cardHTML = `<h5>${pessoaObj.nome}</h5><ul>`;
                 cardHTML += `<li>Total Designações (filt.): <span class="stat-value">${designacoesDaPessoaFiltradas.length}</span></li>`;
-                
+
                 const contagemElementosPessoa = designacoesDaPessoaFiltradas.reduce((acc, d) => {
                     acc[d.nome] = (acc[d.nome] || 0) + 1;
                     return acc;
                 }, {});
                 const top3Elementos = Object.entries(contagemElementosPessoa).sort((a,b) => b[1]-a[1]).slice(0,3);
-                
+
                 cardHTML += `<li>Top Elementos:</li><ul>`;
                 if (top3Elementos.length > 0) {
                     top3Elementos.forEach(([elNome, count]) => cardHTML += `<li>${elNome}: ${count}</li>`);
@@ -2066,7 +2927,7 @@
 
         function popularListaElementosAbaDesignacoes() {
             if (!todosElementos || todosElementos.length === 0) {
-                gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado.</li>';
+                if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado.</li>';
                 return;
             }
              setSectionLoadingState('gs-designacoes-tipos', true);
@@ -2079,18 +2940,18 @@
                 li.classList.add('clickable');
                 li.dataset.elementoNome = nomeEl;
                 li.addEventListener('click', () => {
-                    abrirModalInstancias(nomeEl, true); 
+                    abrirModalInstancias(nomeEl, true);
                 });
                 gsDesignacoesTiposListUl.appendChild(li);
             });
              setSectionLoadingState('gs-designacoes-tipos', false);
         }
-        
+
         function abrirModalInstancias(nomeElemento, aplicarFiltrosDaAbaDesignacoes = false) {
             if (!modalInstanciasDesignacao || !modalInstanciasTitulo || !modalInstanciasListUl) return;
-            
+
             modalInstanciasTitulo.textContent = `Instâncias de: ${nomeElemento}`;
-            modalInstanciasListUl.innerHTML = '<div class="loading-spinner"></div>'; 
+            modalInstanciasListUl.innerHTML = '<div class="loading-spinner"></div>';
             abrirModal(modalInstanciasDesignacao);
 
             let instanciasFiltradas = todasDesignacoesGlobais.filter(d => d.nome === nomeElemento);
@@ -2099,7 +2960,7 @@
                 const diaFiltro = gsDesignacoesFiltroDiaInput.value;
                 const mesFiltro = gsDesignacoesFiltroMesSelect.value;
                 const anoFiltro = gsDesignacoesFiltroAnoSelect.value;
-                const semanaFiltro = gsDesignacoesFiltroSemanaInput.value;
+                const semanaFiltro = gsDesignacoesFiltroSemanaInput.value; // Assumes ISO week number
                 const generoFiltro = gsDesignacoesFiltroGeneroSelect.value;
                 const idiomaFiltro = gsDesignacoesFiltroIdiomaSelect.value;
 
@@ -2107,7 +2968,7 @@
                     const matchDia = !diaFiltro || d.dia === String(diaFiltro).padStart(2, '0');
                     const matchMes = !mesFiltro || d.mes === mesFiltro;
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
-                    
+
                     let matchSemana = true;
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
@@ -2116,7 +2977,7 @@
                     let matchGeneroParticipante = true;
                     let matchIdiomaParticipante = true;
                     if (generoFiltro || idiomaFiltro) {
-                        matchGeneroParticipante = !generoFiltro; 
+                        matchGeneroParticipante = !generoFiltro;
                         matchIdiomaParticipante = !idiomaFiltro;
                         if (d.participantes) {
                             for (const nomeP of Object.keys(d.participantes)) {
@@ -2127,20 +2988,20 @@
                                 }
                             }
                         }
-                        if (!matchGeneroParticipante) return false;
-                        if (!matchIdiomaParticipante) return false;
+                        if (!matchGeneroParticipante && generoFiltro) return false; // Only return false if filter is set and not matched
+                        if (!matchIdiomaParticipante && idiomaFiltro) return false;
                     }
                     return matchDia && matchMes && matchAno && matchSemana;
                 });
             }
-            
+
             instanciasFiltradas.sort((a, b) => {
                 const dateA = new Date(a.ano, parseInt(a.mes)-1, parseInt(a.dia));
                 const dateB = new Date(b.ano, parseInt(b.mes)-1, parseInt(b.dia));
                 return dateB - dateA;
             });
 
-            modalInstanciasListUl.innerHTML = ''; 
+            modalInstanciasListUl.innerHTML = '';
             if (instanciasFiltradas.length === 0) {
                 modalInstanciasListUl.innerHTML = '<li>Nenhuma instância encontrada com os filtros atuais.</li>';
             } else {
@@ -2174,12 +3035,12 @@
                     }
                 });
             });
-            
+
             topPessoasDadosCompletos = Object.entries(contagemPessoas)
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
 
-            renderTopPessoasList(true); 
+            renderTopPessoasList(true);
             setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
         }
 
@@ -2188,7 +3049,7 @@
             gsTopPessoasListUl.innerHTML = '';
             const dadosParaRenderizar = apenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
 
-            if (dadosParaRenderizar.length === 0) {  } 
+            if (dadosParaRenderizar.length === 0) { /* Não faz nada se vazio, o :empty::before cuida da mensagem */ }
             else {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
@@ -2196,13 +3057,13 @@
                     gsTopPessoasListUl.appendChild(li);
                 });
             }
-            
+
             gsTopPessoasMostrarTodosLink.style.display = topPessoasDadosCompletos.length > 5 ? 'inline-block' : 'none';
             gsTopPessoasMostrarTodosLink.textContent = apenasTop5 ? 'Mostrar lista completa' : 'Mostrar apenas Top 5';
         }
 
         async function exibirTodasDesignacoes() {
-            setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-aplicar'); 
+            setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
 
             const mesFiltro = gsTodasDesigMesSelect.value;
@@ -2214,7 +3075,7 @@
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 return matchMes && matchAno && matchElemento;
-            }).sort((a, b) => { 
+            }).sort((a, b) => {
                 const dateA = new Date(a.ano, parseInt(a.mes)-1, parseInt(a.dia));
                 const dateB = new Date(b.ano, parseInt(b.mes)-1, parseInt(b.dia));
                 return dateB - dateA;
@@ -2223,7 +3084,7 @@
             if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
             if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'none';
 
-            if (designacoesFiltradasGlobal.length === 0) {  }
+            if (designacoesFiltradasGlobal.length === 0) { /* :empty::before cuida */ }
             else {
                 designacoesFiltradasGlobal.forEach(d => {
                     const li = document.createElement('li');
@@ -2238,10 +3099,10 @@
         async function agruparDesignacoesPorElemento() {
             setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-agrupar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
-            
+
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
-            const elementoFiltro = gsTodasDesigElementoSelect.value; 
+            const elementoFiltro = gsTodasDesigElementoSelect.value; // Filtro de elemento também se aplica aqui
 
             let designacoesParaAgrupar = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || d.mes === mesFiltro;
@@ -2257,10 +3118,10 @@
             topElementosAgrupadosDadosCompletos = Object.entries(contagemElementos)
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
-            
-            if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
+
+            if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = ''; // Limpa a lista detalhada
             if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'block';
-            renderTopElementosAgrupadosList(true); 
+            renderTopElementosAgrupadosList(true); // Mostra apenas top 5 inicialmente
             setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-agrupar');
         }
 
@@ -2269,7 +3130,7 @@
             gsTodasDesigAgrupadoListUl.innerHTML = '';
             const dadosParaRenderizar = apenasTop5 ? topElementosAgrupadosDadosCompletos.slice(0, 5) : topElementosAgrupadosDadosCompletos;
 
-            if (dadosParaRenderizar.length === 0) {  } 
+            if (dadosParaRenderizar.length === 0) { /* :empty::before cuida */ }
             else {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
@@ -2280,14 +3141,14 @@
             gsTodasDesigAgrupadoMostrarTodosLink.style.display = topElementosAgrupadosDadosCompletos.length > 5 ? 'inline-block' : 'none';
             gsTodasDesigAgrupadoMostrarTodosLink.textContent = apenasTop5 ? 'Mostrar lista completa de elementos' : 'Mostrar apenas Top 5 elementos';
         }
-        
+
         async function analisarDesempenhoPessoa() {
             setSectionLoadingState('gs-pessoa-esp', true, 'btn-gs-pessoa-esp-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
-            if (todasPessoas.length === 0) await carregarPessoas(); 
+            if (todasPessoas.length === 0) await carregarPessoas(); // Garante que todasPessoas está populado
 
-            const pessoaIdSelecionada = gsPessoaEspSelect.value; 
-            const pessoaObj = getPessoaById(pessoaIdSelecionada); 
+            const pessoaIdSelecionada = gsPessoaEspSelect.value;
+            const pessoaObj = getPessoaById(pessoaIdSelecionada); // Usa a função helper
             const nomePessoaSelecionada = pessoaObj ? pessoaObj.nome : null;
 
             const elementoFiltro = gsPessoaEspElementoFiltroSelect.value;
@@ -2323,7 +3184,7 @@
                 numeroOutrasPessoasComDesigNoPeriodo = countPessoasComDesig;
                 if (numeroOutrasPessoasComDesigNoPeriodo > 0) mediaGeral = totalDesigOutrasPessoasNoPeriodo / numeroOutrasPessoasComDesigNoPeriodo;
             }
-            
+
             let htmlResultado = `<p><strong>${nomePessoaSelecionada}</strong> teve <strong>${totalDesigPessoa}</strong> designações no período.</p>`;
             if (numeroOutrasPessoasComDesigNoPeriodo > 0) {
                  htmlResultado += `<p>Média para outras ${numeroOutrasPessoasComDesigNoPeriodo} pessoas: <strong>${mediaGeral.toFixed(1)}</strong>.</p>`;
@@ -2333,7 +3194,7 @@
             } else if (todasPessoas.length === 1 && todasPessoas[0].nome === nomePessoaSelecionada) {
                  htmlResultado += `<p>Única pessoa no sistema ou visível.</p>`;
             } else htmlResultado += `<p>Nenhuma outra pessoa com designações no período para comparação.</p>`;
-            
+
             const desigPessoaPorElemento = designacoesDaPessoa.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
             const sortedDesigPessoaPorElemento = Object.entries(desigPessoaPorElemento).sort((a,b) => b[1] - a[1]);
             if(sortedDesigPessoaPorElemento.length > 0){
@@ -2344,7 +3205,7 @@
             if (gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = htmlResultado;
             setSectionLoadingState('gs-pessoa-esp', false, 'btn-gs-pessoa-esp-aplicar');
         }
-        
+
         function renderChart(chartInstance, canvasId, type, data, options = {}) {
             const canvasEl = document.getElementById(canvasId);
             if (!canvasEl) { console.error(`Canvas ${canvasId} não encontrado.`); return null; }
@@ -2353,11 +3214,11 @@
             if (chartInstance && typeof chartInstance.destroy === 'function') {
                 chartInstance.destroy();
             }
-            
+
             const defaultOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } 
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             };
             const finalOptions = {...defaultOptions, ...options};
 
@@ -2368,27 +3229,42 @@
         if (btnGlobalStats) {
             btnGlobalStats.addEventListener('click', async () => {
                 console.log("Botão de Estatísticas Globais clicado.");
-                if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas(); 
-                if (todasPessoas.length === 0) await carregarPessoas(); 
-                
-                if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais(); 
-                
-                popularFiltrosStatsGlobais(); 
-                if (document.querySelector('#gs-total-content.active')) {
-                     atualizarAbaTotalGlobalStats();
+                if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
+                if (todasPessoas.length === 0) await carregarPessoas(); // Ensures 'todasPessoas' is populated
+
+                if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+
+                popularFiltrosStatsGlobais();
+                popularDropdownsPessoasNosModais(); // Crucial for populating the hidden select for custom multi-select
+
+                // Activate the first tab if none is active, or refresh current
+                const activeTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
+                if (activeTab) {
+                    if (activeTab.dataset.tabTarget === 'gs-total-content') {
+                         atualizarAbaTotalGlobalStats();
+                    } else if (activeTab.dataset.tabTarget === 'gs-pessoas-content') {
+                         initGsPessoasCustomMultiselect();
+                    } // Add other tabs if they need specific refresh logic
+                } else {
+                    // Default to first tab
+                    const firstTabButton = document.querySelector('#modal-global-stats .global-stats-tab-button');
+                    if(firstTabButton) {
+                        firstTabButton.click(); // Simulate click to trigger its logic
+                    }
                 }
-                
+
                 document.querySelectorAll('#modal-global-stats .loading-spinner').forEach(s => s.style.display = 'none');
                 document.querySelectorAll('#modal-global-stats .stats-apply-button, #modal-global-stats .stats-filters select, #modal-global-stats .stats-filters input').forEach(b => b.disabled = false);
-                
-                if(gsTopPessoasListUl) gsTopPessoasListUl.innerHTML = ''; 
+
+                if(gsTopPessoasListUl) gsTopPessoasListUl.innerHTML = '';
                 if(gsTopPessoasMostrarTodosLink) gsTopPessoasMostrarTodosLink.style.display = 'none';
-                if(gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = ''; 
+                if(gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
                 if(gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'none';
-                if(gsTodasDesigAgrupadoListUl) gsTodasDesigAgrupadoListUl.innerHTML = ''; 
+                if(gsTodasDesigAgrupadoListUl) gsTodasDesigAgrupadoListUl.innerHTML = '';
                 if(gsTodasDesigAgrupadoMostrarTodosLink) gsTodasDesigAgrupadoMostrarTodosLink.style.display = 'none';
                 if(gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = '';
-                
+                if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; // Clear comparison area
+
                 abrirModal(modalGlobalStats);
             });
         } else { console.warn("Botão btnGlobalStats não encontrado."); }
@@ -2398,17 +3274,242 @@
         if(btnGsPessoasComparar) btnGsPessoasComparar.addEventListener('click', compararPessoasSelecionadas);
         if(btnGsDesignacoesAplicarFiltros) {
              btnGsDesignacoesAplicarFiltros.addEventListener('click', () => {
-                popularListaElementosAbaDesignacoes();
+                popularListaElementosAbaDesignacoes(); // Apenas repopula a lista de tipos
                 alert("Filtros definidos. Clique num tipo de designação para ver as instâncias filtradas.");
             });
         }
 
-        if (btnGsTopPessoasAplicar) btnGsTopPessoasAplicar.addEventListener('click', calcularTopPessoas); 
+        if (btnGsTopPessoasAplicar) btnGsTopPessoasAplicar.addEventListener('click', calcularTopPessoas);
         if (gsTopPessoasMostrarTodosLink) { gsTopPessoasMostrarTodosLink.addEventListener('click', (e) => { e.preventDefault(); const mostrandoTop5 = gsTopPessoasMostrarTodosLink.textContent.includes("lista completa"); renderTopPessoasList(!mostrandoTop5); }); }
         if (btnGsTodasDesigAplicar) btnGsTodasDesigAplicar.addEventListener('click', exibirTodasDesignacoes);
         if (btnGsTodasDesigAgrupar) btnGsTodasDesigAgrupar.addEventListener('click', agruparDesignacoesPorElemento);
         if (gsTodasDesigAgrupadoMostrarTodosLink) { gsTodasDesigAgrupadoMostrarTodosLink.addEventListener('click', (e) => { e.preventDefault(); const mostrandoTop5 = gsTodasDesigAgrupadoMostrarTodosLink.textContent.includes("lista completa"); renderTopElementosAgrupadosList(!mostrandoTop5); }); }
         if (btnGsPessoaEspAplicar) btnGsPessoaEspAplicar.addEventListener('click', analisarDesempenhoPessoa);
+
+
+        // --- FUNÇÕES PARA O MODAL DE RANKING ---
+        function getNomeMesRanking(numMes) { // Helper se não existir globalmente
+            return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+        }
+
+        async function abrirModalRanking() {
+            if (!todasDesignacoesGlobaisCarregadas) {
+                await carregarTodasDesignacoesParaStatsGlobais();
+                if (!todasDesignacoesGlobaisCarregadas) {
+                    alert("Não foi possível carregar os dados das designações. Tente novamente.");
+                    return;
+                }
+            }
+            if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas(); // Garante que temos os nomes dos elementos
+
+            popularFiltrosRankingPopup();
+            setDefaultRankingFilters(); // Define os filtros para a data mais recente
+            ordemAtualElementosRanking = [...ORDEM_PADRAO_ELEMENTOS_RANKING]; // Reseta a ordem para o padrão
+            renderRankingList();
+            abrirModal(modalRanking);
+        }
+
+        function popularFiltrosRankingPopup() {
+            if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
+
+            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes))].sort((a, b) => parseInt(a) - parseInt(b));
+            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano))].sort((a, b) => parseInt(b) - parseInt(a));
+
+            const semanasUnicasComDatas = todasDesignacoesGlobais
+                .filter(d => d.semanaISO && d.data && d.ano) // Precisa de semanaISO, data e ano
+                .map(d => {
+                    const [dia, mes, anoNum] = d.data.split('/');
+                    return {
+                        semanaISO: d.semanaISO,
+                        ano: parseInt(anoNum), // Garante que o ano é um número
+                        // Um valor de data para ordenação
+                        sortDate: new Date(parseInt(anoNum), parseInt(mes) - 1, parseInt(dia))
+                    };
+                })
+                .reduce((acc, current) => { // Remove duplicatas de ano-semanaISO
+                    if (!acc.find(item => item.semanaISO === current.semanaISO && item.ano === current.ano)) {
+                        acc.push(current);
+                    }
+                    return acc;
+                }, [])
+                .sort((a, b) => b.sortDate - a.sortDate); // Ordena pela data, mais recente primeiro
+
+            rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
+            mesesUnicos.forEach(mes => rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
+
+            rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
+            anosUnicos.forEach(ano => rankingFiltroAnoSelect.appendChild(new Option(ano, ano)));
+
+            rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
+            semanasUnicasComDatas.forEach(item => {
+                const displayDataSemana = `Semana ${item.semanaISO} (${item.ano})`;
+                rankingFiltroSemanaSelect.appendChild(new Option(displayDataSemana, `${item.ano}-${item.semanaISO}`)); // valor como "ANO-SEMANAISO"
+            });
+        }
+
+        function setDefaultRankingFilters() {
+            if (todasDesignacoesGlobais.length === 0) return;
+
+            let maisRecente = null;
+            todasDesignacoesGlobais.forEach(d => {
+                if (d.data && d.ano && d.mes && d.dia) { // Verifica se todos os componentes da data existem
+                    const dataAtual = new Date(parseInt(d.ano), parseInt(d.mes) - 1, parseInt(d.dia));
+                    if (!isNaN(dataAtual.getTime())) { // Verifica se a data é válida
+                        if (!maisRecente || dataAtual > maisRecente.dataObj) {
+                            maisRecente = { ...d, dataObj: dataAtual };
+                        }
+                    }
+                }
+            });
+
+            if (maisRecente) {
+                rankingFiltroAnoSelect.value = maisRecente.ano;
+                rankingFiltroMesSelect.value = maisRecente.mes;
+                if (maisRecente.semanaISO && maisRecente.ano) {
+                    rankingFiltroSemanaSelect.value = `${maisRecente.ano}-${maisRecente.semanaISO}`;
+                } else {
+                    rankingFiltroSemanaSelect.value = "";
+                }
+            } else {
+                if (rankingFiltroAnoSelect.options.length > 1) rankingFiltroAnoSelect.selectedIndex = 1;
+                if (rankingFiltroMesSelect.options.length > 1) rankingFiltroMesSelect.selectedIndex = 1;
+                if (rankingFiltroSemanaSelect.options.length > 1) rankingFiltroSemanaSelect.selectedIndex = 1;
+            }
+        }
+
+
+        function renderRankingList() {
+            if (!listaRankingDesignacoesUl) return;
+            listaRankingDesignacoesUl.innerHTML = '';
+
+            const mesFiltro = rankingFiltroMesSelect.value;
+            const anoFiltro = rankingFiltroAnoSelect.value;
+            const semanaFiltroValor = rankingFiltroSemanaSelect.value;
+            let targetAnoSemana = null;
+            let targetSemanaISO = null;
+
+            if (semanaFiltroValor) {
+                const parts = semanaFiltroValor.split('-');
+                if (parts.length === 2) {
+                    targetAnoSemana = parseInt(parts[0]);
+                    targetSemanaISO = parseInt(parts[1]);
+                }
+            }
+
+            const designacoesDaSemanaSelecionada = todasDesignacoesGlobais.filter(d => {
+                const matchAno = !anoFiltro || d.ano === anoFiltro;
+                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                let matchSemana = true;
+                if (targetSemanaISO && targetAnoSemana) {
+                    matchSemana = (d.semanaISO === targetSemanaISO && parseInt(d.ano) === targetAnoSemana);
+                } else if (anoFiltro && !targetSemanaISO && !mesFiltro) { // Apenas ano selecionado
+                     matchSemana = (d.ano === anoFiltro);
+                } else if (!anoFiltro && !mesFiltro && !targetSemanaISO){ // Nenhum filtro, mostra tudo ( improvável para este modal)
+                    matchSemana = true;
+                }
+                // Se semana não está selecionada, mas ano e/ou mês estão, matchSemana não deve restringir
+                return matchAno && matchMes && matchSemana;
+            });
+
+            const designacoesAgrupadasPorNome = designacoesDaSemanaSelecionada.reduce((acc, desig) => {
+                const nomeElementoBase = desig.nome.startsWith("Discurso") ? "Discurso" : desig.nome;
+                if (!acc[nomeElementoBase]) {
+                    acc[nomeElementoBase] = [];
+                }
+                acc[nomeElementoBase].push(desig);
+                return acc;
+            }, {});
+
+
+            ordemAtualElementosRanking.forEach((nomeElemento, index) => {
+                if (nomeElemento === "---SEP---") {
+                    const hr = document.createElement('hr');
+                    hr.className = 'ranking-section-separator';
+                    listaRankingDesignacoesUl.appendChild(hr);
+                    return;
+                }
+                if (nomeElemento === "---PARAGRAPH_SEP---") {
+                    const liSep = document.createElement('li');
+                    liSep.className = 'ranking-paragraph-separator';
+                    listaRankingDesignacoesUl.appendChild(liSep);
+                    return;
+                }
+
+                const li = document.createElement('li');
+                li.dataset.elementoNome = nomeElemento;
+
+                const nomeSpan = document.createElement('span');
+                nomeSpan.className = 'designacao-nome';
+                nomeSpan.textContent = nomeElemento;
+
+                const participantesSpan = document.createElement('span');
+                participantesSpan.className = 'designacao-participantes';
+
+                const designacoesParaEsteElemento = designacoesAgrupadasPorNome[nomeElemento] || [];
+
+                if (designacoesParaEsteElemento.length > 0) {
+                    const participantesNomes = designacoesParaEsteElemento.map(d =>
+                        [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean).join(' & ')
+                    ).filter(Boolean).join('; ');
+
+                    if (participantesNomes) {
+                         participantesSpan.textContent = participantesNomes;
+                    } else {
+                        participantesSpan.textContent = "Ninguém designado";
+                        participantesSpan.classList.add('ninguem');
+                    }
+                } else {
+                    participantesSpan.textContent = "Nenhuma ocorrência";
+                    participantesSpan.classList.add('ninguem');
+                }
+
+                const reorderDiv = document.createElement('div');
+                reorderDiv.className = 'reorder-buttons';
+                const btnUp = document.createElement('button');
+                btnUp.innerHTML = '<i class="fas fa-arrow-up"></i>';
+                btnUp.title = "Subir";
+                btnUp.disabled = index === 0 || ordemAtualElementosRanking[index-1].startsWith("---");
+                btnUp.onclick = () => moverElementoRanking(index, 'up');
+
+                const btnDown = document.createElement('button');
+                btnDown.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                btnDown.title = "Descer";
+                btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || ordemAtualElementosRanking[index+1].startsWith("---");
+                btnDown.onclick = () => moverElementoRanking(index, 'down');
+
+                reorderDiv.appendChild(btnUp);
+                reorderDiv.appendChild(btnDown);
+
+                li.appendChild(nomeSpan);
+                li.appendChild(participantesSpan);
+                li.appendChild(reorderDiv);
+                listaRankingDesignacoesUl.appendChild(li);
+            });
+        }
+
+        function moverElementoRanking(currentIndex, direction) {
+            const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+            if (newIndex < 0 || newIndex >= ordemAtualElementosRanking.length) return;
+            if (ordemAtualElementosRanking[newIndex].startsWith("---")) return;
+
+
+            [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex]] =
+            [ordemAtualElementosRanking[newIndex], ordemAtualElementosRanking[currentIndex]];
+
+            renderRankingList();
+        }
+
+
+        // --- EVENT LISTENERS ---
+        if (btnRankingPopup) {
+            btnRankingPopup.addEventListener('click', abrirModalRanking);
+        }
+
+        if (btnRankingAplicarFiltros) {
+            btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
+        }
+
 
         // --- Inicialização ---
         window.onload = async () => {
@@ -2418,22 +3519,28 @@
                 alert("Erro crítico ao carregar. Verifique o console.");
                 return;
             }
-            await carregarPessoas(); 
-            await carregarTodosElementosParaEstatisticas(); 
-            await carregarTodasDesignacoesParaStatsGlobais(); 
+            await carregarPessoas();
+            await carregarTodosElementosParaEstatisticas();
+            await carregarTodasDesignacoesParaStatsGlobais(); // Carrega todas as designações globais
+            popularDropdownsPessoasNosModais(); // Popula dropdowns que dependem de 'todasPessoas'
 
-            if(colunaDetalhesDiv && colunaDetalhesContent){ 
-                colunaDetalhesDiv.innerHTML = ''; 
-                colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                colunaDetalhesContent.style.display = 'flex';
+            // Configuração inicial da coluna de detalhes (placeholder)
+            if(colunaDetalhesDiv && colunaDetalhesContent){
+                colunaDetalhesDiv.innerHTML = ''; // Limpa qualquer conteúdo prévio
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent); // Adiciona o placeholder
+                colunaDetalhesContent.style.display = 'flex'; // Garante que o placeholder está visível
             }
 
+            // Configuração inicial da primeira aba do modal de estatísticas globais
             const primeiraAbaBtnGlobal = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button');
             if (primeiraAbaBtnGlobal && !document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active')) {
                 primeiraAbaBtnGlobal.classList.add('active');
                  const targetContentId = primeiraAbaBtnGlobal.dataset.tabTarget;
                  const targetContent = document.getElementById(targetContentId);
                  if (targetContent) targetContent.classList.add('active');
+                 // Chama a função de atualização da aba se necessário
+                 if (targetContentId === 'gs-total-content') atualizarAbaTotalGlobalStats();
+                 else if (targetContentId === 'gs-pessoas-content') initGsPessoasCustomMultiselect();
             }
             console.log("Inicialização concluída.");
         };
