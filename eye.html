@@ -1984,132 +1984,73 @@
             });
         }
 
-
         function renderizarEstatisticas() {
             console.log("renderizarEstatisticas: Iniciando");
             const statsContent = document.getElementById('estatisticas-content');
             if (!statsContent) { console.error("renderizarEstatisticas: #estatisticas-content não encontrado."); return; }
-            statsContent.innerHTML = '';
+
             if (!pessoaSelecionadaAtual || designacoesFiltradas.length === 0) {
                 console.log("renderizarEstatisticas: Sem dados para estatísticas.");
                 statsContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Nenhuma designação para calcular estatísticas com os filtros atuais.</p>';
                 return;
             }
 
+            let allCardsHtml = ''; // String para acumular o HTML de todos os cards
+
             // Card: Total de Designações
             const totalDesignacoes = designacoesFiltradas.length;
-            statsContent.innerHTML += `<div class="stat-card"><h4>Total de Designações</h4><span class="stat-value">${totalDesignacoes}</span><span class="stat-label">(Com filtro aplicado)</span></div>`;
+            allCardsHtml += `<div class="stat-card"><h4>Total de Designações</h4><span class="stat-value">${totalDesignacoes}</span><span class="stat-label">(Com filtro aplicado)</span></div>`;
 
-            // Card: Elementos Mais Realizados
+            // --- Card: Elementos Mais Realizados ---
             const contagemElementos = designacoesFiltradas.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
-            const todosElementosRealizados = Object.entries(contagemElementos).sort(([, a], [, b]) => b - a || (a.nome || '').localeCompare(b.nome || ''));
+            // Guardar 'todosElementosRealizados' para uso na função interna e no gráfico
+            const todosElementosRealizadosOriginal = Object.entries(contagemElementos).sort(([, a], [, b]) => b - a || (a.nome || '').localeCompare(b.nome || ''));
 
-            let elementosHtml = `<div class="stat-card">
-                                    <h4>Elementos Mais Realizados</h4>
-                                    <ul id="lista-elementos-pessoa"></ul>
-                                    <a href="#" id="link-mostrar-todos-elementos-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
-                                 </div>`;
-            statsContent.innerHTML += elementosHtml;
+            allCardsHtml += `<div class="stat-card">
+                                <h4>Elementos Mais Realizados</h4>
+                                <ul id="lista-elementos-pessoa"></ul>
+                                <a href="#" id="link-mostrar-todos-elementos-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
+                             </div>`;
 
-            function renderListaElementosPessoa() {
-                const listaUl = document.getElementById('lista-elementos-pessoa');
-                const link = document.getElementById('link-mostrar-todos-elementos-pessoa');
-                if (!listaUl || !link) return;
-
-                listaUl.innerHTML = '';
-                const dadosParaRenderizar = mostrandoTodosElementosPessoa ? todosElementosRealizados : todosElementosRealizados.slice(0, 5);
-
-                if (dadosParaRenderizar.length > 0) {
-                    dadosParaRenderizar.forEach(([nome, count]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `${nome}: <span class="stat-value-inline">${count}</span>`;
-                        listaUl.appendChild(li);
-                    });
-                } else {
-                    listaUl.innerHTML = '<li>Nenhum dado de elemento.</li>';
-                }
-
-                if (todosElementosRealizados.length > 5) {
-                    link.style.display = 'inline-block';
-                    link.textContent = mostrandoTodosElementosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosElementosRealizados.length})`;
-                } else {
-                    link.style.display = 'none';
-                }
-            }
-            renderListaElementosPessoa();
-            const linkElementos = document.getElementById('link-mostrar-todos-elementos-pessoa');
-            if (linkElementos) {
-                linkElementos.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    mostrandoTodosElementosPessoa = !mostrandoTodosElementosPessoa;
-                    renderListaElementosPessoa();
-                });
-            }
-
-            // Card: Parceiros Mais Frequentes
+            // --- Card: Parceiros Mais Frequentes ---
             const contagemParceiros = designacoesFiltradas.reduce((acc, d) => {
                 [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome).forEach(parceiro => acc[parceiro] = (acc[parceiro] || 0) + 1);
                 return acc;
             }, {});
-            const todosParceirosFrequentes = Object.entries(contagemParceiros).sort(([, a], [, b]) => b - a || (a[0] || '').localeCompare(b[0] || ''));
+             // Guardar 'todosParceirosFrequentes' para uso na função interna
+            const todosParceirosFrequentesOriginal = Object.entries(contagemParceiros).sort(([, a], [, b]) => b - a || (a[0] || '').localeCompare(b[0] || ''));
 
-            let parceirosHtml = `<div class="stat-card">
-                                    <h4>Parceiros Mais Frequentes</h4>
-                                    <ul id="lista-parceiros-pessoa"></ul>
-                                    <a href="#" id="link-mostrar-todos-parceiros-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
-                                 </div>`;
-            statsContent.innerHTML += parceirosHtml;
+            allCardsHtml += `<div class="stat-card">
+                                <h4>Parceiros Mais Frequentes</h4>
+                                <ul id="lista-parceiros-pessoa"></ul>
+                                <a href="#" id="link-mostrar-todos-parceiros-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
+                             </div>`;
 
-            function renderListaParceirosPessoa() {
-                const listaUl = document.getElementById('lista-parceiros-pessoa');
-                const link = document.getElementById('link-mostrar-todos-parceiros-pessoa');
-                if (!listaUl || !link) return;
+            // --- Card: Verificar Designação Conjunta ---
+            const pessoasDisponiveisParaConjunta = todasPessoas
+                .filter(p => pessoaSelecionadaAtual && p.id !== pessoaSelecionadaAtual.id && p.estaVisivel !== false)
+                .map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+            const elementosDisponiveisParaConjunta = [...new Set(todosElementos.map(el => el.designacao || el.nome))]
+                .sort()
+                .map(nomeEl => `<option value="${nomeEl}">${nomeEl}</option>`).join('');
+            allCardsHtml += `<div class="stat-card" id="verificacao-conjunta-container">
+                                <h4>Verificar Designação Conjunta</h4>
+                                <label for="select-outra-pessoa">Com:</label>
+                                <select id="select-outra-pessoa"><option value="">-- Selecione Pessoa --</option>${pessoasDisponiveisParaConjunta}</select>
+                                <label for="select-elemento-verificacao">Elemento:</label>
+                                <select id="select-elemento-verificacao"><option value="">-- Selecione Elemento --</option>${elementosDisponiveisParaConjunta}</select>
+                                <button id="btn-verificar-conjunta">Verificar</button>
+                                <div id="resultado-verificacao-conjunta"></div>
+                             </div>`;
 
-                listaUl.innerHTML = '';
-                const dadosParaRenderizar = mostrandoTodosParceirosPessoa ? todosParceirosFrequentes : todosParceirosFrequentes.slice(0, 3);
-
-                if (dadosParaRenderizar.length > 0) {
-                    dadosParaRenderizar.forEach(([nome, count]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `${nome}: <span class="stat-value-inline">${count}</span>`;
-                        listaUl.appendChild(li);
-                    });
-                } else {
-                    listaUl.innerHTML = '<li>Nenhum parceiro frequente ou só fez designações sozinho(a).</li>';
-                }
-
-                if (todosParceirosFrequentes.length > 3) {
-                    link.style.display = 'inline-block';
-                    link.textContent = mostrandoTodosParceirosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosParceirosFrequentes.length})`;
-                } else {
-                    link.style.display = 'none';
-                }
-            }
-            renderListaParceirosPessoa();
-            const linkParceiros = document.getElementById('link-mostrar-todos-parceiros-pessoa');
-            if(linkParceiros) {
-                linkParceiros.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    mostrandoTodosParceirosPessoa = !mostrandoTodosParceirosPessoa;
-                    renderListaParceirosPessoa();
-                });
-            }
-
-            // Card: Verificar Designação Conjunta
-            const pessoasDisponiveisParaConjunta = todasPessoas.filter(p => pessoaSelecionadaAtual && p.id !== pessoaSelecionadaAtual.id && p.estaVisivel !== false).map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-            const elementosDisponiveisParaConjunta = [...new Set(todosElementos.map(el => el.designacao || el.nome))].sort().map(nomeEl => `<option value="${nomeEl}">${nomeEl}</option>`).join('');
-            statsContent.innerHTML += `<div class="stat-card" id="verificacao-conjunta-container"><h4>Verificar Designação Conjunta</h4><label for="select-outra-pessoa">Com:</label><select id="select-outra-pessoa"><option value="">-- Selecione Pessoa --</option>${pessoasDisponiveisParaConjunta}</select><label for="select-elemento-verificacao">Elemento:</label><select id="select-elemento-verificacao"><option value="">-- Selecione Elemento --</option>${elementosDisponiveisParaConjunta}</select><button id="btn-verificar-conjunta">Verificar</button><div id="resultado-verificacao-conjunta"></div></div>`;
-            const btnVerificar = document.getElementById('btn-verificar-conjunta');
-            if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
-
-            // Card: Média de Participações (vs Global)
+            // --- Card: Média de Participações (vs Global) ---
             let mediaGlobalDesignacoes = 0;
             let comparacaoStr = "Não foi possível calcular a média global (dados globais de designações ou pessoas não carregados).";
             const countPessoaAtual = designacoesFiltradas.length;
 
             const filtroMesVal = document.getElementById('filtro-mes')?.value || "";
             const filtroAnoVal = document.getElementById('filtro-ano')?.value || "";
-            const filtroElementoVal = document.getElementById('filtro-elemento')?.value || "";
+            const filtroElementoVal = document.getElementById('filtro-elemento')?.value || ""; // Filtro principal da pessoa
             const filtroSemanaVal = document.getElementById('filtro-semana')?.value || "";
 
             if (todasDesignacoesGlobaisCarregadas && todasPessoas.length > 0) {
@@ -2117,7 +2058,7 @@
                     const matchMes = !filtroMesVal || d.mes === filtroMesVal;
                     const matchAno = !filtroAnoVal || d.ano === filtroAnoVal;
                     const matchElemento = !filtroElementoVal || d.nome === filtroElementoVal;
-                    const matchSemana = !filtroSemanaVal || d.semana === filtroSemanaVal; // Using descriptive week string
+                    const matchSemana = !filtroSemanaVal || d.semana === filtroSemanaVal;
                     return matchMes && matchAno && matchElemento && matchSemana;
                 });
 
@@ -2148,45 +2089,133 @@
                     comparacaoStr = "Nenhuma designação encontrada globalmente para calcular a média com os filtros atuais.";
                 }
             }
-            statsContent.innerHTML += `
+            allCardsHtml += `
                 <div class="stat-card">
                     <h4>Média de Participações (vs Global)</h4>
                     <p style="font-size:0.9em; line-height:1.5;">${comparacaoStr}</p>
                 </div>`;
 
-            // GRÁFICOS
-            statsContent.innerHTML += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
-            if (designacoesChart && typeof designacoesChart.destroy === 'function') designacoesChart.destroy();
-            const labelsElementos = Object.keys(contagemElementos);
-            const dataCountsElementos = Object.values(contagemElementos);
-            if (labelsElementos.length > 0) {
-                designacoesChart = renderChart(designacoesChart, 'designacoesPorElementoChart', 'bar',
-                    { labels: labelsElementos, datasets: [{ label: 'Nº de Designações', data: dataCountsElementos, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] }
-                );
-            } else {
-                const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
-                if (chartContainer) { const canvas = chartContainer.querySelector('canvas'); if (canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico de elementos.</p>"; }
-            }
-
+            // --- GRÁFICOS ---
+            allCardsHtml += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
+            
             const desigPorMes = {};
-            const desigPorSemana = {}; // For descriptive week strings
+            const desigPorSemana = {}; 
             const desigPorAno = {};
 
             designacoesFiltradas.forEach(d => {
                 const mesAnoKey = `${d.ano}-${String(d.mes).padStart(2, '0')}`;
                 desigPorMes[mesAnoKey] = (desigPorMes[mesAnoKey] || 0) + 1;
-
-                if (d.semana) { // Using descriptive week string
+                if (d.semana) { 
                     desigPorSemana[d.semana] = (desigPorSemana[d.semana] || 0) + 1;
                 }
                 desigPorAno[d.ano.toString()] = (desigPorAno[d.ano.toString()] || 0) + 1;
             });
 
-            statsContent.innerHTML += `
+            allCardsHtml += `
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Mês</h4><canvas id="chartDesigPorMes"></canvas></div>
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana (Descritiva)</h4><canvas id="chartDesigPorSemana"></canvas></div>
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Ano</h4><canvas id="chartDesigPorAno"></canvas></div>
             `;
+
+            // Define o innerHTML de statsContent UMA VEZ com todo o HTML acumulado
+            statsContent.innerHTML = allCardsHtml;
+
+            // Agora que o DOM está estável, defina as funções de renderização de lista e anexe os listeners
+
+            // Função para renderizar lista de Elementos Mais Realizados
+            function renderListaElementosPessoaInterna() {
+                const listaUl = document.getElementById('lista-elementos-pessoa');
+                const link = document.getElementById('link-mostrar-todos-elementos-pessoa');
+                if (!listaUl || !link) {
+                    // console.error("renderListaElementosPessoaInterna: UL ou Link não encontrado!");
+                    return;
+                }
+
+                listaUl.innerHTML = '';
+                const dadosParaRenderizar = mostrandoTodosElementosPessoa ? todosElementosRealizadosOriginal : todosElementosRealizadosOriginal.slice(0, 5);
+
+                if (dadosParaRenderizar.length > 0) {
+                    dadosParaRenderizar.forEach(([nome, count]) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${nome}: <span class="stat-value-inline">${count}</span>`;
+                        listaUl.appendChild(li);
+                    });
+                } else {
+                    listaUl.innerHTML = '<li>Nenhum dado de elemento.</li>';
+                }
+
+                if (todosElementosRealizadosOriginal.length > 5) {
+                    link.style.display = 'inline-block';
+                    link.textContent = mostrandoTodosElementosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosElementosRealizadosOriginal.length})`;
+                } else {
+                    link.style.display = 'none';
+                }
+            }
+            renderListaElementosPessoaInterna(); // Renderiza inicialmente
+            const linkElementos = document.getElementById('link-mostrar-todos-elementos-pessoa');
+            if (linkElementos) {
+                linkElementos.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mostrandoTodosElementosPessoa = !mostrandoTodosElementosPessoa;
+                    renderListaElementosPessoaInterna(); // Chama a função interna para re-renderizar
+                });
+            }
+
+            // Função para renderizar lista de Parceiros Mais Frequentes
+            function renderListaParceirosPessoaInterna() {
+                const listaUl = document.getElementById('lista-parceiros-pessoa');
+                const link = document.getElementById('link-mostrar-todos-parceiros-pessoa');
+                if (!listaUl || !link) {
+                    // console.error("renderListaParceirosPessoaInterna: UL ou Link não encontrado!");
+                    return;
+                }
+
+                listaUl.innerHTML = '';
+                const dadosParaRenderizar = mostrandoTodosParceirosPessoa ? todosParceirosFrequentesOriginal : todosParceirosFrequentesOriginal.slice(0, 3);
+
+                if (dadosParaRenderizar.length > 0) {
+                    dadosParaRenderizar.forEach(([nome, count]) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${nome}: <span class="stat-value-inline">${count}</span>`;
+                        listaUl.appendChild(li);
+                    });
+                } else {
+                    listaUl.innerHTML = '<li>Nenhum parceiro frequente ou só fez designações sozinho(a).</li>';
+                }
+
+                if (todosParceirosFrequentesOriginal.length > 3) {
+                    link.style.display = 'inline-block';
+                    link.textContent = mostrandoTodosParceirosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosParceirosFrequentesOriginal.length})`;
+                } else {
+                    link.style.display = 'none';
+                }
+            }
+            renderListaParceirosPessoaInterna(); // Renderiza inicialmente
+            const linkParceiros = document.getElementById('link-mostrar-todos-parceiros-pessoa');
+            if(linkParceiros) {
+                linkParceiros.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    mostrandoTodosParceirosPessoa = !mostrandoTodosParceirosPessoa;
+                    renderListaParceirosPessoaInterna(); // Chama a função interna para re-renderizar
+                });
+            }
+
+            // Listener para Verificar Designação Conjunta
+            const btnVerificar = document.getElementById('btn-verificar-conjunta');
+            if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
+
+            // Renderizar Gráficos
+            if (designacoesChart && typeof designacoesChart.destroy === 'function') designacoesChart.destroy();
+            const labelsElementosChart = Object.keys(contagemElementos); // Usar contagemElementos que já foi calculado
+            const dataCountsElementosChart = Object.values(contagemElementos);
+            if (labelsElementosChart.length > 0) {
+                designacoesChart = renderChart(designacoesChart, 'designacoesPorElementoChart', 'bar',
+                    { labels: labelsElementosChart, datasets: [{ label: 'Nº de Designações', data: dataCountsElementosChart, backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] }
+                );
+            } else {
+                const chartContainer = document.getElementById('designacoesPorElementoChartContainer');
+                if (chartContainer) { const canvas = chartContainer.querySelector('canvas'); if (canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico de elementos.</p>"; }
+            }
 
             const labelsMes = Object.keys(desigPorMes).sort();
             if (labelsMes.length > 0) {
@@ -2197,9 +2226,10 @@
             } else { const el = document.getElementById('chartDesigPorMes'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico mensal.</p>"; }
 
             const labelsSemana = Object.keys(desigPorSemana).sort((a, b) => {
-                const partsA = a.split(' | ')[0];
+                const partsA = a.split(' | ')[0]; // "Semana de DD/MM"
                 const partsB = b.split(' | ')[0];
-                return partsA.localeCompare(partsB);
+                // Pode precisar de uma lógica de ordenação mais robusta se os formatos de semana variarem muito
+                return new Date(partsA.split('/')[2], partsA.split('/')[1]-1, partsA.split('/')[0]) - new Date(partsB.split('/')[2], partsB.split('/')[1]-1, partsB.split('/')[0]) || partsA.localeCompare(partsB);
             });
             if (labelsSemana.length > 0) {
                  designacoesPorSemanaChart = renderChart(designacoesPorSemanaChart, 'chartDesigPorSemana', 'bar', {
@@ -2217,7 +2247,7 @@
                 });
             } else { const el = document.getElementById('chartDesigPorAno'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico anual.</p>"; }
 
-            console.log("renderizarEstatisticas: Estatísticas renderizadas com 'mostrar mais' e média.");
+            console.log("renderizarEstatisticas: Estatísticas renderizadas com HTML único e listeners reatribuídos.");
         }
 
         function verificarDesignacaoConjunta() {
