@@ -606,6 +606,51 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* Styles for the new sub-menu in "Análises Anteriores" tab */
+        .gs-old-submenu-tabs {
+            display: flex;
+            border-bottom: 1px solid #dfe3e8; /* Lighter border for sub-tabs */
+            margin-bottom: 15px; /* Space before the content of the sub-tab */
+            background-color: #f0f2f5; /* Slightly different background for the sub-tab bar */
+            padding: 6px 6px 0 6px;
+            border-radius: 5px 5px 0 0; /* Rounded top corners */
+        }
+
+        .gs-old-submenu-button {
+            padding: 9px 14px; /* Adjust padding as needed */
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 0.9em; /* Slightly smaller font for sub-tabs */
+            margin-right: 4px;
+            border-bottom: 3px solid transparent;
+            color: #555e69;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            transition: background-color 0.2s ease, color 0.2s ease, border-bottom-color 0.2s ease;
+        }
+
+        .gs-old-submenu-button:hover {
+            background-color: #e9ecef;
+            color: #0056b3;
+        }
+
+        .gs-old-submenu-button.active {
+            border-bottom: 3px solid #007bff;
+            font-weight: 600; /* Bolder for active sub-tab */
+            color: #007bff;
+            background-color: #ffffff; /* Make active sub-tab's background match content area */
+        }
+
+        /* Control visibility of the sections within gs-old-content */
+        #gs-old-content > .stats-card-section {
+            display: none; /* Hide all sections by default */
+        }
+
+        #gs-old-content > .stats-card-section.active-submenu-section {
+            display: block; /* Show only the active section */
+        }
     </style>
 </head>
 <body>
@@ -696,7 +741,7 @@
 
             <div class="modal-global-stats-tabs">
                 <button class="global-stats-tab-button active" data-tab-target="gs-total-content">Visão Geral</button>
-                <button class="global-stats-tab-button" data-tab-target="gs-old-content">Análises Anteriores</button> <!-- Para o conteúdo que já existia -->
+                <button class="global-stats-tab-button" data-tab-target="gs-old-content">Análises Anteriores</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-pessoas-content">Pessoas</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-designacoes-content">Designações</button>
             </div>
@@ -801,15 +846,23 @@
                 </div>
             </div>
 
-            <!-- Conteúdo da Aba: Análises Anteriores (o que já existia) -->
+            <!-- Conteúdo da Aba: Análises Anteriores (o que já existia, now with submenu) -->
             <div id="gs-old-content" class="global-stats-tab-content">
-                <div class="stats-card-section">
+                <div class="gs-old-submenu-tabs">
+                    <button class="gs-old-submenu-button active" data-submenu-target="gs-old-sec-top-pessoas">Top Pessoas</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-old-sec-todas-designacoes">Todas Designações</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-old-sec-desempenho-individual">Desempenho Individual</button>
+                </div>
+
+                <div class="stats-card-section active-submenu-section" id="gs-old-sec-top-pessoas">
                     <h4><i class="fas fa-users stats-icon"></i> Pessoas com Mais Designações</h4>
                     <div class="filters-container stats-filters">
                         <label for="gs-top-pessoas-mes">Mês:</label>
                         <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
                         <label for="gs-top-pessoas-ano">Ano:</label>
                         <select id="gs-top-pessoas-ano"><option value="">Todos</option></select>
+                        <label for="gs-top-pessoas-elemento">Elemento:</label>
+                        <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
                         <button id="btn-gs-top-pessoas-aplicar" class="stats-apply-button">
                             <i class="fas fa-search stats-btn-icon"></i> Ver Top
                         </button>
@@ -820,7 +873,7 @@
                         <a href="#" id="gs-top-pessoas-mostrar-todos" class="mostrar-todos-link" style="display:none;">Mostrar lista completa</a>
                     </div>
                 </div>
-                <div class="stats-card-section">
+                <div class="stats-card-section" id="gs-old-sec-todas-designacoes">
                     <h4><i class="fas fa-list-alt stats-icon"></i> Todas as Designações</h4>
                     <div class="filters-container stats-filters">
                         <label for="gs-todas-desig-mes">Mês:</label>
@@ -846,7 +899,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="stats-card-section">
+                <div class="stats-card-section" id="gs-old-sec-desempenho-individual">
                     <h4><i class="fas fa-user-chart stats-icon"></i> Desempenho Individual vs. Média</h4>
                     <div class="filters-container stats-filters">
                         <label for="gs-pessoa-esp-select">Pessoa:</label>
@@ -1061,6 +1114,7 @@
         // Elementos da Aba "Análises Anteriores" (gs-old-content)
         const gsTopPessoasMesSelect = document.getElementById('gs-top-pessoas-mes');
         const gsTopPessoasAnoSelect = document.getElementById('gs-top-pessoas-ano');
+        const gsTopPessoasElementoSelect = document.getElementById('gs-top-pessoas-elemento'); //NOVO
         const btnGsTopPessoasAplicar = document.getElementById('btn-gs-top-pessoas-aplicar');
         const gsTopPessoasListUl = document.getElementById('gs-top-pessoas-list');
         const gsTopPessoasMostrarTodosLink = document.getElementById('gs-top-pessoas-mostrar-todos');
@@ -2615,6 +2669,54 @@
 
         // --- Funções para o NOVO MODAL DE ESTATÍSTICAS GLOBAIS ---
 
+        // --- FUNÇÃO PARA GERENCIAR SUBMENU DA ABA "ANÁLISES ANTERIORES" ---
+        function setupGsOldSubmenu() {
+            const gsOldContentDiv = document.getElementById('gs-old-content');
+            if (!gsOldContentDiv) {
+                console.warn("Div gs-old-content não encontrada para configurar submenu.");
+                return;
+            }
+
+            const submenuButtons = gsOldContentDiv.querySelectorAll('.gs-old-submenu-button');
+            const submenuSections = gsOldContentDiv.querySelectorAll('.stats-card-section'); // Sections to be shown/hidden
+
+            submenuButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    submenuButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetSectionId = button.dataset.submenuTarget;
+                    submenuSections.forEach(section => {
+                        section.classList.remove('active-submenu-section');
+                        if (section.id === targetSectionId) {
+                            section.classList.add('active-submenu-section');
+                        }
+                    });
+                });
+            });
+
+            let activeSubmenuButton = gsOldContentDiv.querySelector('.gs-old-submenu-button.active');
+            if (!activeSubmenuButton && submenuButtons.length > 0) {
+                submenuButtons[0].classList.add('active');
+                activeSubmenuButton = submenuButtons[0];
+            }
+            
+            submenuSections.forEach(section => section.classList.remove('active-submenu-section'));
+            
+            if (activeSubmenuButton) {
+                const targetId = activeSubmenuButton.dataset.submenuTarget;
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active-submenu-section');
+                }
+            } else if (submenuButtons.length > 0 && submenuSections.length > 0) {
+                submenuButtons[0].classList.add('active');
+                const firstTargetId = submenuButtons[0].dataset.submenuTarget;
+                const firstTargetSection = document.getElementById(firstTargetId);
+                if (firstTargetSection) firstTargetSection.classList.add('active-submenu-section');
+            }
+        }
+
         globalStatsTabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
@@ -2630,11 +2732,13 @@
                     atualizarAbaTotalGlobalStats();
                 } else if (targetContentId === 'gs-pessoas-content') {
                     if (gsPessoasSelectMulti && gsPessoasSelectMulti.options.length === 0 && todasPessoas.length > 0) {
-                         popularDropdownsPessoasNosModais(); // Make sure the hidden select is populated
+                         popularDropdownsPessoasNosModais();
                     }
-                    initGsPessoasCustomMultiselect(); // Initialize/re-initialize custom select
+                    initGsPessoasCustomMultiselect();
                 } else if (targetContentId === 'gs-designacoes-content') {
                     popularListaElementosAbaDesignacoes();
+                } else if (targetContentId === 'gs-old-content') {
+                    setupGsOldSubmenu();
                 }
             });
         });
@@ -2710,10 +2814,10 @@
                  if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
 
-            [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect].forEach(select => {
+            [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => { // Adicionado gsTopPessoasElementoSelect
                 if (!select) return;
                 const currentVal = select.value;
-                select.innerHTML = '<option value="">Todos</option>';
+                select.innerHTML = '<option value="">Todos Elementos</option>'; // Default option
                 elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
@@ -3020,11 +3124,13 @@
 
             const mesFiltro = gsTopPessoasMesSelect.value;
             const anoFiltro = gsTopPessoasAnoSelect.value;
+            const elementoFiltro = gsTopPessoasElementoSelect.value; 
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || d.mes === mesFiltro;
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                return matchMes && matchAno;
+                const matchElemento = !elementoFiltro || d.nome === elementoFiltro; 
+                return matchMes && matchAno && matchElemento; 
             });
 
             const contagemPessoas = {};
@@ -3230,26 +3336,29 @@
             btnGlobalStats.addEventListener('click', async () => {
                 console.log("Botão de Estatísticas Globais clicado.");
                 if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
-                if (todasPessoas.length === 0) await carregarPessoas(); // Ensures 'todasPessoas' is populated
+                if (todasPessoas.length === 0) await carregarPessoas(); 
 
                 if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
 
                 popularFiltrosStatsGlobais();
-                popularDropdownsPessoasNosModais(); // Crucial for populating the hidden select for custom multi-select
+                popularDropdownsPessoasNosModais(); 
 
-                // Activate the first tab if none is active, or refresh current
                 const activeTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
                 if (activeTab) {
-                    if (activeTab.dataset.tabTarget === 'gs-total-content') {
+                    const activeTabTargetId = activeTab.dataset.tabTarget;
+                    if (activeTabTargetId === 'gs-total-content') {
                          atualizarAbaTotalGlobalStats();
-                    } else if (activeTab.dataset.tabTarget === 'gs-pessoas-content') {
+                    } else if (activeTabTargetId === 'gs-pessoas-content') {
                          initGsPessoasCustomMultiselect();
-                    } // Add other tabs if they need specific refresh logic
+                    } else if (activeTabTargetId === 'gs-designacoes-content') {
+                        popularListaElementosAbaDesignacoes();
+                    } else if (activeTabTargetId === 'gs-old-content') {
+                        setupGsOldSubmenu();
+                    }
                 } else {
-                    // Default to first tab
                     const firstTabButton = document.querySelector('#modal-global-stats .global-stats-tab-button');
                     if(firstTabButton) {
-                        firstTabButton.click(); // Simulate click to trigger its logic
+                        firstTabButton.click();
                     }
                 }
 
@@ -3263,7 +3372,7 @@
                 if(gsTodasDesigAgrupadoListUl) gsTodasDesigAgrupadoListUl.innerHTML = '';
                 if(gsTodasDesigAgrupadoMostrarTodosLink) gsTodasDesigAgrupadoMostrarTodosLink.style.display = 'none';
                 if(gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = '';
-                if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; // Clear comparison area
+                if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; 
 
                 abrirModal(modalGlobalStats);
             });
@@ -3521,26 +3630,33 @@
             }
             await carregarPessoas();
             await carregarTodosElementosParaEstatisticas();
-            await carregarTodasDesignacoesParaStatsGlobais(); // Carrega todas as designações globais
-            popularDropdownsPessoasNosModais(); // Popula dropdowns que dependem de 'todasPessoas'
+            await carregarTodasDesignacoesParaStatsGlobais(); 
+            popularDropdownsPessoasNosModais(); 
 
-            // Configuração inicial da coluna de detalhes (placeholder)
             if(colunaDetalhesDiv && colunaDetalhesContent){
-                colunaDetalhesDiv.innerHTML = ''; // Limpa qualquer conteúdo prévio
-                colunaDetalhesDiv.appendChild(colunaDetalhesContent); // Adiciona o placeholder
-                colunaDetalhesContent.style.display = 'flex'; // Garante que o placeholder está visível
+                colunaDetalhesDiv.innerHTML = ''; 
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
+                colunaDetalhesContent.style.display = 'flex'; 
             }
 
-            // Configuração inicial da primeira aba do modal de estatísticas globais
             const primeiraAbaBtnGlobal = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button');
             if (primeiraAbaBtnGlobal && !document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active')) {
                 primeiraAbaBtnGlobal.classList.add('active');
                  const targetContentId = primeiraAbaBtnGlobal.dataset.tabTarget;
                  const targetContent = document.getElementById(targetContentId);
                  if (targetContent) targetContent.classList.add('active');
-                 // Chama a função de atualização da aba se necessário
+                 
                  if (targetContentId === 'gs-total-content') atualizarAbaTotalGlobalStats();
                  else if (targetContentId === 'gs-pessoas-content') initGsPessoasCustomMultiselect();
+                 else if (targetContentId === 'gs-designacoes-content') popularListaElementosAbaDesignacoes();
+                 else if (targetContentId === 'gs-old-content') { 
+                    setupGsOldSubmenu();
+                 }
+            } else {
+                const activeMainTab = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active');
+                if (activeMainTab && activeMainTab.dataset.tabTarget === 'gs-old-content') {
+                    setupGsOldSubmenu();
+                }
             }
             console.log("Inicialização concluída.");
         };
