@@ -1212,6 +1212,9 @@
         // Para estatísticas globais - aba "Análises Anteriores"
         let topPessoasDadosCompletos = [];
         let topElementosAgrupadosDadosCompletos = [];
+        let gsTopPessoasMostrandoApenasTop5 = true;
+        let gsTopElementosAgrupadosMostrandoApenasTop5 = true;
+
 
         // Chart instances for Global Stats "Total" Tab
         let gsTotalChartDesignacoesMes = null;
@@ -1259,6 +1262,13 @@
                     applyButton = sectionElement.querySelector('.stats-apply-button');
                 }
             }
+            // Also handle ranking filter specific loading spinner
+            const rankingFiltersContainer = document.getElementById('ranking-filters-container');
+            if (sectionIdPrefix === 'ranking-filtros' && rankingFiltersContainer) { // Custom handling for ranking modal
+                rankingFiltersContainer.style.opacity = isLoading ? "0.5" : "1";
+                rankingFiltersContainer.querySelectorAll('select, button').forEach(el => el.disabled = isLoading);
+            }
+
 
             const resultList = document.getElementById(`${sectionIdPrefix}-list`) || document.getElementById(`${sectionIdPrefix}-tipos-list`);
             const resultText = document.getElementById(`${sectionIdPrefix}-results`);
@@ -1531,8 +1541,9 @@
                         }
                         return;
                     } else {
+                        // Remove 'active' from all tabs except the edit mode toggle
                         document.querySelectorAll('#coluna-detalhes .tab-button:not(#tab-btn-editar-modo)').forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
+                        button.classList.add('active'); // Add active to the clicked content tab
 
                         const historicoContentDiv = document.getElementById('historico-content');
                         const estatisticasContentDiv = document.getElementById('estatisticas-content');
@@ -1606,24 +1617,36 @@
                     const isMobile = window.innerWidth <= 768;
 
                     if (!isMobile) {
-                        filtrosPessoaContainer.classList.remove('filtros-visiveis'); // Garante que esteja visível por padrão em desktop
+                        // On desktop, ensure filters are visible and button is reset
+                        filtrosPessoaContainer.classList.remove('filtros-visiveis'); // This class makes it hidden in mobile-first CSS
+                        filtrosPessoaContainer.style.maxHeight = ""; // Remove inline style if any
+                        filtrosPessoaContainer.style.opacity = "";
+                        filtrosPessoaContainer.style.paddingTop = "";
+                        filtrosPessoaContainer.style.paddingBottom = "";
+                        filtrosPessoaContainer.style.marginBottom = "";
+
                         btnToggleFiltrosPessoa.classList.remove('active');
+                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros"; // Default text
+                        if (btnToggleIconElement) {
+                             btnToggleIconElement.classList.remove('fa-chevron-up');
+                             btnToggleIconElement.classList.add('fa-chevron-down');
+                        }
                         return;
                     }
-                    // Em mobile, respeita o estado atual (se já foi aberto ou está colapsado)
+                    // In mobile, respect the current state (if already opened by user or default collapsed)
                     const isCurrentlyVisible = filtrosPessoaContainer.classList.contains('filtros-visiveis');
                     btnToggleFiltrosPessoa.classList.toggle('active', isCurrentlyVisible);
 
                     if (isCurrentlyVisible) {
                         if (btnTextElement) btnTextElement.textContent = "Ocultar Filtros";
                         if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-down'); btnToggleIconElement.classList.add('fa-chevron-up');}
-                    } else { // Colapsado por padrão em mobile
+                    } else { // Collapsed by default in mobile
                         if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros";
                         if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-up'); btnToggleIconElement.classList.add('fa-chevron-down');}
                     }
                 }
-                adjustFilterDisplayOnLoadOrResize(); // Chama na criação da estrutura
-                window.addEventListener('resize', adjustFilterDisplayOnLoadOrResize); // E ajusta ao redimensionar a janela
+                adjustFilterDisplayOnLoadOrResize(); // Call on structure creation
+                window.addEventListener('resize', adjustFilterDisplayOnLoadOrResize); // Adjust on window resize
             }
         }
 
@@ -1640,42 +1663,36 @@
             const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a, b) => b - a);
             const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a, b) => a.localeCompare(b));
 
+            // Usar 'semana' descritiva se disponível, senão 'semanaISO'
             const semanasUnicasComDatas = designacoesDaPessoaAtual
-                .filter(d => d.semana && typeof d.semana === 'string')
+                .filter(d => (d.semana && typeof d.semana === 'string') || d.semanaISO) // Ensure one of them exists
                 .map(d => ({
-                    semanaStr: d.semana,
+                    valorSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`, // Fallback to ISO if descriptive not present
+                    textoSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`, // Display text
                     ano: parseInt(d.ano),
                     mes: parseInt(d.mes),
                     dia: parseInt(d.dia)
                 }))
-                .reduce((acc, current) => {
-                    const existing = acc.find(item => item.semanaStr === current.semanaStr);
-                    if (!existing) {
+                .reduce((acc, current) => { // Remove duplicatas baseadas no 'valorSemana'
+                    if (!acc.find(item => item.valorSemana === current.valorSemana)) {
                         acc.push(current);
-                    } else {
-                        const currentDate = new Date(current.ano, current.mes - 1, current.dia);
-                        const existingDate = new Date(existing.ano, existing.mes - 1, existing.dia);
-                        if (currentDate < existingDate) {
-                            existing.ano = current.ano;
-                            existing.mes = current.mes;
-                            existing.dia = current.dia;
-                        }
                     }
                     return acc;
                 }, [])
-                .sort((a, b) => {
+                .sort((a, b) => { // Ordena pela data de início da semana
                     const dateA = new Date(a.ano, a.mes - 1, a.dia);
                     const dateB = new Date(b.ano, b.mes - 1, b.dia);
                     return dateA - dateB;
                 });
 
-            const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.semanaStr}">${item.semanaStr}</option>`).join('');
+
+            const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.valorSemana}">${item.textoSemana}</option>`).join('');
 
             filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
             filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
 
-            console.log("popularFiltros: Filtros de detalhes populados com semanas descritivas.");
+            console.log("popularFiltros: Filtros de detalhes populados.");
         }
 
         function aplicarEAtualizarFiltros() {
@@ -1688,20 +1705,21 @@
             const mes = mesEl ? mesEl.value : "";
             const ano = anoEl ? anoEl.value : "";
             const elemento = elemEl ? elemEl.value : "";
-            const semana = semanaEl ? semanaEl.value : "";
+            const semana = semanaEl ? semanaEl.value : ""; // This will be the descriptive week string or ISO week string
 
             designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
                 const matchMes = !mes || d.mes === mes;
                 const matchAno = !ano || d.ano === ano;
                 const matchElemento = !elemento || d.nome === elemento;
-                const matchSemana = !semana || d.semana === semana;
+                // Match 'semana' (descriptive) if available, otherwise 'semanaISO' (if descriptive not available)
+                const matchSemana = !semana || (d.semana === semana) || (!d.semana && d.semanaISO && `Semana ISO ${d.semanaISO} (${d.ano})` === semana);
                 return matchMes && matchAno && matchElemento && matchSemana;
             });
 
-            const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)'); // Ensure we don't pick the edit mode button
+            const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)');
             if (activeTabButton?.dataset.tab === 'historico') renderizarHistorico();
             else if (activeTabButton?.dataset.tab === 'estatisticas') renderizarEstatisticas();
-            else if (document.getElementById('historico-content')?.classList.contains('active')) renderizarHistorico(); // Fallback if no content tab explicitly active
+            else if (document.getElementById('historico-content')?.classList.contains('active')) renderizarHistorico();
         }
 
         function limparEAtualizarFiltros() {
@@ -1727,16 +1745,19 @@
                 return;
             }
             const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
-                const valA = parseInt(a.ano) * 10000 + parseInt(a.mes) * 100 + parseInt(a.dia);
-                const valB = parseInt(b.ano) * 10000 + parseInt(b.mes) * 100 + parseInt(b.dia);
-                return valB - valA;
+                // Use Date objects for robust sorting
+                const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
+                const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0; // Handle invalid dates
+                return dateB - dateA; // Sort descending (most recent first)
             });
+
 
             const ul = document.createElement('ul');
             let currentMonthYearForColor = null;
-            let currentWeekForColor = null;
+            let currentWeekForColor = null; // This will store the descriptive week string or ISO week if descriptive not available
             let colorIndex = 0;
-            const weekColors = ['#f8f9fa', '#e9ecef'];
+            const weekColors = ['#f8f9fa', '#e9ecef']; // Light gray, slightly darker gray
 
             let mesAnoAtualSeparador = null;
             let primeiroSeparadorAdicionado = false;
@@ -1757,9 +1778,9 @@
                     }
                     separadorLi.textContent = nomeMesAnoSeparador.charAt(0).toUpperCase() + nomeMesAnoSeparador.slice(1);
                     ul.appendChild(separadorLi);
-                    currentMonthYearForColor = `${desig.mes}/${desig.ano}`;
-                    currentWeekForColor = null;
-                    colorIndex = 0;
+                    currentMonthYearForColor = `${desig.mes}/${desig.ano}`; // For resetting color logic per month
+                    currentWeekForColor = null; // Reset week tracking for new month
+                    colorIndex = 0; // Reset color index for new month
                 }
 
                 const li = document.createElement('li');
@@ -1767,28 +1788,18 @@
                 li.style.justifyContent = 'space-between';
                 li.style.alignItems = 'center';
 
-                const desigMonthYear = `${desig.mes}/${desig.ano}`;
-                if (desig.semanaISO) { // Still use semanaISO for coloring if available
-                    if (currentMonthYearForColor !== desigMonthYear) {
-                        currentMonthYearForColor = desigMonthYear;
-                        currentWeekForColor = desig.semanaISO;
-                        colorIndex = 0;
-                    } else if (currentWeekForColor !== desig.semanaISO) {
-                        currentWeekForColor = desig.semanaISO;
-                        colorIndex = (colorIndex + 1) % weekColors.length;
-                    }
-                    li.style.backgroundColor = weekColors[colorIndex];
-                } else if (desig.semana) { // Fallback to descriptive week for coloring
-                     if (currentMonthYearForColor !== desigMonthYear) {
-                        currentMonthYearForColor = desigMonthYear;
-                        currentWeekForColor = desig.semana; // Use the string itself
-                        colorIndex = 0;
-                    } else if (currentWeekForColor !== desig.semana) {
-                        currentWeekForColor = desig.semana;
-                        colorIndex = (colorIndex + 1) % weekColors.length;
-                    }
-                    li.style.backgroundColor = weekColors[colorIndex];
+                // Determine the week string to use for coloring
+                const weekIdentifier = desig.semana || (desig.semanaISO ? `ISO-${desig.semanaISO}-${desig.ano}` : `UnknownWeek-${desig.data}`);
+
+                if (currentMonthYearForColor !== `${desig.mes}/${desig.ano}`) { // Should not happen if month separator logic is correct
+                    currentMonthYearForColor = `${desig.mes}/${desig.ano}`;
+                    currentWeekForColor = weekIdentifier;
+                    colorIndex = 0;
+                } else if (currentWeekForColor !== weekIdentifier) {
+                    currentWeekForColor = weekIdentifier;
+                    colorIndex = (colorIndex + 1) % weekColors.length;
                 }
+                li.style.backgroundColor = weekColors[colorIndex];
 
 
                 const nomeElementoDesig = desig.nome;
@@ -1812,6 +1823,15 @@
                 if (participantesString) {
                     textoFinal += `: ${participantesString}`;
                 }
+                 // Add "Orador Público" specific info
+                if (desig.nome === "Orador Público" && (desig.tema || desig.congregacao)) {
+                    textoFinal += ` (`;
+                    if (desig.tema) textoFinal += `Tema: ${desig.tema}`;
+                    if (desig.tema && desig.congregacao) textoFinal += `; `;
+                    if (desig.congregacao) textoFinal += `Cong: ${desig.congregacao}`;
+                    textoFinal += `)`;
+                }
+
 
                 const textSpan = document.createElement('span');
                 textSpan.textContent = textoFinal;
@@ -1828,10 +1848,12 @@
             });
 
             if (ul.childNodes.length > 0) {
-                const ultimoItemDeDesignacao = Array.from(ul.childNodes).reverse().find(node => node.querySelector('span') && !node.classList.contains('month-separator'));
-                if (ultimoItemDeDesignacao) ultimoItemDeDesignacao.style.borderBottom = 'none';
+                 const ultimoItemDeDesignacaoReal = Array.from(ul.childNodes).filter(node => !node.classList.contains('month-separator')).pop();
+                if (ultimoItemDeDesignacaoReal) {
+                    ultimoItemDeDesignacaoReal.style.borderBottom = 'none';
+                }
                 historicoContent.appendChild(ul);
-            } else if (designacoesFiltradas.length > 0) {
+            } else if (designacoesFiltradas.length > 0) { // Should not happen if filtering leads to 0 results
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Erro ao exibir histórico.</p>';
             }
             console.log("renderizarHistorico: Histórico renderizado.");
@@ -1902,7 +1924,10 @@
 
                 if (!id) { alert("Erro: ID da designação não encontrado."); return; }
                 if (!nomeElemento) { alert("Selecione um elemento."); return; }
-                if (!pA && !pB && !pC) { alert("Selecione pelo menos uma pessoa."); return; }
+                if (!pA && !pB && !pC && nomeElemento !== "Orador Público") { // Orador público pode não ter pessoa local
+                     alert("Selecione pelo menos uma pessoa para designações que não sejam 'Orador Público'.");
+                     return;
+                }
                 if (!dataStr.match(/\d{2}\/\d{2}\/\d{4}/)) { alert("Formato de data inválido. Use DD/MM/AAAA."); return; }
 
                 const [dia, mes, ano] = dataStr.split('/');
@@ -1935,12 +1960,19 @@
                     ano: ano,
                     ultimaModificacao: serverTimestamp()
                 };
-                 // Manter o campo 'semana' (descritivo)
+                // Manter o campo 'semana' (descritivo)
+                // Se a data mudou, a string 'semana' PODE precisar ser recalculada.
+                // Por agora, vamos manter a lógica de semanaISO e se a string 'semana' existir, ela será mantida
+                // ou atualizada se a função 'gerarStringSemanaDescritiva' for implementada e chamada.
                 if (designacaoAtualParaEdicao && designacaoAtualParaEdicao.semana) {
-                    if (designacaoAtualParaEdicao.data !== dataStr) {
-                        // Se data mudou, idealmente recalcular 'semana'. Por simplicidade, mantemos ou limpamos.
-                        // console.warn("Data da designação alterada. O campo 'semana' descritivo pode precisar ser ajustado.");
-                        // updateData.semana = gerarStringSemanaDescritiva(new Date(ano, mes-1, dia)); // Se tiver essa função
+                     if (designacaoAtualParaEdicao.data !== dataStr) {
+                        // Idealmente, recalcular 'semana' aqui se a lógica existir.
+                        // Ex: updateData.semana = gerarStringSemanaDescritiva(new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia)));
+                        // Por simplicidade, se a data muda, a antiga string 'semana' pode ficar dessincronizada.
+                        // Ou você pode optar por removê-la ou limpá-la se a data mudar.
+                        console.warn("Data alterada, a string 'semana' descritiva pode não corresponder mais se não for recalculada.");
+                        // Para este exemplo, vamos manter a existente se não for recalculada
+                        updateData.semana = designacaoAtualParaEdicao.semana; // Or set to null, or recalculate
                     } else {
                          updateData.semana = designacaoAtualParaEdicao.semana;
                     }
@@ -1974,7 +2006,7 @@
                     alert("Designação atualizada com sucesso!");
                     fecharModal(modalEditarDesignacao);
 
-                    await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id);
+                    await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id); // Recarrega dados da pessoa atual
                     todasDesignacoesGlobaisCarregadas = false; // Forçar recarregamento das stats globais se necessário
 
                 } catch (error) {
@@ -2058,7 +2090,9 @@
                     const matchMes = !filtroMesVal || d.mes === filtroMesVal;
                     const matchAno = !filtroAnoVal || d.ano === filtroAnoVal;
                     const matchElemento = !filtroElementoVal || d.nome === filtroElementoVal;
-                    const matchSemana = !filtroSemanaVal || d.semana === filtroSemanaVal;
+                     // Match 'semana' (descriptive) or 'semanaISO' based on how filtroSemanaVal is structured
+                    const matchSemana = !filtroSemanaVal || (d.semana === filtroSemanaVal) || (!d.semana && d.semanaISO && `Semana ISO ${d.semanaISO} (${d.ano})` === filtroSemanaVal);
+
                     return matchMes && matchAno && matchElemento && matchSemana;
                 });
 
@@ -2105,15 +2139,17 @@
             designacoesFiltradas.forEach(d => {
                 const mesAnoKey = `${d.ano}-${String(d.mes).padStart(2, '0')}`;
                 desigPorMes[mesAnoKey] = (desigPorMes[mesAnoKey] || 0) + 1;
-                if (d.semana) { 
-                    desigPorSemana[d.semana] = (desigPorSemana[d.semana] || 0) + 1;
+                // Use 'semana' (descriptive) if available for chart label, otherwise use 'semanaISO'
+                const semanaLabel = d.semana || (d.semanaISO ? `ISO ${d.semanaISO} (${d.ano})` : "Semana Desconhecida");
+                if (semanaLabel !== "Semana Desconhecida") {
+                    desigPorSemana[semanaLabel] = (desigPorSemana[semanaLabel] || 0) + 1;
                 }
                 desigPorAno[d.ano.toString()] = (desigPorAno[d.ano.toString()] || 0) + 1;
             });
 
             allCardsHtml += `
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Mês</h4><canvas id="chartDesigPorMes"></canvas></div>
-                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana (Descritiva)</h4><canvas id="chartDesigPorSemana"></canvas></div>
+                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana</h4><canvas id="chartDesigPorSemana"></canvas></div>
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Ano</h4><canvas id="chartDesigPorAno"></canvas></div>
             `;
 
@@ -2224,18 +2260,32 @@
                     datasets: [{ label: 'Nº Designações', data: labelsMes.map(k => desigPorMes[k]), backgroundColor: 'rgba(75, 192, 192, 0.2)', borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 }]
                 });
             } else { const el = document.getElementById('chartDesigPorMes'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico mensal.</p>"; }
-
-            const labelsSemana = Object.keys(desigPorSemana).sort((a, b) => {
-                const partsA = a.split(' | ')[0]; // "Semana de DD/MM"
-                const partsB = b.split(' | ')[0];
-                // Pode precisar de uma lógica de ordenação mais robusta se os formatos de semana variarem muito
-                return new Date(partsA.split('/')[2], partsA.split('/')[1]-1, partsA.split('/')[0]) - new Date(partsB.split('/')[2], partsB.split('/')[1]-1, partsB.split('/')[0]) || partsA.localeCompare(partsB);
+            
+            // Sort week labels if they are descriptive (e.g., "Maio 2025 | 5 - 11")
+             const labelsSemana = Object.keys(desigPorSemana).sort((a, b) => {
+                const parseWeekString = (weekStr) => {
+                    if (weekStr.startsWith("ISO")) { // "ISO 19 (2025)"
+                        const isoParts = weekStr.match(/ISO\s*(\d+)\s*\((\d{4})\)/);
+                        if (isoParts) return new Date(parseInt(isoParts[2]), 0, (parseInt(isoParts[1]) -1) * 7 + 1); // Approx start date
+                        return new Date(0); // Invalid
+                    }
+                    // "Maio 2025 | 5 - 11"
+                    const descParts = weekStr.match(/^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})/i);
+                     const monthMap = { 'janeiro':0,'fevereiro':1,'março':2,'abril':3,'maio':4,'junho':5,'julho':6,'agosto':7,'setembro':8,'outubro':9,'novembro':10,'dezembro':11};
+                    if (descParts) {
+                        const monthNum = monthMap[descParts[1].toLowerCase()];
+                        if (monthNum !== undefined) return new Date(parseInt(descParts[2]), monthNum, parseInt(descParts[3]));
+                    }
+                    return new Date(0); // Invalid or unparseable
+                };
+                return parseWeekString(a) - parseWeekString(b);
             });
+
             if (labelsSemana.length > 0) {
                  designacoesPorSemanaChart = renderChart(designacoesPorSemanaChart, 'chartDesigPorSemana', 'bar', {
                     labels: labelsSemana,
                     datasets: [{ label: 'Nº Designações', data: labelsSemana.map(k => desigPorSemana[k]), backgroundColor: 'rgba(153, 102, 255, 0.2)', borderColor: 'rgba(153, 102, 255, 1)'}]
-                }, { scales: { x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 45 } } } });
+                }, { scales: { x: { ticks: { autoSkip: labelsSemana.length > 15, maxRotation: labelsSemana.length > 10 ? 90 : 0, minRotation: labelsSemana.length > 10 ? 45 : 0 } } } });
             } else { const el = document.getElementById('chartDesigPorSemana'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico semanal.</p>"; }
 
 
@@ -2450,7 +2500,10 @@
                 const dataStr = dataDesignacaoInput.value;
 
                 if (!nomeElemento) { alert("Selecione um elemento."); return; }
-                if (!pA && !pB && !pC) { alert("Selecione pelo menos uma pessoa."); return; }
+                 if (!pA && !pB && !pC && nomeElemento !== "Orador Público") { // Orador público pode não ter pessoa local
+                     alert("Selecione pelo menos uma pessoa para designações que não sejam 'Orador Público'.");
+                     return;
+                }
                 if (!dataStr.match(/\d{2}\/\d{2}\/\d{4}/)) { alert("Formato de data inválido. Use DD/MM/AAAA."); return; }
 
                 const [dia, mes, ano] = dataStr.split('/');
@@ -2465,7 +2518,8 @@
                 }
                 const elementoOriginalObj = todosElementos.find(el => (el.designacao || el.nome) === nomeElemento);
                 if (!elementoOriginalObj) {
-                    alert("Elemento selecionado não encontrado na base de dados de elementos."); return;
+                    alert("Elemento selecionado não encontrado na base de dados de elementos.");
+                    return;
                 }
 
 
@@ -2476,11 +2530,13 @@
                     participantes: participantes, data: dataStr, dia: dia.padStart(2, '0'),
                     mes: mes.padStart(2, '0'), ano: ano, criadoEm: serverTimestamp()
                 };
-                // Adicionar semanaISO
+                 // Adicionar semanaISO
                 try {
                     const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                      if (!isNaN(dateObj.getTime())) {
                         designacaoData.semanaISO = getISOWeek(dateObj);
+                        // Potentially add descriptive 'semana' string here if logic is available
+                        // designacaoData.semana = gerarStringSemanaDescritiva(dateObj);
                      } else {
                         console.warn("Data inválida ao criar designação, semanaISO não será definida:", dataStr);
                         designacaoData.semanaISO = null;
@@ -2489,6 +2545,18 @@
                      console.warn("Erro ao calcular semanaISO na criação da designação:", error);
                      designacaoData.semanaISO = null;
                 }
+                // Add Orador Público specific fields if applicable
+                if (nomeElemento === "Orador Público") {
+                    // These fields would ideally be in the "Criar Designação" modal if needed at creation time
+                    // For now, assuming they are not part of the creation form for simplicity,
+                    // but they are handled in the edit form.
+                    // If you add them to the creation modal, get their values here:
+                    // const temaOradorInput = document.getElementById('tema-orador-criar-modal');
+                    // const congregacaoOradorInput = document.getElementById('congregacao-orador-criar-modal');
+                    // if (temaOradorInput) designacaoData.tema = temaOradorInput.value.trim() || null;
+                    // if (congregacaoOradorInput) designacaoData.congregacao = congregacaoOradorInput.value.trim() || null;
+                }
+
 
                 try {
                     await addDoc(collection(db, "designacoes"), designacaoData);
@@ -2587,6 +2655,11 @@
                 console.warn("Elementos do custom multi-select de pessoas não encontrados.");
                 return;
             }
+             // Ensure gsPessoasSelectMulti is populated if it's empty but todasPessoas has data
+            if (gsPessoasSelectMulti.options.length === 0 && todasPessoas.length > 0) {
+                popularDropdownsPessoasNosModais(); // This should populate gsPessoasSelectMulti
+            }
+
 
             availablePessoasForCustomSelect = Array.from(gsPessoasSelectMulti.options).map(opt => ({
                 id: opt.value,
@@ -2600,7 +2673,7 @@
             gsPessoasSearchInputCustom.addEventListener('focus', openDropdownAndRender);
 
             // Clear previous selections in the hidden select and update visual tags
-            Array.from(gsPessoasSelectMulti.options).forEach(opt => opt.selected = false);
+            // Array.from(gsPessoasSelectMulti.options).forEach(opt => opt.selected = false); // Don't clear on tab switch
             updateSelectedPessoasTagsDisplay();
         }
 
@@ -2633,7 +2706,13 @@
                 li.textContent = 'Nenhuma pessoa encontrada.';
                 li.style.color = '#777';
                 ul.appendChild(li);
-            } else {
+            } else if (filteredPessoas.length === 0 && !searchTerm && availablePessoasForCustomSelect.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'Nenhuma pessoa disponível.';
+                li.style.color = '#777';
+                ul.appendChild(li);
+            }
+            else {
                  filteredPessoas.forEach(pessoa => {
                     const li = document.createElement('li');
                     li.textContent = pessoa.nome;
@@ -2708,7 +2787,7 @@
             }
 
             const submenuButtons = gsOldContentDiv.querySelectorAll('.gs-old-submenu-button');
-            const submenuSections = gsOldContentDiv.querySelectorAll('.stats-card-section'); // Sections to be shown/hidden
+            const submenuSections = gsOldContentDiv.querySelectorAll('#gs-old-content > .stats-card-section'); // More specific selector
 
             submenuButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -2724,26 +2803,24 @@
                     });
                 });
             });
-
+            
+            // Ensure one sub-tab is active by default if none are explicitly set
             let activeSubmenuButton = gsOldContentDiv.querySelector('.gs-old-submenu-button.active');
             if (!activeSubmenuButton && submenuButtons.length > 0) {
-                submenuButtons[0].classList.add('active');
+                submenuButtons[0].classList.add('active'); // Make first button active
                 activeSubmenuButton = submenuButtons[0];
             }
             
+            // Hide all sections first
             submenuSections.forEach(section => section.classList.remove('active-submenu-section'));
             
+            // Then show the one corresponding to the (now) active button
             if (activeSubmenuButton) {
                 const targetId = activeSubmenuButton.dataset.submenuTarget;
                 const targetSection = document.getElementById(targetId);
                 if (targetSection) {
                     targetSection.classList.add('active-submenu-section');
                 }
-            } else if (submenuButtons.length > 0 && submenuSections.length > 0) {
-                submenuButtons[0].classList.add('active');
-                const firstTargetId = submenuButtons[0].dataset.submenuTarget;
-                const firstTargetSection = document.getElementById(firstTargetId);
-                if (firstTargetSection) firstTargetSection.classList.add('active-submenu-section');
             }
         }
 
@@ -2761,10 +2838,7 @@
                 if (targetContentId === 'gs-total-content') {
                     atualizarAbaTotalGlobalStats();
                 } else if (targetContentId === 'gs-pessoas-content') {
-                    if (gsPessoasSelectMulti && gsPessoasSelectMulti.options.length === 0 && todasPessoas.length > 0) {
-                         popularDropdownsPessoasNosModais();
-                    }
-                    initGsPessoasCustomMultiselect();
+                     initGsPessoasCustomMultiselect(); // Ensure it's initialized when tab becomes active
                 } else if (targetContentId === 'gs-designacoes-content') {
                     popularListaElementosAbaDesignacoes();
                 } else if (targetContentId === 'gs-old-content') {
@@ -2798,11 +2872,11 @@
                              if (!isNaN(dateObj.getTime())) {
                                 data.semanaISO = getISOWeek(dateObj);
                             } else {
-                                console.warn("Data inválida para designação global, semanaISO não calculada:", data.data, docSnap.id);
+                                // console.warn("Data inválida para designação global, semanaISO não calculada:", data.data, docSnap.id);
                                 data.semanaISO = null;
                             }
                         } catch (e) {
-                            console.warn("Erro ao converter data para semanaISO (global):", data.data, docSnap.id, e);
+                            // console.warn("Erro ao converter data para semanaISO (global):", data.data, docSnap.id, e);
                             data.semanaISO = null;
                         }
                     }
@@ -2819,14 +2893,20 @@
 
         function popularFiltrosStatsGlobais() {
             if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
-            if (todosElementos.length === 0) return;
-            if (todasPessoas.length === 0) return;
+            if (todosElementos.length === 0 && !document.getElementById('gs-total-filtro-elemento-tipo')) { /* If no elements, can't populate element filters*/ }
+            if (todasPessoas.length === 0 && !document.getElementById('gs-pessoa-esp-select')) { /* If no people, can't populate people filters */ }
 
-            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes))].sort((a,b) => parseInt(a) - parseInt(b));
-            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano))].sort((a, b) => parseInt(b) - parseInt(a));
-            const elementosNomes = [...new Set(todosElementos.map(el => el.designacao || el.nome))].sort((a,b) => a.localeCompare(b));
 
-            const getNomeMes = (numMes) => new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
+            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+            const elementosNomes = todosElementos.length > 0 ? [...new Set(todosElementos.map(el => el.designacao || el.nome))].sort((a,b) => a.localeCompare(b)) : [];
+
+            const getNomeMes = (numMes) => {
+                if (!numMes) return "";
+                try {
+                    return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+                } catch(e) { return "";}
+            }
 
             [gsTopPessoasMesSelect, gsTodasDesigMesSelect, gsPessoaEspMesFiltroSelect, gsTotalFiltroMesSelect, gsPessoasFiltroMesSelect, gsDesignacoesFiltroMesSelect].forEach(select => {
                 if (!select) return;
@@ -2866,7 +2946,11 @@
         async function atualizarAbaTotalGlobalStats() {
             if (!todasDesignacoesGlobaisCarregadas) {
                 await carregarTodasDesignacoesParaStatsGlobais();
-                if (!todasDesignacoesGlobaisCarregadas) return;
+                if (!todasDesignacoesGlobaisCarregadas) {
+                     gsTotalNumDesignacoesSpan.textContent = "-"; // Indicate data not loaded
+                     // Clear other fields as well
+                    return;
+                }
             }
              setSectionLoadingState('gs-total-elementos', true);
 
@@ -2875,7 +2959,7 @@
 
             const designacoesFiltradas = todasDesignacoesGlobais.filter(d => {
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 return matchAno && matchMes;
             });
 
@@ -2900,14 +2984,14 @@
             gsTotalNumDesigItSpan.textContent = countIt;
             gsTotalNumDesigOutroIdiomaSpan.textContent = countOutroIdioma;
 
-            renderListaTiposDesignacaoTotal();
+            renderListaTiposDesignacaoTotal(); // This filters elements based on another dropdown
 
             const dadosGraficoTotal = {};
             const dadosGraficoGenero = { Masculino: {}, Feminino: {} };
             const dadosGraficoIdioma = { Português: {}, Italiano: {}, Outro: {} };
 
             designacoesFiltradas.forEach(d => {
-                const chaveMesAno = `${d.ano}-${d.mes}`;
+                const chaveMesAno = `${d.ano}-${String(d.mes).padStart(2,'0')}`; // Ensure month is padded
                 dadosGraficoTotal[chaveMesAno] = (dadosGraficoTotal[chaveMesAno] || 0) + 1;
 
                 Object.keys(d.participantes || {}).forEach(nomeParticipante => {
@@ -2948,7 +3032,7 @@
                 ]}, { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } }
             );
 
-            const numMesesConsiderados = sortedLabels.length || 1;
+            const numMesesConsiderados = sortedLabels.length || 1; // Avoid division by zero
             gsTotalMediaDesignacoesSpan.textContent = (designacoesFiltradas.length / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigMascSpan.textContent = (countMasc / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigFemSpan.textContent = (countFem / numMesesConsiderados).toFixed(1);
@@ -2960,40 +3044,64 @@
         }
 
         function renderListaTiposDesignacaoTotal() {
+             if (!gsTotalFiltroElementoTipoSelect || !gsTotalElementosListUl || !gsTotalElementosCountSpan || !gsTotalElementosLoading) {
+                console.warn("Elementos da lista de tipos de designação na aba Total não encontrados.");
+                return;
+            }
             setSectionLoadingState('gs-total-elementos', true);
             const tipoReuniaoFiltro = gsTotalFiltroElementoTipoSelect.value;
+            const anoFiltroGlobal = gsTotalFiltroAnoSelect.value; // Get global year filter
+            const mesFiltroGlobal = gsTotalFiltroMesSelect.value; // Get global month filter
 
-            const elementosFiltrados = todosElementos.filter(el => {
+
+            const elementosFiltradosPorTipo = todosElementos.filter(el => {
                 if (tipoReuniaoFiltro && el.tipo === 'reuniao') {
                     return el.generoReuniao === tipoReuniaoFiltro;
                 }
-                if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false;
-                return true;
+                if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false; // If filter is for a meeting type, non-meeting elements are out
+                return true; // If no tipoReuniaoFiltro, or element is not 'reuniao' and filter is not for 'reuniao'
             });
 
             gsTotalElementosListUl.innerHTML = '';
-            gsTotalElementosCountSpan.textContent = elementosFiltrados.length;
+            let countElementosExibidos = 0;
 
-            if (elementosFiltrados.length === 0) {
-                setSectionLoadingState('gs-total-elementos', false);
-                return;
+            if (elementosFiltradosPorTipo.length === 0) {
+                // gsTotalElementosListUl.innerHTML = '<li>Nenhum tipo de elemento corresponde ao filtro de reunião.</li>';
+            } else {
+                 elementosFiltradosPorTipo.forEach(el => {
+                    const nomeEl = el.designacao || el.nome;
+                    // Count occurrences of this element within the globally filtered designações (by year/month)
+                    const countDesigElemento = todasDesignacoesGlobais.filter(d => {
+                        const matchAno = !anoFiltroGlobal || d.ano === anoFiltroGlobal;
+                        const matchMes = !mesFiltroGlobal || String(d.mes).padStart(2,'0') === String(mesFiltroGlobal).padStart(2,'0');
+                        return d.nome === nomeEl && matchAno && matchMes;
+                    }).length;
+
+                    if (countDesigElemento > 0 || !tipoReuniaoFiltro) { // Show if has occurrences or if no type filter (shows all elements)
+                        const li = document.createElement('li');
+                        li.classList.add('clickable');
+                        li.innerHTML = `${nomeEl} <span class="count">${countDesigElemento} ocorrências</span>`;
+                        li.addEventListener('click', () => abrirModalInstancias(nomeEl)); // abrirModalInstancias will use its own filters or global ones
+                        gsTotalElementosListUl.appendChild(li);
+                        countElementosExibidos++;
+                    }
+                });
+            }
+            gsTotalElementosCountSpan.textContent = countElementosExibidos;
+             if (countElementosExibidos === 0 && (tipoReuniaoFiltro || anoFiltroGlobal || mesFiltroGlobal)) {
+                // gsTotalElementosListUl.innerHTML = '<li>Nenhum elemento com ocorrências para os filtros atuais.</li>';
+                // The :empty::before pseudo-element should handle this now.
             }
 
-            elementosFiltrados.forEach(el => {
-                const nomeEl = el.designacao || el.nome;
-                const countDesigElemento = todasDesignacoesGlobais.filter(d => d.nome === nomeEl).length;
-
-                const li = document.createElement('li');
-                li.classList.add('clickable');
-                li.innerHTML = `${nomeEl} <span class="count">${countDesigElemento} ocorrências</span>`;
-                li.addEventListener('click', () => abrirModalInstancias(nomeEl));
-                gsTotalElementosListUl.appendChild(li);
-            });
             setSectionLoadingState('gs-total-elementos', false);
         }
 
         async function compararPessoasSelecionadas() {
             setSectionLoadingState('gs-pessoas', true, 'btn-gs-pessoas-comparar');
+            if (!gsPessoasSelectMulti || !gsPessoasComparisonAreaDiv) {
+                 setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
+                return;
+            }
 
             const idsPessoasSelecionadas = Array.from(gsPessoasSelectMulti.selectedOptions).map(opt => opt.value);
             if (idsPessoasSelecionadas.length === 0) {
@@ -3004,9 +3112,9 @@
 
             const anoFiltro = gsPessoasFiltroAnoSelect.value;
             const mesFiltro = gsPessoasFiltroMesSelect.value;
-            const semanaFiltro = gsPessoasFiltroSemanaInput.value;
-            const generoFiltro = gsPessoasFiltroGeneroSelect.value;
-            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value;
+            const semanaFiltro = gsPessoasFiltroSemanaInput.value; // This is ISO week number
+            const generoFiltro = gsPessoasFiltroGeneroSelect.value; // Filters based on person's gender
+            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value; // Filters based on person's language
 
             gsPessoasComparisonAreaDiv.innerHTML = '';
 
@@ -3014,25 +3122,30 @@
                 const pessoaObj = getPessoaById(pessoaId);
                 if (!pessoaObj) continue;
 
+                // Apply gender/language filters for the person *before* iterating designacoes
+                if (generoFiltro && pessoaObj.genero !== generoFiltro) continue;
+                if (idiomaFiltro && pessoaObj.idioma !== idiomaFiltro) continue;
+
+
                 let designacoesDaPessoaFiltradas = todasDesignacoesGlobais.filter(d => {
                     if (!d.participantes || !d.participantes[pessoaObj.nome]) return false;
 
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
-                    const matchMes = !mesFiltro || d.mes === mesFiltro;
+                    const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
 
                     let matchSemana = true;
                     if (semanaFiltro) {
-                         matchSemana = d.semanaISO === parseInt(semanaFiltro); // Assumes gs-pessoas-filtro-semana is ISO week number
+                         matchSemana = d.semanaISO === parseInt(semanaFiltro);
                     }
-                    const matchGenero = !generoFiltro || pessoaObj.genero === generoFiltro;
-                    const matchIdioma = !idiomaFiltro || pessoaObj.idioma === idiomaFiltro;
-
-                    return matchAno && matchMes && matchSemana && matchGenero && matchIdioma;
+                    // Genero/Idioma já foi filtrado para a pessoa em si.
+                    // Se precisar filtrar designações por genero/idioma dos *outros* participantes, a lógica seria mais complexa aqui.
+                    // Por agora, parece que o filtro de genero/idioma é para as *pessoas* sendo comparadas.
+                    return matchAno && matchMes && matchSemana;
                 });
 
                 const card = document.createElement('div');
                 card.className = 'pessoa-comparison-card';
-                let cardHTML = `<h5>${pessoaObj.nome}</h5><ul>`;
+                let cardHTML = `<h5>${pessoaObj.nome} <small>(${pessoaObj.genero}, ${pessoaObj.idioma})</small></h5><ul>`;
                 cardHTML += `<li>Total Designações (filt.): <span class="stat-value">${designacoesDaPessoaFiltradas.length}</span></li>`;
 
                 const contagemElementosPessoa = designacoesDaPessoaFiltradas.reduce((acc, d) => {
@@ -3052,20 +3165,27 @@
                 card.innerHTML = cardHTML;
                 gsPessoasComparisonAreaDiv.appendChild(card);
             }
-            if(gsPessoasComparisonAreaDiv.innerHTML === '') {
-                 gsPessoasComparisonAreaDiv.innerHTML = '<p style="text-align:center; color:#777;">Nenhum resultado para as pessoas e filtros selecionados.</p>';
+            if(gsPessoasComparisonAreaDiv.innerHTML === '') { // If all selected people were filtered out by genero/idioma
+                 gsPessoasComparisonAreaDiv.innerHTML = '<p style="text-align:center; color:#777;">Nenhuma pessoa corresponde aos filtros de Gênero/Idioma ou não têm designações nos outros filtros.</p>';
             }
 
             setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
         }
 
         function popularListaElementosAbaDesignacoes() {
-            if (!todosElementos || todosElementos.length === 0) {
-                if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado.</li>';
+            if (!todosElementos || !gsDesignacoesTiposListUl) {
+                if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado ou lista não encontrada.</li>';
                 return;
             }
-             setSectionLoadingState('gs-designacoes-tipos', true);
+             setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros'); // Pass button ID
             gsDesignacoesTiposListUl.innerHTML = '';
+
+            if (todosElementos.length === 0) {
+                // gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado.</li>'; // :empty::before will handle
+                setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
+                return;
+            }
+
 
             todosElementos.forEach(el => {
                 const nomeEl = el.designacao || el.nome;
@@ -3074,65 +3194,73 @@
                 li.classList.add('clickable');
                 li.dataset.elementoNome = nomeEl;
                 li.addEventListener('click', () => {
-                    abrirModalInstancias(nomeEl, true);
+                    abrirModalInstancias(nomeEl, true); // true = aplicar filtros da aba "Designações"
                 });
                 gsDesignacoesTiposListUl.appendChild(li);
             });
-             setSectionLoadingState('gs-designacoes-tipos', false);
+             setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
         }
 
         function abrirModalInstancias(nomeElemento, aplicarFiltrosDaAbaDesignacoes = false) {
             if (!modalInstanciasDesignacao || !modalInstanciasTitulo || !modalInstanciasListUl) return;
 
             modalInstanciasTitulo.textContent = `Instâncias de: ${nomeElemento}`;
-            modalInstanciasListUl.innerHTML = '<div class="loading-spinner"></div>';
+            modalInstanciasListUl.innerHTML = '<div class="loading-spinner" style="display:block;"></div>';
             abrirModal(modalInstanciasDesignacao);
 
             let instanciasFiltradas = todasDesignacoesGlobais.filter(d => d.nome === nomeElemento);
 
             if (aplicarFiltrosDaAbaDesignacoes) {
+                // Use values from the "Designações" tab filters
                 const diaFiltro = gsDesignacoesFiltroDiaInput.value;
                 const mesFiltro = gsDesignacoesFiltroMesSelect.value;
                 const anoFiltro = gsDesignacoesFiltroAnoSelect.value;
                 const semanaFiltro = gsDesignacoesFiltroSemanaInput.value; // Assumes ISO week number
-                const generoFiltro = gsDesignacoesFiltroGeneroSelect.value;
-                const idiomaFiltro = gsDesignacoesFiltroIdiomaSelect.value;
+                const generoFiltroParticipante = gsDesignacoesFiltroGeneroSelect.value; // Filtro de Gênero do *Participante*
+                const idiomaFiltroParticipante = gsDesignacoesFiltroIdiomaSelect.value; // Filtro de Idioma do *Participante*
+
 
                 instanciasFiltradas = instanciasFiltradas.filter(d => {
                     const matchDia = !diaFiltro || d.dia === String(diaFiltro).padStart(2, '0');
-                    const matchMes = !mesFiltro || d.mes === mesFiltro;
+                    const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
 
                     let matchSemana = true;
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
                     }
-
-                    let matchGeneroParticipante = true;
-                    let matchIdiomaParticipante = true;
-                    if (generoFiltro || idiomaFiltro) {
-                        matchGeneroParticipante = !generoFiltro;
-                        matchIdiomaParticipante = !idiomaFiltro;
+                    
+                    let atendeFiltroParticipante = true;
+                    if (generoFiltroParticipante || idiomaFiltroParticipante) {
+                        atendeFiltroParticipante = false; // Assume false until a participant matches
                         if (d.participantes) {
                             for (const nomeP of Object.keys(d.participantes)) {
-                                const pessoa = todasPessoas.find(p => p.nome === nomeP);
-                                if (pessoa) {
-                                    if (generoFiltro && pessoa.genero === generoFiltro) matchGeneroParticipante = true;
-                                    if (idiomaFiltro && pessoa.idioma === idiomaFiltro) matchIdiomaParticipante = true;
+                                if (d.participantes[nomeP]) { // Only consider actual participants
+                                    const pessoa = todasPessoas.find(p => p.nome === nomeP);
+                                    if (pessoa) {
+                                        const matchGeneroEsteP = !generoFiltroParticipante || pessoa.genero === generoFiltroParticipante;
+                                        const matchIdiomaEsteP = !idiomaFiltroParticipante || pessoa.idioma === idiomaFiltroParticipante;
+                                        if(matchGeneroEsteP && matchIdiomaEsteP) { // If this participant matches both (or non-set filters)
+                                            atendeFiltroParticipante = true;
+                                            break; // Found a matching participant for this designation
+                                        }
+                                    }
                                 }
                             }
                         }
-                        if (!matchGeneroParticipante && generoFiltro) return false; // Only return false if filter is set and not matched
-                        if (!matchIdiomaParticipante && idiomaFiltro) return false;
                     }
-                    return matchDia && matchMes && matchAno && matchSemana;
+
+
+                    return matchDia && matchMes && matchAno && matchSemana && atendeFiltroParticipante;
                 });
             }
 
             instanciasFiltradas.sort((a, b) => {
-                const dateA = new Date(a.ano, parseInt(a.mes)-1, parseInt(a.dia));
-                const dateB = new Date(b.ano, parseInt(b.mes)-1, parseInt(b.dia));
-                return dateB - dateA;
+                 // Use Date objects for robust sorting
+                const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
+                const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                return dateB - dateA; // Sort descending
             });
 
             modalInstanciasListUl.innerHTML = '';
@@ -3142,7 +3270,15 @@
                 instanciasFiltradas.forEach(d => {
                     const li = document.createElement('li');
                     const participantesStr = [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean).join(', ') || 'N/A';
-                    li.textContent = `${d.data} - Participantes: ${participantesStr}`;
+                    let textoDesig = `${d.data} - Participantes: ${participantesStr}`;
+                    if (d.nome === "Orador Público" && (d.tema || d.congregacao)) {
+                        textoDesig += ` (`;
+                        if (d.tema) textoDesig += `Tema: ${d.tema}`;
+                        if (d.tema && d.congregacao) textoDesig += `; `;
+                        if (d.congregacao) textoDesig += `Cong: ${d.congregacao}`;
+                        textoDesig += `)`;
+                    }
+                    li.textContent = textoDesig;
                     modalInstanciasListUl.appendChild(li);
                 });
             }
@@ -3151,13 +3287,17 @@
         async function calcularTopPessoas() {
             setSectionLoadingState('gs-top-pessoas', true, 'btn-gs-top-pessoas-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+            if (!gsTopPessoasListUl) { 
+                 setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
+                return;
+            }
 
             const mesFiltro = gsTopPessoasMesSelect.value;
             const anoFiltro = gsTopPessoasAnoSelect.value;
             const elementoFiltro = gsTopPessoasElementoSelect.value; 
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro; 
                 return matchMes && matchAno && matchElemento; 
@@ -3176,16 +3316,24 @@
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
 
-            renderTopPessoasList(true);
+            gsTopPessoasMostrandoApenasTop5 = true; // Reset state to show top 5 initially
+            renderTopPessoasList(); // Call without argument
             setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
         }
 
-        function renderTopPessoasList(apenasTop5 = false) {
+        function renderTopPessoasList() { // Argument `apenasTop5` removed
             if (!gsTopPessoasListUl || !gsTopPessoasMostrarTodosLink) return;
-            gsTopPessoasListUl.innerHTML = '';
-            const dadosParaRenderizar = apenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
+            gsTopPessoasListUl.innerHTML = ''; // Clear previous
 
-            if (dadosParaRenderizar.length === 0) { /* Não faz nada se vazio, o :empty::before cuida da mensagem */ }
+            // Use the global state variable
+            const dadosParaRenderizar = gsTopPessoasMostrandoApenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
+
+            if (dadosParaRenderizar.length === 0 && topPessoasDadosCompletos.length > 0) {
+                // This case means we are trying to show top 5 of an empty filtered list, or all of an empty list
+                // Let the :empty::before CSS handle it if topPessoasDadosCompletos is truly empty
+            } else if (dadosParaRenderizar.length === 0 && topPessoasDadosCompletos.length === 0) {
+                // :empty::before CSS will show "Nenhum dado..."
+            }
             else {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
@@ -3195,37 +3343,55 @@
             }
 
             gsTopPessoasMostrarTodosLink.style.display = topPessoasDadosCompletos.length > 5 ? 'inline-block' : 'none';
-            gsTopPessoasMostrarTodosLink.textContent = apenasTop5 ? 'Mostrar lista completa' : 'Mostrar apenas Top 5';
+            // Update text based on the global state
+            gsTopPessoasMostrarTodosLink.textContent = gsTopPessoasMostrandoApenasTop5 ? `Mostrar lista completa (${topPessoasDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
         async function exibirTodasDesignacoes() {
             setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+            if (!gsTodasDesigListUl) {
+                 setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-aplicar');
+                return;
+            }
+
 
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
             const elementoFiltro = gsTodasDesigElementoSelect.value;
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 return matchMes && matchAno && matchElemento;
             }).sort((a, b) => {
-                const dateA = new Date(a.ano, parseInt(a.mes)-1, parseInt(a.dia));
-                const dateB = new Date(b.ano, parseInt(b.mes)-1, parseInt(b.dia));
-                return dateB - dateA;
+                // Use Date objects for robust sorting
+                const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
+                const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                return dateB - dateA; // Sort descending
             });
 
-            if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
+            gsTodasDesigListUl.innerHTML = '';
             if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'none';
 
-            if (designacoesFiltradasGlobal.length === 0) { /* :empty::before cuida */ }
+            if (designacoesFiltradasGlobal.length === 0) {
+                // gsTodasDesigListUl.innerHTML = '<li>Nenhuma designação encontrada.</li>'; // :empty::before handles this
+            }
             else {
                 designacoesFiltradasGlobal.forEach(d => {
                     const li = document.createElement('li');
                     const participantesStr = [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean).join(', ');
-                    li.textContent = `${d.data} - ${d.nome}: ${participantesStr || 'N/A'}`;
+                    let textoDesig = `${d.data} - ${d.nome}: ${participantesStr || 'N/A'}`;
+                     if (d.nome === "Orador Público" && (d.tema || d.congregacao)) {
+                        textoDesig += ` (`;
+                        if (d.tema) textoDesig += `Tema: ${d.tema}`;
+                        if (d.tema && d.congregacao) textoDesig += `; `;
+                        if (d.congregacao) textoDesig += `Cong: ${d.congregacao}`;
+                        textoDesig += `)`;
+                    }
+                    li.textContent = textoDesig;
                     gsTodasDesigListUl.appendChild(li);
                 });
             }
@@ -3235,13 +3401,17 @@
         async function agruparDesignacoesPorElemento() {
             setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-agrupar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+             if (!gsTodasDesigAgrupadoListUl || !gsTodasDesigAgrupadoContainerDiv) {
+                 setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-agrupar');
+                return;
+            }
 
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
             const elementoFiltro = gsTodasDesigElementoSelect.value; // Filtro de elemento também se aplica aqui
 
             let designacoesParaAgrupar = todasDesignacoesGlobais.filter(d => {
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 return matchMes && matchAno && matchElemento;
@@ -3255,18 +3425,25 @@
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
 
-            if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = ''; // Limpa a lista detalhada
-            if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'block';
-            renderTopElementosAgrupadosList(true); // Mostra apenas top 5 inicialmente
+            if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
+            gsTodasDesigAgrupadoContainerDiv.style.display = 'block';
+            gsTopElementosAgrupadosMostrandoApenasTop5 = true; // Reset state
+            renderTopElementosAgrupadosList(); // Call without argument
             setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-agrupar');
         }
 
-        function renderTopElementosAgrupadosList(apenasTop5 = false) {
+        function renderTopElementosAgrupadosList() { // Argument `apenasTop5` removed
             if (!gsTodasDesigAgrupadoListUl || !gsTodasDesigAgrupadoMostrarTodosLink) return;
             gsTodasDesigAgrupadoListUl.innerHTML = '';
-            const dadosParaRenderizar = apenasTop5 ? topElementosAgrupadosDadosCompletos.slice(0, 5) : topElementosAgrupadosDadosCompletos;
 
-            if (dadosParaRenderizar.length === 0) { /* :empty::before cuida */ }
+            // Use the global state variable
+            const dadosParaRenderizar = gsTopElementosAgrupadosMostrandoApenasTop5 ? topElementosAgrupadosDadosCompletos.slice(0, 5) : topElementosAgrupadosDadosCompletos;
+
+            if (dadosParaRenderizar.length === 0 && topElementosAgrupadosDadosCompletos.length > 0) {
+                // As above, let :empty::before handle empty list message
+            } else if (dadosParaRenderizar.length === 0 && topElementosAgrupadosDadosCompletos.length === 0) {
+                // :empty::before
+            }
             else {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
@@ -3275,13 +3452,19 @@
                 });
             }
             gsTodasDesigAgrupadoMostrarTodosLink.style.display = topElementosAgrupadosDadosCompletos.length > 5 ? 'inline-block' : 'none';
-            gsTodasDesigAgrupadoMostrarTodosLink.textContent = apenasTop5 ? 'Mostrar lista completa de elementos' : 'Mostrar apenas Top 5 elementos';
+            // Update text based on the global state
+            gsTodasDesigAgrupadoMostrarTodosLink.textContent = gsTopElementosAgrupadosMostrandoApenasTop5 ? `Mostrar lista completa (${topElementosAgrupadosDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
         async function analisarDesempenhoPessoa() {
             setSectionLoadingState('gs-pessoa-esp', true, 'btn-gs-pessoa-esp-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
-            if (todasPessoas.length === 0) await carregarPessoas(); // Garante que todasPessoas está populado
+            if (todasPessoas.length === 0) await carregarPessoas();
+            if (!gsPessoaEspResultsDiv || !gsPessoaEspSelect) {
+                 setSectionLoadingState('gs-pessoa-esp', false, 'btn-gs-pessoa-esp-aplicar');
+                return;
+            }
+
 
             const pessoaIdSelecionada = gsPessoaEspSelect.value;
             const pessoaObj = getPessoaById(pessoaIdSelecionada); // Usa a função helper
@@ -3292,7 +3475,7 @@
             const mesFiltro = gsPessoaEspMesFiltroSelect.value;
 
             if (!nomePessoaSelecionada) {
-                if (gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = "<p>Por favor, selecione uma pessoa para analisar.</p>";
+                gsPessoaEspResultsDiv.innerHTML = "<p>Por favor, selecione uma pessoa para analisar.</p>";
                 setSectionLoadingState('gs-pessoa-esp', false, 'btn-gs-pessoa-esp-aplicar');
                 return;
             }
@@ -3300,7 +3483,7 @@
             let designacoesFiltradas = todasDesignacoesGlobais.filter(d => {
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 return matchElemento && matchAno && matchMes;
             });
 
@@ -3309,10 +3492,10 @@
             let mediaGeral = 0, totalDesigOutrasPessoasNoPeriodo = 0, numeroOutrasPessoasComDesigNoPeriodo = 0;
 
             if (todasPessoas.length > 1) {
-                const outrasPessoas = todasPessoas.filter(p => p.nome !== nomePessoaSelecionada && p.estaVisivel !== false);
+                const outrasPessoasVisiveis = todasPessoas.filter(p => p.nome !== nomePessoaSelecionada && p.estaVisivel !== false);
                 let somaDesigOutrasPessoas = 0;
                 let countPessoasComDesig = 0;
-                outrasPessoas.forEach(outraPessoa => {
+                outrasPessoasVisiveis.forEach(outraPessoa => {
                     const desigDestaOutra = designacoesFiltradas.filter(d => d.participantes && d.participantes[outraPessoa.nome]).length;
                     if (desigDestaOutra > 0) { somaDesigOutrasPessoas += desigDestaOutra; countPessoasComDesig++; }
                 });
@@ -3323,13 +3506,13 @@
 
             let htmlResultado = `<p><strong>${nomePessoaSelecionada}</strong> teve <strong>${totalDesigPessoa}</strong> designações no período.</p>`;
             if (numeroOutrasPessoasComDesigNoPeriodo > 0) {
-                 htmlResultado += `<p>Média para outras ${numeroOutrasPessoasComDesigNoPeriodo} pessoas: <strong>${mediaGeral.toFixed(1)}</strong>.</p>`;
+                 htmlResultado += `<p>Média para outras ${numeroOutrasPessoasComDesigNoPeriodo} pessoas (visíveis): <strong>${mediaGeral.toFixed(1)}</strong>.</p>`;
                 if (totalDesigPessoa > mediaGeral) htmlResultado += `<p>Desempenho: <span class="acima-media">Acima da média</span>.</p>`;
                 else if (totalDesigPessoa < mediaGeral) htmlResultado += `<p>Desempenho: <span class="abaixo-media">Abaixo da média</span>.</p>`;
                 else htmlResultado += `<p>Desempenho: <span class="na-media">Na média</span>.</p>`;
-            } else if (todasPessoas.length === 1 && todasPessoas[0].nome === nomePessoaSelecionada) {
-                 htmlResultado += `<p>Única pessoa no sistema ou visível.</p>`;
-            } else htmlResultado += `<p>Nenhuma outra pessoa com designações no período para comparação.</p>`;
+            } else if (todasPessoas.filter(p => p.estaVisivel !== false).length === 1 && todasPessoas.filter(p => p.estaVisivel !== false)[0].nome === nomePessoaSelecionada) {
+                 htmlResultado += `<p>Única pessoa visível no sistema.</p>`;
+            } else htmlResultado += `<p>Nenhuma outra pessoa (visível) com designações no período para comparação.</p>`;
 
             const desigPessoaPorElemento = designacoesDaPessoa.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
             const sortedDesigPessoaPorElemento = Object.entries(desigPessoaPorElemento).sort((a,b) => b[1] - a[1]);
@@ -3337,8 +3520,10 @@
                 htmlResultado += `<p><strong>Detalhes por elemento para ${nomePessoaSelecionada}:</strong></p><ul>`;
                 sortedDesigPessoaPorElemento.forEach(([elNome, count]) => htmlResultado += `<li>${elNome}: ${count}</li>`);
                 htmlResultado += `</ul>`;
+            } else {
+                htmlResultado += `<p>Nenhum detalhe por elemento para ${nomePessoaSelecionada} com os filtros atuais.</p>`;
             }
-            if (gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = htmlResultado;
+            gsPessoaEspResultsDiv.innerHTML = htmlResultado;
             setSectionLoadingState('gs-pessoa-esp', false, 'btn-gs-pessoa-esp-aplicar');
         }
 
@@ -3357,14 +3542,25 @@
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             };
             const finalOptions = {...defaultOptions, ...options};
-
-            return new Chart(ctx, { type, data, options: finalOptions });
+            try {
+                return new Chart(ctx, { type, data, options: finalOptions });
+            } catch (e) {
+                console.error("Erro ao renderizar gráfico:", canvasId, e);
+                if(canvasEl.parentElement) canvasEl.parentElement.innerHTML = `<p style="text-align:center; color: red;">Erro ao gerar gráfico.</p>`;
+                return null;
+            }
         }
 
         // --- Event Listeners para Estatísticas Globais ---
         if (btnGlobalStats) {
             btnGlobalStats.addEventListener('click', async () => {
                 console.log("Botão de Estatísticas Globais clicado.");
+                abrirModal(modalGlobalStats); // Open modal first to show loading state inside it
+
+                // Show loading spinners and disable controls
+                document.querySelectorAll('#modal-global-stats .loading-spinner').forEach(s => s.style.display = 'block');
+                document.querySelectorAll('#modal-global-stats .stats-apply-button, #modal-global-stats .stats-filters select, #modal-global-stats .stats-filters input').forEach(b => b.disabled = true);
+
                 if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
                 if (todasPessoas.length === 0) await carregarPessoas(); 
 
@@ -3377,24 +3573,26 @@
                 if (activeTab) {
                     const activeTabTargetId = activeTab.dataset.tabTarget;
                     if (activeTabTargetId === 'gs-total-content') {
-                         atualizarAbaTotalGlobalStats();
+                         await atualizarAbaTotalGlobalStats(); // Make it async if it contains await
                     } else if (activeTabTargetId === 'gs-pessoas-content') {
                          initGsPessoasCustomMultiselect();
                     } else if (activeTabTargetId === 'gs-designacoes-content') {
                         popularListaElementosAbaDesignacoes();
                     } else if (activeTabTargetId === 'gs-old-content') {
-                        setupGsOldSubmenu();
+                        setupGsOldSubmenu(); // This sets up clicks, content loaded by individual functions
                     }
-                } else {
+                } else { // If no tab is active, activate the first one
                     const firstTabButton = document.querySelector('#modal-global-stats .global-stats-tab-button');
                     if(firstTabButton) {
-                        firstTabButton.click();
+                        firstTabButton.click(); // This will trigger the logic above for the first tab
                     }
                 }
 
+                // Hide loading spinners and enable controls
                 document.querySelectorAll('#modal-global-stats .loading-spinner').forEach(s => s.style.display = 'none');
                 document.querySelectorAll('#modal-global-stats .stats-apply-button, #modal-global-stats .stats-filters select, #modal-global-stats .stats-filters input').forEach(b => b.disabled = false);
 
+                // Clear previous results for "Análises Anteriores" when opening modal
                 if(gsTopPessoasListUl) gsTopPessoasListUl.innerHTML = '';
                 if(gsTopPessoasMostrarTodosLink) gsTopPessoasMostrarTodosLink.style.display = 'none';
                 if(gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
@@ -3404,7 +3602,12 @@
                 if(gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = '';
                 if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; 
 
-                abrirModal(modalGlobalStats);
+                // Ensure the correct sub-tab for "Análises Anteriores" is shown if it's the active main tab
+                const currentActiveMainTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
+                if (currentActiveMainTab && currentActiveMainTab.dataset.tabTarget === 'gs-old-content') {
+                    setupGsOldSubmenu();
+                }
+
             });
         } else { console.warn("Botão btnGlobalStats não encontrado."); }
 
@@ -3413,145 +3616,263 @@
         if(btnGsPessoasComparar) btnGsPessoasComparar.addEventListener('click', compararPessoasSelecionadas);
         if(btnGsDesignacoesAplicarFiltros) {
              btnGsDesignacoesAplicarFiltros.addEventListener('click', () => {
-                popularListaElementosAbaDesignacoes(); // Apenas repopula a lista de tipos
-                alert("Filtros definidos. Clique num tipo de designação para ver as instâncias filtradas.");
+                popularListaElementosAbaDesignacoes(); // Re-renders types list; modal for instances will apply these filters
+                // alert("Filtros definidos. Clique num tipo de designação para ver as instâncias filtradas.");
             });
         }
 
         if (btnGsTopPessoasAplicar) btnGsTopPessoasAplicar.addEventListener('click', calcularTopPessoas);
-        if (gsTopPessoasMostrarTodosLink) { gsTopPessoasMostrarTodosLink.addEventListener('click', (e) => { e.preventDefault(); const mostrandoTop5 = gsTopPessoasMostrarTodosLink.textContent.includes("lista completa"); renderTopPessoasList(!mostrandoTop5); }); }
+        if (gsTopPessoasMostrarTodosLink) {
+            gsTopPessoasMostrarTodosLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                gsTopPessoasMostrandoApenasTop5 = !gsTopPessoasMostrandoApenasTop5; // Toggle the state
+                renderTopPessoasList(); // Re-render based on the new state
+            });
+        }
         if (btnGsTodasDesigAplicar) btnGsTodasDesigAplicar.addEventListener('click', exibirTodasDesignacoes);
         if (btnGsTodasDesigAgrupar) btnGsTodasDesigAgrupar.addEventListener('click', agruparDesignacoesPorElemento);
-        if (gsTodasDesigAgrupadoMostrarTodosLink) { gsTodasDesigAgrupadoMostrarTodosLink.addEventListener('click', (e) => { e.preventDefault(); const mostrandoTop5 = gsTodasDesigAgrupadoMostrarTodosLink.textContent.includes("lista completa"); renderTopElementosAgrupadosList(!mostrandoTop5); }); }
+        if (gsTodasDesigAgrupadoMostrarTodosLink) {
+            gsTodasDesigAgrupadoMostrarTodosLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                gsTopElementosAgrupadosMostrandoApenasTop5 = !gsTopElementosAgrupadosMostrandoApenasTop5; // Toggle the state
+                renderTopElementosAgrupadosList(); // Re-render based on the new state
+            });
+        }
         if (btnGsPessoaEspAplicar) btnGsPessoaEspAplicar.addEventListener('click', analisarDesempenhoPessoa);
 
 
         // --- FUNÇÕES PARA O MODAL DE RANKING ---
-        function getNomeMesRanking(numMes) { // Helper se não existir globalmente
-            return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+        // Helper function (can be defined globally or within script scope if not already)
+        function getNomeMesRanking(numMes) {
+            if (!numMes || isNaN(parseInt(numMes))) return "";
+            try {
+                // Ensure month is 1-indexed for Date constructor, so subtract 1
+                return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+            } catch (e) {
+                console.error("Erro em getNomeMesRanking:", e);
+                return "";
+            }
         }
 
         async function abrirModalRanking() {
+            if (!modalRanking) {
+                console.error("Modal de Ranking não encontrado.");
+                return;
+            }
+            // Visual cue for loading, if applicable to the filter container
+            const rankingFiltersContainer = document.getElementById('ranking-filters-container');
+            if (rankingFiltersContainer) rankingFiltersContainer.style.opacity = "0.5";
+
+
             if (!todasDesignacoesGlobaisCarregadas) {
+                console.log("Modal Ranking: Carregando todas as designações globais...");
                 await carregarTodasDesignacoesParaStatsGlobais();
                 if (!todasDesignacoesGlobaisCarregadas) {
-                    alert("Não foi possível carregar os dados das designações. Tente novamente.");
+                    alert("Não foi possível carregar os dados das designações para o ranking. Tente novamente.");
+                    if (rankingFiltersContainer) rankingFiltersContainer.style.opacity = "1";
                     return;
                 }
             }
-            if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas(); // Garante que temos os nomes dos elementos
+            if (todosElementos.length === 0) {
+                console.log("Modal Ranking: Carregando todos os elementos...");
+                await carregarTodosElementosParaEstatisticas();
+            }
+
+            if (rankingFiltersContainer) rankingFiltersContainer.style.opacity = "1";
 
             popularFiltrosRankingPopup();
-            setDefaultRankingFilters(); // Define os filtros para a data mais recente
-            ordemAtualElementosRanking = [...ORDEM_PADRAO_ELEMENTOS_RANKING]; // Reseta a ordem para o padrão
-            renderRankingList();
+            setDefaultRankingFilters();
+            ordemAtualElementosRanking = [...ORDEM_PADRAO_ELEMENTOS_RANKING];
+            renderRankingList(); // Render list after filters are set
             abrirModal(modalRanking);
         }
 
         function popularFiltrosRankingPopup() {
-            if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
+            if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) {
+                console.error("Elementos de filtro do modal de ranking não encontrados.");
+                return;
+            }
+            if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) {
+                console.warn("Modal Ranking: Dados de designações globais não disponíveis para popular filtros.");
+                 rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
+                 rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
+                 rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
+                return;
+            }
 
-            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes))].sort((a, b) => parseInt(a) - parseInt(b));
-            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano))].sort((a, b) => parseInt(b) - parseInt(a));
+            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
+            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
 
-            const semanasUnicasComDatas = todasDesignacoesGlobais
-                .filter(d => d.semanaISO && d.data && d.ano) // Precisa de semanaISO, data e ano
+            const monthMap = {
+                'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
+                'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12
+            };
+
+            const semanasCompletas = todasDesignacoesGlobais
+                .filter(d => d.semana && typeof d.semana === 'string')
                 .map(d => {
-                    const [dia, mes, anoNum] = d.data.split('/');
-                    return {
-                        semanaISO: d.semanaISO,
-                        ano: parseInt(anoNum), // Garante que o ano é um número
-                        // Um valor de data para ordenação
-                        sortDate: new Date(parseInt(anoNum), parseInt(mes) - 1, parseInt(dia))
-                    };
-                })
-                .reduce((acc, current) => { // Remove duplicatas de ano-semanaISO
-                    if (!acc.find(item => item.semanaISO === current.semanaISO && item.ano === current.ano)) {
-                        acc.push(current);
-                    }
-                    return acc;
-                }, [])
-                .sort((a, b) => b.sortDate - a.sortDate); // Ordena pela data, mais recente primeiro
+                    const parts = d.semana.match(/^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})\s*-\s*(\d{1,2})$/i);
+                    if (parts) {
+                        const monthName = parts[1].toLowerCase();
+                        const year = parseInt(parts[2]);
+                        const startDay = parseInt(parts[3]);
+                        const monthNumber = monthMap[monthName];
 
+                        if (monthNumber && year && startDay) {
+                            try {
+                                const sortDate = new Date(year, monthNumber - 1, startDay);
+                                 if (!isNaN(sortDate.getTime())) {
+                                    return { year, month: monthNumber, startDay, originalString: d.semana, sortDate };
+                                }
+                            } catch (e) {
+                                // console.warn("Error parsing date for semana string:", d.semana, e);
+                                return null;
+                            }
+                        }
+                    }
+                    // console.warn("Could not parse semana string for ranking filters:", d.semana);
+                    return null;
+                })
+                .filter(item => item !== null);
+
+            const uniqueSemanas = semanasCompletas.reduce((acc, current) => {
+                if (!acc.find(item => item.originalString === current.originalString)) {
+                    acc.push(current);
+                }
+                return acc;
+            }, []);
+
+            uniqueSemanas.sort((a, b) => { // Sort by date: most recent year, then month, then day
+                if (a.year !== b.year) return b.year - a.year;
+                if (a.month !== b.month) return b.month - a.month;
+                return b.startDay - a.startDay;
+            });
+
+            // Populate Meses
+            const currentMesVal = rankingFiltroMesSelect.value;
             rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
             mesesUnicos.forEach(mes => rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
+            rankingFiltroMesSelect.value = currentMesVal;
 
+
+            // Populate Anos
+            const currentAnoVal = rankingFiltroAnoSelect.value;
             rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
             anosUnicos.forEach(ano => rankingFiltroAnoSelect.appendChild(new Option(ano, ano)));
+            rankingFiltroAnoSelect.value = currentAnoVal;
 
+            // Populate Semanas (Descriptive)
+            const currentSemanaVal = rankingFiltroSemanaSelect.value;
             rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
-            semanasUnicasComDatas.forEach(item => {
-                const displayDataSemana = `Semana ${item.semanaISO} (${item.ano})`;
-                rankingFiltroSemanaSelect.appendChild(new Option(displayDataSemana, `${item.ano}-${item.semanaISO}`)); // valor como "ANO-SEMANAISO"
+            let currentYearForOptgroup = null;
+            let optgroup = null;
+
+            uniqueSemanas.forEach(item => {
+                if (item.year !== currentYearForOptgroup) {
+                    currentYearForOptgroup = item.year;
+                    optgroup = document.createElement('optgroup');
+                    optgroup.label = `${item.year}`;
+                    rankingFiltroSemanaSelect.appendChild(optgroup);
+                }
+                const option = document.createElement('option');
+                option.value = item.originalString;
+                option.textContent = item.originalString;
+                if (optgroup) {
+                    optgroup.appendChild(option);
+                } else {
+                    rankingFiltroSemanaSelect.appendChild(option); // Fallback
+                }
             });
+             // Attempt to restore previous selection or set to default ""
+            if (Array.from(rankingFiltroSemanaSelect.options).some(opt => opt.value === currentSemanaVal)) {
+                 rankingFiltroSemanaSelect.value = currentSemanaVal;
+            } else {
+                rankingFiltroSemanaSelect.value = ""; // Default to "Todas" if previous value not found
+            }
         }
 
         function setDefaultRankingFilters() {
-            if (todasDesignacoesGlobais.length === 0) return;
+             if (!rankingFiltroAnoSelect || !rankingFiltroMesSelect || !rankingFiltroSemanaSelect) return;
+
+            if (todasDesignacoesGlobais.length === 0) {
+                 rankingFiltroAnoSelect.value = "";
+                 rankingFiltroMesSelect.value = "";
+                 rankingFiltroSemanaSelect.value = "";
+                return;
+            }
 
             let maisRecente = null;
             todasDesignacoesGlobais.forEach(d => {
-                if (d.data && d.ano && d.mes && d.dia) { // Verifica se todos os componentes da data existem
-                    const dataAtual = new Date(parseInt(d.ano), parseInt(d.mes) - 1, parseInt(d.dia));
-                    if (!isNaN(dataAtual.getTime())) { // Verifica se a data é válida
-                        if (!maisRecente || dataAtual > maisRecente.dataObj) {
-                            maisRecente = { ...d, dataObj: dataAtual };
+                if (d.data && d.ano && d.mes && d.dia) {
+                    try {
+                        const [day, month, year] = d.data.split('/'); // Ensure correct parsing based on DD/MM/YYYY
+                        const dataAtual = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        if (!isNaN(dataAtual.getTime())) {
+                            if (!maisRecente || dataAtual > maisRecente.dataObj) {
+                                maisRecente = { ...d, dataObj: dataAtual };
+                            }
                         }
-                    }
+                    } catch (e) { /* ignore parse errors for this record */ }
                 }
             });
 
             if (maisRecente) {
-                rankingFiltroAnoSelect.value = maisRecente.ano;
-                rankingFiltroMesSelect.value = maisRecente.mes;
-                if (maisRecente.semanaISO && maisRecente.ano) {
-                    rankingFiltroSemanaSelect.value = `${maisRecente.ano}-${maisRecente.semanaISO}`;
+                rankingFiltroAnoSelect.value = maisRecente.ano || "";
+                rankingFiltroMesSelect.value = String(maisRecente.mes).padStart(2,'0') || "";
+
+                if (maisRecente.semana && typeof maisRecente.semana === 'string') {
+                    const semanaOptionExists = Array.from(rankingFiltroSemanaSelect.options).some(opt => opt.value === maisRecente.semana);
+                    if (semanaOptionExists) {
+                        rankingFiltroSemanaSelect.value = maisRecente.semana;
+                    } else {
+                         rankingFiltroSemanaSelect.value = ""; // Default to "Todas" if exact match not found
+                    }
                 } else {
                     rankingFiltroSemanaSelect.value = "";
                 }
             } else {
-                if (rankingFiltroAnoSelect.options.length > 1) rankingFiltroAnoSelect.selectedIndex = 1;
-                if (rankingFiltroMesSelect.options.length > 1) rankingFiltroMesSelect.selectedIndex = 1;
-                if (rankingFiltroSemanaSelect.options.length > 1) rankingFiltroSemanaSelect.selectedIndex = 1;
+                // Fallback: select "Todos" or "Todas"
+                rankingFiltroAnoSelect.value = "";
+                rankingFiltroMesSelect.value = "";
+                rankingFiltroSemanaSelect.value = "";
             }
         }
 
-
         function renderRankingList() {
             if (!listaRankingDesignacoesUl) return;
-            listaRankingDesignacoesUl.innerHTML = '';
+            listaRankingDesignacoesUl.innerHTML = '<div class="loading-spinner" style="margin: 10px auto; display: block;"></div>';
 
-            const mesFiltro = rankingFiltroMesSelect.value;
-            const anoFiltro = rankingFiltroAnoSelect.value;
-            const semanaFiltroValor = rankingFiltroSemanaSelect.value;
-            let targetAnoSemana = null;
-            let targetSemanaISO = null;
-
-            if (semanaFiltroValor) {
-                const parts = semanaFiltroValor.split('-');
-                if (parts.length === 2) {
-                    targetAnoSemana = parseInt(parts[0]);
-                    targetSemanaISO = parseInt(parts[1]);
-                }
-            }
+            // Ensure filter elements exist before trying to read their values
+            const mesFiltro = rankingFiltroMesSelect ? rankingFiltroMesSelect.value : "";
+            const anoFiltro = rankingFiltroAnoSelect ? rankingFiltroAnoSelect.value : "";
+            const semanaFiltroValor = rankingFiltroSemanaSelect ? rankingFiltroSemanaSelect.value : "";
 
             const designacoesDaSemanaSelecionada = todasDesignacoesGlobais.filter(d => {
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchMes = !mesFiltro || d.mes === mesFiltro;
+                // Ensure mes comparison is robust, d.mes should be padded if it comes as '5' vs '05'
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
+
                 let matchSemana = true;
-                if (targetSemanaISO && targetAnoSemana) {
-                    matchSemana = (d.semanaISO === targetSemanaISO && parseInt(d.ano) === targetAnoSemana);
-                } else if (anoFiltro && !targetSemanaISO && !mesFiltro) { // Apenas ano selecionado
-                     matchSemana = (d.ano === anoFiltro);
-                } else if (!anoFiltro && !mesFiltro && !targetSemanaISO){ // Nenhum filtro, mostra tudo ( improvável para este modal)
-                    matchSemana = true;
+                if (semanaFiltroValor) {
+                    matchSemana = (d.semana === semanaFiltroValor);
                 }
-                // Se semana não está selecionada, mas ano e/ou mês estão, matchSemana não deve restringir
                 return matchAno && matchMes && matchSemana;
             });
 
+            listaRankingDesignacoesUl.innerHTML = ''; // Clear loading spinner
+
+            if (designacoesDaSemanaSelecionada.length === 0 && (anoFiltro || mesFiltro || semanaFiltroValor)) {
+                listaRankingDesignacoesUl.innerHTML = '<li>Nenhuma designação encontrada para os filtros selecionados.</li>';
+                return; // Stop further processing
+            } else if (designacoesDaSemanaSelecionada.length === 0 && !anoFiltro && !mesFiltro && !semanaFiltroValor) {
+                 listaRankingDesignacoesUl.innerHTML = '<li>Selecione filtros para ver o ranking.</li>';
+                 return; // Stop further processing
+            }
+
+
             const designacoesAgrupadasPorNome = designacoesDaSemanaSelecionada.reduce((acc, desig) => {
-                const nomeElementoBase = desig.nome.startsWith("Discurso") ? "Discurso" : desig.nome;
+                const nomeElementoBase = desig.nome && desig.nome.startsWith("Discurso") ? "Discurso" : desig.nome;
+                if (!nomeElementoBase) return acc;
                 if (!acc[nomeElementoBase]) {
                     acc[nomeElementoBase] = [];
                 }
@@ -3559,20 +3880,36 @@
                 return acc;
             }, {});
 
-
+            let hasContentRendered = false;
             ordemAtualElementosRanking.forEach((nomeElemento, index) => {
                 if (nomeElemento === "---SEP---") {
                     const hr = document.createElement('hr');
                     hr.className = 'ranking-section-separator';
                     listaRankingDesignacoesUl.appendChild(hr);
+                    hasContentRendered = true;
                     return;
                 }
                 if (nomeElemento === "---PARAGRAPH_SEP---") {
                     const liSep = document.createElement('li');
                     liSep.className = 'ranking-paragraph-separator';
                     listaRankingDesignacoesUl.appendChild(liSep);
+                    hasContentRendered = true;
                     return;
                 }
+
+                const designacoesParaEsteElemento = designacoesAgrupadasPorNome[nomeElemento] || [];
+                let shouldRenderItem = false;
+
+                if (designacoesParaEsteElemento.length > 0) {
+                    shouldRenderItem = true;
+                } else if (anoFiltro || mesFiltro || semanaFiltroValor) { // Filters are active, show "Nenhuma ocorrência"
+                     shouldRenderItem = true;
+                } else { // No filters active, this is initial state. Show template items.
+                    shouldRenderItem = true;
+                }
+
+                if (!shouldRenderItem) return; // Skip rendering this item if not needed
+
 
                 const li = document.createElement('li');
                 li.dataset.elementoNome = nomeElemento;
@@ -3584,7 +3921,6 @@
                 const participantesSpan = document.createElement('span');
                 participantesSpan.className = 'designacao-participantes';
 
-                const designacoesParaEsteElemento = designacoesAgrupadasPorNome[nomeElemento] || [];
 
                 if (designacoesParaEsteElemento.length > 0) {
                     const participantesNomes = designacoesParaEsteElemento.map(d =>
@@ -3594,6 +3930,8 @@
                     if (participantesNomes) {
                          participantesSpan.textContent = participantesNomes;
                     } else {
+                        // This case should ideally not be hit if length > 0 means there are participants.
+                        // However, if a designation could have participants but all are empty strings, this might occur.
                         participantesSpan.textContent = "Ninguém designado";
                         participantesSpan.classList.add('ninguem');
                     }
@@ -3601,6 +3939,8 @@
                     participantesSpan.textContent = "Nenhuma ocorrência";
                     participantesSpan.classList.add('ninguem');
                 }
+                hasContentRendered = true;
+
 
                 const reorderDiv = document.createElement('div');
                 reorderDiv.className = 'reorder-buttons';
@@ -3613,8 +3953,11 @@
                 const btnDown = document.createElement('button');
                 btnDown.innerHTML = '<i class="fas fa-arrow-down"></i>';
                 btnDown.title = "Descer";
-                btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || ordemAtualElementosRanking[index+1].startsWith("---");
+                // Check if next element exists and is not a separator
+                const nextElementIsSeparator = (index + 1 < ordemAtualElementosRanking.length) && ordemAtualElementosRanking[index + 1].startsWith("---");
+                btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || nextElementIsSeparator;
                 btnDown.onclick = () => moverElementoRanking(index, 'down');
+
 
                 reorderDiv.appendChild(btnUp);
                 reorderDiv.appendChild(btnDown);
@@ -3624,20 +3967,103 @@
                 li.appendChild(reorderDiv);
                 listaRankingDesignacoesUl.appendChild(li);
             });
+
+            if (!hasContentRendered && !(anoFiltro || mesFiltro || semanaFiltroValor) ) {
+                // This message shows if the list is completely empty AND no filters are applied.
+                listaRankingDesignacoesUl.innerHTML = '<li>Use os filtros para gerar o ranking ou aguarde o carregamento dos dados.</li>';
+            }
         }
+
+
+        // --- EVENT LISTENERS ---
+        if (btnRankingPopup) {
+            btnRankingPopup.addEventListener('click', abrirModalRanking);
+        }
+
+        if (btnRankingAplicarFiltros) {
+            btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
+        }
+
+
+        // --- Inicialização ---
+        window.onload = async () => {
+            console.log("Window onload: Iniciando aplicação.");
+            if (!listaPessoasUl || !colunaDetalhesDiv || !colunaDetalhesContent || !modalGlobalStats) {
+                console.error("ERRO CRÍTICO: Elementos DOM essenciais não encontrados. A aplicação pode não funcionar.");
+                alert("Erro crítico ao carregar. Verifique o console.");
+                return;
+            }
+            await carregarPessoas();
+            await carregarTodosElementosParaEstatisticas();
+            // Don't await carregarTodasDesignacoesParaStatsGlobais here to speed up initial load.
+            // It will be loaded on demand when Global Stats or Ranking modal is opened.
+            // await carregarTodasDesignacoesParaStatsGlobais();
+            popularDropdownsPessoasNosModais();
+
+            if(colunaDetalhesDiv && colunaDetalhesContent){
+                colunaDetalhesDiv.innerHTML = '';
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent);
+                colunaDetalhesContent.style.display = 'flex';
+            }
+
+            // Setup initial state for Global Stats Modal Tabs
+            const primeiraAbaBtnGlobal = document.querySelector('#modal-global-stats .global-stats-tab-button');
+            let activeMainTabInitially = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
+
+            if (!activeMainTabInitially && primeiraAbaBtnGlobal) { // If no tab is active, make the first one active
+                primeiraAbaBtnGlobal.classList.add('active');
+                activeMainTabInitially = primeiraAbaBtnGlobal; // Update for below logic
+            }
+            
+            // Ensure corresponding content for the active tab is shown
+            if (activeMainTabInitially) {
+                const targetContentId = activeMainTabInitially.dataset.tabTarget;
+                document.querySelectorAll('#modal-global-stats .global-stats-tab-content').forEach(tc => tc.classList.remove('active'));
+                const targetContent = document.getElementById(targetContentId);
+                if (targetContent) targetContent.classList.add('active');
+                
+                // Specific setup for "Análises Anteriores" if it's the active tab
+                if (targetContentId === 'gs-old-content') {
+                    setupGsOldSubmenu();
+                }
+                // Initial data load for 'gs-total-content' is handled when its tab is clicked or modal opened
+            }
+
+
+            console.log("Inicialização concluída.");
+        };
 
         function moverElementoRanking(currentIndex, direction) {
             const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
             if (newIndex < 0 || newIndex >= ordemAtualElementosRanking.length) return;
-            if (ordemAtualElementosRanking[newIndex].startsWith("---")) return;
-
-
-            [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex]] =
-            [ordemAtualElementosRanking[newIndex], ordemAtualElementosRanking[currentIndex]];
+            // Prevent swapping with a separator or moving past it in a way that breaks groups
+            if (ordemAtualElementosRanking[newIndex].startsWith("---")) {
+                 // If trying to move up into a separator, try moving to index before separator
+                 if (direction === 'up' && newIndex > 0 && ordemAtualElementosRanking[newIndex-1] && !ordemAtualElementosRanking[newIndex-1].startsWith("---")) {
+                    [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex-1]] =
+                    [ordemAtualElementosRanking[newIndex-1], ordemAtualElementosRanking[currentIndex]];
+                 }
+                 // If trying to move down into a separator, try moving to index after separator
+                 else if (direction === 'down' && newIndex < ordemAtualElementosRanking.length - 1 && ordemAtualElementosRanking[newIndex+1] && !ordemAtualElementosRanking[newIndex+1].startsWith("---")) {
+                     [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex+1]] =
+                     [ordemAtualElementosRanking[newIndex+1], ordemAtualElementosRanking[currentIndex]];
+                 } else {
+                    return; // Cannot make a valid swap
+                 }
+            } else {
+                 [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex]] =
+                 [ordemAtualElementosRanking[newIndex], ordemAtualElementosRanking[currentIndex]];
+            }
 
             renderRankingList();
         }
+
+
+
+
+
+
 
 
         // --- EVENT LISTENERS ---
@@ -3690,6 +4116,7 @@
             }
             console.log("Inicialização concluída.");
         };
+
     </script>
 </body>
 </html>
