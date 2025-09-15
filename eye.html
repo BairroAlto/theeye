@@ -130,33 +130,6 @@
             transform: rotate(180deg); /* Rotaciona o chevron quando ativo */
         }
 
-        /* Media Query para comportamento mobile dos filtros da pessoa */
-        @media (max-width: 768px) {
-            #btn-toggle-filtros-pessoa.btn-toggle-filtros { /* Usando ID para especificidade */
-                display: flex; /* Mostrar o botão em mobile e ativar flex */
-            }
-
-            /* Container de filtros da pessoa */
-            #coluna-detalhes #filtros-pessoa-container {
-                max-height: 0; /* Começa colapsado */
-                overflow: hidden;
-                padding-top: 0;
-                padding-bottom: 0;
-                margin-bottom: 0;
-                opacity: 0;
-                transition: max-height 0.35s ease-out, opacity 0.3s ease-in-out, padding 0.35s ease-out, margin-bottom 0.35s ease-out;
-            }
-
-            #coluna-detalhes #filtros-pessoa-container.filtros-visiveis {
-                max-height: 500px; /* Altura suficiente para mostrar os filtros. Ajuste se necessário. */
-                opacity: 1;
-                /* Restaura os paddings e margins originais do .filters-container */
-                padding-top: 10px;
-                padding-bottom: 10px;
-                margin-bottom: 15px;
-            }
-        }
-
 
         #historico-content ul { list-style-type: none; padding-left: 0; }
         #historico-content li { padding: 8px 10px; border-bottom: 1px solid #eee; transition: background-color 0.3s ease; /* For week color hover */ }
@@ -651,10 +624,169 @@
         #gs-old-content > .stats-card-section.active-submenu-section {
             display: block; /* Show only the active section */
         }
+
+.participante-editavel {
+    color: #333; /* Define a cor do texto para um preto suave */
+    font-style: normal; /* Remove o itálico que é herdado do contêiner */
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: currentColor; /* A linha pontilhada será da mesma cor do texto (#333) */
+    transition: background-color 0.2s ease;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.participante-editavel:hover {
+    background-color: #e9ecef; /* Fundo cinza claro no hover, sem alterar a cor do texto */
+}
+
+/* Adicione esta regra de estilo ao seu bloco <style> */
+#coluna-pessoas h2 {
+    cursor: pointer;
+    user-select: none; /* Impede que o texto seja selecionado ao clicar */
+}
+
+
+.sidebar-toggle-button, .sidebar-overlay {
+    display: none;
+}
+
+
+.btn-toggle-filtros {
+    display: none;
+}
+
+/* Mas se entrarmos em um contexto onde ele precisa aparecer (JS fará isso), ele se torna visível */
+/* Esta regra é mais uma garantia de consistência */
+#coluna-detalhes .btn-toggle-filtros {
+     /* display: none; */ /* O JS vai controlar isso agora */
+}
+
+/* O wrapper no desktop não precisa da lógica de grid, mas o JS vai setar display:grid/none */
+.filtros-wrapper-mobile {
+    /* Não precisa de regras específicas de display aqui, o JS controla */
+}
+
+/* Media Query: Aplica estes estilos APENAS em telas com largura máxima de 768px (móveis e tablets pequenos) */
+@media (max-width: 768px) {
+    /* O contêiner principal se ajusta */
+    .main-container {
+        flex-direction: column;
+    }
+
+    /* O botão hamburger (três traços) */
+    .sidebar-toggle-button {
+        display: flex; /* Torna o botão visível */
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 24px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1011; /* Acima do overlay e do conteúdo, mas abaixo do menu */
+        position: fixed; /* Fica fixo na tela */
+        top: 15px;
+        left: 15px;
+    }
+    .sidebar-toggle-button span {
+        width: 30px;
+        height: 3px;
+        background-color: #333; /* Cor dos traços */
+        border-radius: 5px;
+    }
+
+    /* O fundo escurecido (overlay) */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1009;
+        opacity: 0; /* Começa invisível */
+        visibility: hidden; /* Começa inacessível */
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    /* A coluna das pessoas (a barra lateral) */
+    #coluna-pessoas {
+        position: fixed; /* Fica por cima do conteúdo */
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 80%; /* Ocupa 80% da tela */
+        max-width: 300px; /* Mas não mais que 300px */
+        z-index: 1010; /* Fica acima do overlay */
+        transform: translateX(-100%); /* Começa escondida para a esquerda */
+        transition: transform 0.3s ease-in-out;
+        box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* A coluna de detalhes ocupa a tela inteira */
+    #coluna-detalhes {
+        width: 100%;
+        flex-basis: 100%;
+        padding-top: 60px; /* Espaço para o botão hamburger não ficar por cima do título */
+    }
+
+    /* --- ESTADOS QUANDO O MENU ESTÁ ABERTO --- */
+    
+    /* Quando o body tem a classe 'sidebar-visible', o menu aparece */
+    body.sidebar-visible #coluna-pessoas {
+        transform: translateX(0); /* Desliza para a posição visível */
+    }
+
+    /* E o overlay também aparece */
+    body.sidebar-visible .sidebar-overlay {
+        display: block; /* Garante que está no fluxo para ser clicável */
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+
+@media (max-width: 768px) {
+    /* Mostra o botão no mobile */
+    #btn-toggle-filtros-pessoa.btn-toggle-filtros {
+        display: flex;
+    }
+
+    /* O wrapper no mobile usa GRID para a animação de altura */
+    .filtros-wrapper-mobile {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.35s ease-out;
+    }
+    
+    .filtros-wrapper-mobile.filtros-visiveis {
+        grid-template-rows: 1fr;
+    }
+    
+    /* Precisamos garantir que o overflow e min-height só se apliquem no mobile
+       para não interferir com a animação de opacidade */
+    #coluna-detalhes #filtros-pessoa-container {
+        overflow: hidden;
+        min-height: 0;
+    }
+}
+
     </style>
 </head>
 <body>
     <div class="main-container">
+
+        <button id="sidebar-toggle-button" class="sidebar-toggle-button">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
         <div id="coluna-pessoas" class="coluna">
             <h2>Pessoas</h2>
             <div id="search-pessoa-container"><input type="text" id="search-pessoa-input" placeholder="Pesquisar pessoa..."></div>
@@ -1193,6 +1325,22 @@
         const btnRankingAplicarFiltros = document.getElementById('btn-ranking-aplicar-filtros');
         const listaRankingDesignacoesUl = document.getElementById('lista-ranking-designacoes');
 
+        // --- LÓGICA PARA CONTROLAR A BARRA LATERAL MÓVEL ---
+        const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const colunaPessoas = document.getElementById('coluna-pessoas'); // Já deve estar declarado, mas garantimos
+
+        if (sidebarToggleButton && sidebarOverlay && colunaPessoas) {
+            // Abre/Fecha o menu ao clicar no botão hamburger
+            sidebarToggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-visible');
+            });
+
+            // Fecha o menu ao clicar no overlay (fundo escuro)
+            sidebarOverlay.addEventListener('click', () => {
+                document.body.classList.remove('sidebar-visible');
+            });
+        }
 
         // Globais
         let todasPessoas = [];
@@ -1419,11 +1567,13 @@
                         document.querySelectorAll('#lista-pessoas li').forEach(item => item.classList.remove('active'));
                         li.classList.add('active');
                         pessoaSelecionadaAtual = pessoa;
-                        // Reset states for "show more" when a new person is selected
-                        mostrandoTodosElementosPessoa = false;
+                        // ...
                         mostrandoTodosParceirosPessoa = false;
-                        editModeActive = false; // Reset edit mode when changing person
+                        editModeActive = false;
                         carregarDesignacoesDaPessoa(pessoa.id);
+
+                        // ADICIONE ESTA LINHA AQUI:
+                        document.body.classList.remove('sidebar-visible'); // Fecha o menu após a seleção
                     });
                     listaPessoasUl.appendChild(li);
                 });
@@ -1486,7 +1636,7 @@
         }
 
         function criarEstruturaDetalhes() {
-             if (!colunaDetalhesDiv || !colunaDetalhesContent) {
+            if (!colunaDetalhesDiv || !colunaDetalhesContent) {
                 console.error("ERRO CRÍTICO: colunaDetalhesDiv ou colunaDetalhesContent não encontrado em criarEstruturaDetalhes.");
                 return;
             }
@@ -1499,12 +1649,14 @@
                 return;
             }
             colunaDetalhesContent.style.display = 'none';
+
             colunaDetalhesDiv.innerHTML = `
                 <h3>Detalhes de: <span id="nome-pessoa-detalhe">${pessoaSelecionadaAtual.nome}</span></h3>
                 <div class="tabs">
-                    <button class="tab-button active" data-tab="historico">Histórico</button>
+                    <button class="tab-button active" data-tab="historico">Linha</button>
+                    <button class="tab-button" data-tab="arquivo">Arquivo</button>
                     <button class="tab-button" data-tab="estatisticas">Estatísticas</button>
-                    <button class="tab-button" id="tab-btn-editar-modo" data-tab="editar-modo">Editar Designações</button>
+                    <button class="tab-button" id="tab-btn-editar-modo" data-tab="editar-modo">Editar</button>
                 </div>
 
                 <button id="btn-toggle-filtros-pessoa" class="btn-toggle-filtros">
@@ -1513,143 +1665,204 @@
                     <i class="fas fa-chevron-down toggle-icon"></i>
                 </button>
 
-                <div class="filters-container" id="filtros-pessoa-container">
-                    <label for="filtro-mes">Mês:</label>
-                    <select id="filtro-mes"><option value="">Todos</option>${[...Array(12).keys()].map(i => `<option value="${String(i + 1).padStart(2, '0')}">${new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}</option>`).join('')}</select>
-                    <label for="filtro-ano">Ano:</label><select id="filtro-ano"><option value="">Todos</option></select>
-                    <label for="filtro-semana">Semana:</label><select id="filtro-semana"><option value="">Todas</option></select>
-                    <label for="filtro-elemento">Elemento:</label><select id="filtro-elemento"><option value="">Todos</option></select>
-                    <button id="btn-aplicar-filtros">Aplicar</button>
-                    <button id="btn-limpar-filtros">Limpar</button>
+                <div class="filtros-wrapper-mobile">
+                    <div class="filters-container" id="filtros-pessoa-container">
+                        <label for="filtro-mes">Mês:</label>
+                        <select id="filtro-mes"><option value="">Todos</option>${[...Array(12).keys()].map(i => `<option value="${String(i + 1).padStart(2, '0')}">${new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}</option>`).join('')}</select>
+                        <label for="filtro-ano">Ano:</label><select id="filtro-ano"><option value="">Todos</option></select>
+                        <label for="filtro-semana">Semana:</label><select id="filtro-semana"><option value="">Todas</option></select>
+                        <label for="filtro-elemento">Elemento:</label><select id="filtro-elemento"><option value="">Todos</option></select>
+                        <button id="btn-aplicar-filtros">Aplicar</button>
+                        <button id="btn-limpar-filtros">Limpar</button>
+                    </div>
                 </div>
+
                 <div id="historico-content" class="tab-content active"></div>
+                <div id="arquivo-content" class="tab-content">
+                    <div class="gs-old-submenu-tabs" style="margin-bottom: 0;">
+                        <button class="gs-old-submenu-button active" data-filtro="semana">Semana</button>
+                        <button class="gs-old-submenu-button" data-filtro="fim de semana">Fim de Semana</button>
+                        <button class="gs-old-submenu-button" data-filtro="tecnico">Técnicas</button>
+                        <button class="gs-old-submenu-button" data-filtro="pregacao">Pregação</button>
+                    </div>
+                    <div id="arquivo-resultados-container" style="overflow-y: auto; flex-grow: 1;">
+                        <ul id="arquivo-resultados-lista" style="list-style-type: none; padding: 0;"></ul>
+                    </div>
+                </div>
                 <div id="estatisticas-content" class="tab-content"></div>`;
-            console.log("criarEstruturaDetalhes: Estrutura da segunda coluna criada.");
+            console.log("criarEstruturaDetalhes: Estrutura da segunda coluna criada com a aba Arquivo.");
 
             const tabBtnEditarModo = document.getElementById('tab-btn-editar-modo');
 
             document.querySelectorAll('#coluna-detalhes .tab-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const targetTabId = button.dataset.tab;
-
                     if (targetTabId === 'editar-modo') {
                         editModeActive = !editModeActive;
                         tabBtnEditarModo.classList.toggle('active-edit-mode', editModeActive);
-                        tabBtnEditarModo.textContent = editModeActive ? "Modo Edição Ativado" : "Editar Designações";
-
+                        tabBtnEditarModo.textContent = editModeActive ? "Modo Edição Ativado" : "Editar";
                         if (document.getElementById('historico-content')?.classList.contains('active')) {
                             renderizarHistorico();
                         }
                         return;
-                    } else {
-                        // Remove 'active' from all tabs except the edit mode toggle
-                        document.querySelectorAll('#coluna-detalhes .tab-button:not(#tab-btn-editar-modo)').forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active'); // Add active to the clicked content tab
+                    } 
+                    
+                    document.querySelectorAll('#coluna-detalhes .tab-button:not(#tab-btn-editar-modo)').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
 
-                        const historicoContentDiv = document.getElementById('historico-content');
-                        const estatisticasContentDiv = document.getElementById('estatisticas-content');
-                        if (!historicoContentDiv || !estatisticasContentDiv) {
-                            console.error("ERRO: Painéis de conteúdo de detalhes não encontrados!");
-                            return;
-                        }
-                        if (targetTabId === 'historico') {
-                            historicoContentDiv.classList.add('active');
-                            estatisticasContentDiv.classList.remove('active');
-                            renderizarHistorico();
-                        } else if (targetTabId === 'estatisticas') {
-                            estatisticasContentDiv.classList.add('active');
-                            historicoContentDiv.classList.remove('active');
-                            renderizarEstatisticas();
-                        }
-                    }
+                    const historicoContentDiv = document.getElementById('historico-content');
+                    const arquivoContentDiv = document.getElementById('arquivo-content');
+                    const estatisticasContentDiv = document.getElementById('estatisticas-content');
+
+                    historicoContentDiv.classList.toggle('active', targetTabId === 'historico');
+                    arquivoContentDiv.classList.toggle('active', targetTabId === 'arquivo');
+                    estatisticasContentDiv.classList.toggle('active', targetTabId === 'estatisticas');
+
+                    if (targetTabId === 'historico') renderizarHistorico();
+                    else if (targetTabId === 'arquivo') setupArquivoTab();
+                    else if (targetTabId === 'estatisticas') renderizarEstatisticas();
                 });
             });
 
             editModeActive = false;
             if (tabBtnEditarModo) {
                 tabBtnEditarModo.classList.remove('active-edit-mode');
-                tabBtnEditarModo.textContent = "Editar Designações";
+                tabBtnEditarModo.textContent = "Editar";
             }
 
             const btnAplicar = document.getElementById('btn-aplicar-filtros');
             const btnLimpar = document.getElementById('btn-limpar-filtros');
             if(btnAplicar) btnAplicar.addEventListener('click', aplicarEAtualizarFiltros);
-            else console.error("Botão btn-aplicar-filtros não encontrado");
             if(btnLimpar) {
                 btnLimpar.addEventListener('click', () => {
-                    editModeActive = false; // Reset edit mode on filter clear
+                    editModeActive = false;
                     if (tabBtnEditarModo) {
                         tabBtnEditarModo.classList.remove('active-edit-mode');
-                        tabBtnEditarModo.textContent = "Editar Designações";
+                        tabBtnEditarModo.textContent = "Editar";
                     }
                     limparEAtualizarFiltros();
                 });
             }
-            else console.error("Botão btn-limpar-filtros não encontrado");
 
-            // Lógica para o botão de toggle dos filtros da pessoa
             const btnToggleFiltrosPessoa = document.getElementById('btn-toggle-filtros-pessoa');
-            const filtrosPessoaContainer = document.getElementById('filtros-pessoa-container');
+            const filtrosWrapperMobile = document.querySelector('.filtros-wrapper-mobile'); 
 
-            if (btnToggleFiltrosPessoa && filtrosPessoaContainer) {
+            if (btnToggleFiltrosPessoa && filtrosWrapperMobile) {
                 const btnTextElement = btnToggleFiltrosPessoa.querySelector('.btn-toggle-text');
-                const btnToggleIconElement = btnToggleFiltrosPessoa.querySelector('.toggle-icon');
-
+                
                 btnToggleFiltrosPessoa.addEventListener('click', () => {
-                    filtrosPessoaContainer.classList.toggle('filtros-visiveis');
-                    btnToggleFiltrosPessoa.classList.toggle('active'); // Controla a rotação do ícone via CSS
-
-                    if (filtrosPessoaContainer.classList.contains('filtros-visiveis')) {
-                        if (btnTextElement) btnTextElement.textContent = "Ocultar Filtros";
-                        if (btnToggleIconElement) {
-                            btnToggleIconElement.classList.remove('fa-chevron-down');
-                            btnToggleIconElement.classList.add('fa-chevron-up');
-                        }
-                    } else {
-                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros";
-                        if (btnToggleIconElement) {
-                            btnToggleIconElement.classList.remove('fa-chevron-up');
-                            btnToggleIconElement.classList.add('fa-chevron-down');
-                        }
+                    const isMobile = window.innerWidth <= 768;
+                    filtrosWrapperMobile.classList.toggle('filtros-visiveis');
+                    btnToggleFiltrosPessoa.classList.toggle('active');
+                    const isNowVisible = filtrosWrapperMobile.classList.contains('filtros-visiveis');
+                    if (btnTextElement) {
+                        btnTextElement.textContent = isNowVisible ? "Ocultar Filtros" : "Mostrar Filtros";
+                    }
+                    if (!isMobile) {
+                        filtrosWrapperMobile.style.display = isNowVisible ? 'grid' : 'none';
                     }
                 });
-
+                
                 function adjustFilterDisplayOnLoadOrResize() {
                     const isMobile = window.innerWidth <= 768;
-
+                    filtrosWrapperMobile.style.display = '';
                     if (!isMobile) {
-                        // On desktop, ensure filters are visible and button is reset
-                        filtrosPessoaContainer.classList.remove('filtros-visiveis'); // This class makes it hidden in mobile-first CSS
-                        filtrosPessoaContainer.style.maxHeight = ""; // Remove inline style if any
-                        filtrosPessoaContainer.style.opacity = "";
-                        filtrosPessoaContainer.style.paddingTop = "";
-                        filtrosPessoaContainer.style.paddingBottom = "";
-                        filtrosPessoaContainer.style.marginBottom = "";
-
-                        btnToggleFiltrosPessoa.classList.remove('active');
-                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros"; // Default text
-                        if (btnToggleIconElement) {
-                             btnToggleIconElement.classList.remove('fa-chevron-up');
-                             btnToggleIconElement.classList.add('fa-chevron-down');
-                        }
-                        return;
-                    }
-                    // In mobile, respect the current state (if already opened by user or default collapsed)
-                    const isCurrentlyVisible = filtrosPessoaContainer.classList.contains('filtros-visiveis');
-                    btnToggleFiltrosPessoa.classList.toggle('active', isCurrentlyVisible);
-
-                    if (isCurrentlyVisible) {
-                        if (btnTextElement) btnTextElement.textContent = "Ocultar Filtros";
-                        if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-down'); btnToggleIconElement.classList.add('fa-chevron-up');}
-                    } else { // Collapsed by default in mobile
-                        if (btnTextElement) btnTextElement.textContent = "Mostrar Filtros";
-                        if (btnToggleIconElement) { btnToggleIconElement.classList.remove('fa-chevron-up'); btnToggleIconElement.classList.add('fa-chevron-down');}
+                        btnToggleFiltrosPessoa.style.display = 'flex';
+                        const isVisible = filtrosWrapperMobile.classList.contains('filtros-visiveis');
+                        filtrosWrapperMobile.style.display = isVisible ? 'block' : 'none';
+                    } else {
+                        btnToggleFiltrosPessoa.style.display = 'flex';
                     }
                 }
-                adjustFilterDisplayOnLoadOrResize(); // Call on structure creation
-                window.addEventListener('resize', adjustFilterDisplayOnLoadOrResize); // Adjust on window resize
+                adjustFilterDisplayOnLoadOrResize();
+                window.addEventListener('resize', adjustFilterDisplayOnLoadOrResize);
             }
         }
+        
+        function setupArquivoTab() {
+            const submenuButtons = document.querySelectorAll('#arquivo-content .gs-old-submenu-button');
+            
+            submenuButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    submenuButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const filtro = button.dataset.filtro;
+                    renderizarArquivo(filtro);
+                });
+            });
+
+            const filtroInicial = document.querySelector('#arquivo-content .gs-old-submenu-button.active')?.dataset.filtro || 'semana';
+            renderizarArquivo(filtroInicial);
+        }
+
+       function renderizarArquivo(filtroGenero) {
+    console.log(`Renderizando arquivo com filtro: ${filtroGenero}`);
+    const listaResultadosUl = document.getElementById('arquivo-resultados-lista');
+    if (!listaResultadosUl) {
+        console.error("Elemento #arquivo-resultados-lista não encontrado.");
+        return;
+    }
+
+    listaResultadosUl.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Filtrando designações...</p>';
+
+    // Filtra as designações da pessoa atual
+    const designacoesFiltradas = designacoesDaPessoaAtual.filter(desig => {
+        const elemento = todosElementos.find(el => (el.designacao || el.nome) === desig.nome);
+        if (!elemento) return false;
+
+        // O filtro "Pregação" é um 'tipo', enquanto os outros são 'generoReuniao'
+        if (filtroGenero === 'pregacao') {
+            return elemento.tipo === 'pregacao';
+        }
+        // Para os outros filtros, verificamos o generoReuniao
+        return elemento.generoReuniao === filtroGenero;
+    });
+
+    // Ordena por data, da mais recente para a mais antiga
+    const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
+        const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
+        const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
+        return dateB - dateA;
+    });
+
+    listaResultadosUl.innerHTML = ''; // Limpa a lista para os novos resultados
+
+    if (designacoesOrdenadas.length === 0) {
+        listaResultadosUl.innerHTML = '<li style="text-align:center; color:#777; margin-top:20px; padding: 10px;">Nenhuma designação encontrada para este filtro.</li>';
+        return;
+    }
+    
+    // Reutiliza a lógica de separador de mês do histórico para consistência
+    let mesAnoAtualSeparador = null;
+    let primeiroSeparadorAdicionado = false;
+
+    designacoesOrdenadas.forEach(desig => {
+        const dataFormatada = `${String(desig.dia).padStart(2, '0')}/${String(desig.mes).padStart(2, '0')}/${desig.ano}`;
+        const nomeMesAnoSeparador = `${new Date(desig.ano, desig.mes - 1).toLocaleString('pt-BR', { month: 'long' })} de ${desig.ano}`;
+
+        if (mesAnoAtualSeparador !== nomeMesAnoSeparador) {
+            mesAnoAtualSeparador = nomeMesAnoSeparador;
+            const separadorLi = document.createElement('li');
+            separadorLi.className = 'month-separator';
+            if (!primeiroSeparadorAdicionado) {
+                separadorLi.classList.add('first-month-separator');
+                primeiroSeparadorAdicionado = true;
+            }
+            // LINHA MODIFICADA: Adicionada a tag <strong> para o negrito
+            separadorLi.innerHTML = `<strong>${nomeMesAnoSeparador.charAt(0).toUpperCase() + nomeMesAnoSeparador.slice(1)}</strong>`;
+            listaResultadosUl.appendChild(separadorLi);
+        }
+        
+        const li = document.createElement('li');
+        // Adiciona um padding e borda para se assemelhar aos itens do histórico
+        li.style.padding = "8px 10px";
+        li.style.borderBottom = "1px solid #eee";
+
+        const participantesString = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean).join(' - ');
+        li.textContent = `${dataFormatada} | ${desig.nome}: ${participantesString}`;
+        listaResultadosUl.appendChild(li);
+    });
+}
 
         function popularFiltros() {
             console.log("popularFiltros: Iniciando");
@@ -1662,49 +1875,44 @@
                 return;
             }
 
-               // MODIFIED: Added .filter(Boolean) for robustness and parseInt in sort
-               const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+            const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
             const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a, b) => a.localeCompare(b));
 
-            // Usar 'semana' descritiva se disponível, senão 'semanaISO'
-           // Usar 'semana' descritiva se disponível, senão 'semanaISO'
             const semanasUnicasComDatas = designacoesDaPessoaAtual
-                .filter(d => (d.semana && typeof d.semana === 'string') || d.semanaISO) // Ensure one of them exists
+                .filter(d => (d.semana && typeof d.semana === 'string') || d.semanaISO)
                 .map(d => ({
-                    valorSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`, // Fallback to ISO if descriptive not present
-                    textoSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`, // Display text
+                    valorSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`,
+                    textoSemana: d.semana || `Semana ISO ${d.semanaISO} (${d.ano})`,
                     ano: parseInt(d.ano),
                     mes: parseInt(d.mes),
                     dia: parseInt(d.dia)
                 }))
-                .reduce((acc, current) => { // Remove duplicatas baseadas no 'valorSemana'
+                .reduce((acc, current) => {
                     if (!acc.find(item => item.valorSemana === current.valorSemana)) {
                         acc.push(current);
                     }
                     return acc;
                 }, [])
-                .sort((a, b) => { // Ordena pela data de início da semana
+                .sort((a, b) => {
                     const dateA = new Date(a.ano, a.mes - 1, a.dia);
                     const dateB = new Date(b.ano, b.mes - 1, b.dia);
                     return dateA - dateB;
                 });
 
+            const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.valorSemana}">${item.textoSemana}</option>`).join('');
 
-                const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.valorSemana}">${item.textoSemana}</option>`).join('');
+            filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
+            if (anos.length > 0) {
+                filtroAnoSelect.value = anos[0];
+            } else {
+                filtroAnoSelect.value = "";
+            }
 
-filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
-// MODIFICATION: Set default to most recent year
-if (anos.length > 0) {
-    filtroAnoSelect.value = anos[0];
-} else {
-    filtroAnoSelect.value = "";
-}
+            filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
+            filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
 
-filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
-filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
-
-console.log("popularFiltros: Filtros de detalhes populados.");
-}
+            console.log("popularFiltros: Filtros de detalhes populados.");
+        }
 
         function aplicarEAtualizarFiltros() {
             console.log("aplicarEAtualizarFiltros: Aplicando filtros.");
@@ -1716,13 +1924,12 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             const mes = mesEl ? mesEl.value : "";
             const ano = anoEl ? anoEl.value : "";
             const elemento = elemEl ? elemEl.value : "";
-            const semana = semanaEl ? semanaEl.value : ""; // This will be the descriptive week string or ISO week string
+            const semana = semanaEl ? semanaEl.value : "";
 
             designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
                 const matchMes = !mes || d.mes === mes;
                 const matchAno = !ano || d.ano === ano;
                 const matchElemento = !elemento || d.nome === elemento;
-                // Match 'semana' (descriptive) if available, otherwise 'semanaISO' (if descriptive not available)
                 const matchSemana = !semana || (d.semana === semana) || (!d.semana && d.semanaISO && `Semana ISO ${d.semanaISO} (${d.ano})` === semana);
                 return matchMes && matchAno && matchElemento && matchSemana;
             });
@@ -1756,19 +1963,17 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 return;
             }
             const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
-                // Use Date objects for robust sorting
                 const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
                 const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
-                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0; // Handle invalid dates
-                return dateB - dateA; // Sort descending (most recent first)
+                if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                return dateB - dateA;
             });
-
 
             const ul = document.createElement('ul');
             let currentMonthYearForColor = null;
-            let currentWeekForColor = null; // This will store the descriptive week string or ISO week if descriptive not available
+            let currentWeekForColor = null;
             let colorIndex = 0;
-            const weekColors = ['#f8f9fa', '#e9ecef']; // Light gray, slightly darker gray
+            const weekColors = ['#f8f9fa', '#e9ecef'];
 
             let mesAnoAtualSeparador = null;
             let primeiroSeparadorAdicionado = false;
@@ -1789,9 +1994,9 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     }
                     separadorLi.textContent = nomeMesAnoSeparador.charAt(0).toUpperCase() + nomeMesAnoSeparador.slice(1);
                     ul.appendChild(separadorLi);
-                    currentMonthYearForColor = `${desig.mes}/${desig.ano}`; // For resetting color logic per month
-                    currentWeekForColor = null; // Reset week tracking for new month
-                    colorIndex = 0; // Reset color index for new month
+                    currentMonthYearForColor = `${desig.mes}/${desig.ano}`;
+                    currentWeekForColor = null;
+                    colorIndex = 0;
                 }
 
                 const li = document.createElement('li');
@@ -1799,10 +2004,9 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 li.style.justifyContent = 'space-between';
                 li.style.alignItems = 'center';
 
-                // Determine the week string to use for coloring
                 const weekIdentifier = desig.semana || (desig.semanaISO ? `ISO-${desig.semanaISO}-${desig.ano}` : `UnknownWeek-${desig.data}`);
 
-                if (currentMonthYearForColor !== `${desig.mes}/${desig.ano}`) { // Should not happen if month separator logic is correct
+                if (currentMonthYearForColor !== `${desig.mes}/${desig.ano}`) {
                     currentMonthYearForColor = `${desig.mes}/${desig.ano}`;
                     currentWeekForColor = weekIdentifier;
                     colorIndex = 0;
@@ -1811,7 +2015,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     colorIndex = (colorIndex + 1) % weekColors.length;
                 }
                 li.style.backgroundColor = weekColors[colorIndex];
-
 
                 const nomeElementoDesig = desig.nome;
                 const elementoCorrespondente = todosElementos.find(el => (el.designacao || el.nome) === nomeElementoDesig);
@@ -1834,7 +2037,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 if (participantesString) {
                     textoFinal += `: ${participantesString}`;
                 }
-                 // Add "Orador Público" specific info
                 if (desig.nome === "Orador Público" && (desig.tema || desig.congregacao)) {
                     textoFinal += ` (`;
                     if (desig.tema) textoFinal += `Tema: ${desig.tema}`;
@@ -1842,7 +2044,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     if (desig.congregacao) textoFinal += `Cong: ${desig.congregacao}`;
                     textoFinal += `)`;
                 }
-
 
                 const textSpan = document.createElement('span');
                 textSpan.textContent = textoFinal;
@@ -1864,7 +2065,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     ultimoItemDeDesignacaoReal.style.borderBottom = 'none';
                 }
                 historicoContent.appendChild(ul);
-            } else if (designacoesFiltradas.length > 0) { // Should not happen if filtering leads to 0 results
+            } else if (designacoesFiltradas.length > 0) {
                 historicoContent.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Erro ao exibir histórico.</p>';
             }
             console.log("renderizarHistorico: Histórico renderizado.");
@@ -1911,7 +2112,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             };
 
             selectElementoDesignacaoEdit.onchange = toggleOradorFieldsEdit;
-            toggleOradorFieldsEdit(); // Call once to set initial state
+            toggleOradorFieldsEdit();
 
             if (designacaoAtualParaEdicao.nome === "Orador Público") {
                 temaOradorEditInput.value = designacaoAtualParaEdicao.tema || '';
@@ -1935,7 +2136,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
                 if (!id) { alert("Erro: ID da designação não encontrado."); return; }
                 if (!nomeElemento) { alert("Selecione um elemento."); return; }
-                if (!pA && !pB && !pC && nomeElemento !== "Orador Público") { // Orador público pode não ter pessoa local
+                if (!pA && !pB && !pC && nomeElemento !== "Orador Público") {
                      alert("Selecione pelo menos uma pessoa para designações que não sejam 'Orador Público'.");
                      return;
                 }
@@ -1971,24 +2172,15 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     ano: ano,
                     ultimaModificacao: serverTimestamp()
                 };
-                // Manter o campo 'semana' (descritivo)
-                // Se a data mudou, a string 'semana' PODE precisar ser recalculada.
-                // Por agora, vamos manter a lógica de semanaISO e se a string 'semana' existir, ela será mantida
-                // ou atualizada se a função 'gerarStringSemanaDescritiva' for implementada e chamada.
+                
                 if (designacaoAtualParaEdicao && designacaoAtualParaEdicao.semana) {
                      if (designacaoAtualParaEdicao.data !== dataStr) {
-                        // Idealmente, recalcular 'semana' aqui se a lógica existir.
-                        // Ex: updateData.semana = gerarStringSemanaDescritiva(new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia)));
-                        // Por simplicidade, se a data muda, a antiga string 'semana' pode ficar dessincronizada.
-                        // Ou você pode optar por removê-la ou limpá-la se a data mudar.
                         console.warn("Data alterada, a string 'semana' descritiva pode não corresponder mais se não for recalculada.");
-                        // Para este exemplo, vamos manter a existente se não for recalculada
-                        updateData.semana = designacaoAtualParaEdicao.semana; // Or set to null, or recalculate
+                        updateData.semana = designacaoAtualParaEdicao.semana;
                     } else {
                          updateData.semana = designacaoAtualParaEdicao.semana;
                     }
                 }
-
 
                 try {
                     const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
@@ -2007,7 +2199,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     updateData.tema = temaOradorEditInput.value.trim() || null;
                     updateData.congregacao = congregacaoOradorEditInput.value.trim() || null;
                 } else {
-                    updateData.tema = null; // Firebase SDK v9 não tem deleteField, usar null
+                    updateData.tema = null;
                     updateData.congregacao = null;
                 }
 
@@ -2016,9 +2208,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     await updateDoc(designacaoRef, updateData);
                     alert("Designação atualizada com sucesso!");
                     fecharModal(modalEditarDesignacao);
-
-                    await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id); // Recarrega dados da pessoa atual
-                    todasDesignacoesGlobaisCarregadas = false; // Forçar recarregamento das stats globais se necessário
+                    await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id);
+                    todasDesignacoesGlobaisCarregadas = false;
 
                 } catch (error) {
                     console.error("Erro ao atualizar designação: ", error);
@@ -2038,15 +2229,12 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 return;
             }
 
-            let allCardsHtml = ''; // String para acumular o HTML de todos os cards
+            let allCardsHtml = '';
 
-            // Card: Total de Designações
             const totalDesignacoes = designacoesFiltradas.length;
             allCardsHtml += `<div class="stat-card"><h4>Total de Designações</h4><span class="stat-value">${totalDesignacoes}</span><span class="stat-label">(Com filtro aplicado)</span></div>`;
 
-            // --- Card: Elementos Mais Realizados ---
             const contagemElementos = designacoesFiltradas.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
-            // Guardar 'todosElementosRealizados' para uso na função interna e no gráfico
             const todosElementosRealizadosOriginal = Object.entries(contagemElementos).sort(([, a], [, b]) => b - a || (a.nome || '').localeCompare(b.nome || ''));
 
             allCardsHtml += `<div class="stat-card">
@@ -2055,12 +2243,10 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                                 <a href="#" id="link-mostrar-todos-elementos-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
                              </div>`;
 
-            // --- Card: Parceiros Mais Frequentes ---
             const contagemParceiros = designacoesFiltradas.reduce((acc, d) => {
                 [d.pessoaA, d.pessoaB, d.pessoaC].filter(p => p && p !== pessoaSelecionadaAtual.nome).forEach(parceiro => acc[parceiro] = (acc[parceiro] || 0) + 1);
                 return acc;
             }, {});
-             // Guardar 'todosParceirosFrequentes' para uso na função interna
             const todosParceirosFrequentesOriginal = Object.entries(contagemParceiros).sort(([, a], [, b]) => b - a || (a[0] || '').localeCompare(b[0] || ''));
 
             allCardsHtml += `<div class="stat-card">
@@ -2069,7 +2255,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                                 <a href="#" id="link-mostrar-todos-parceiros-pessoa" class="mostrar-todos-link" style="display:none;">Mostrar mais</a>
                              </div>`;
 
-            // --- Card: Verificar Designação Conjunta ---
             const pessoasDisponiveisParaConjunta = todasPessoas
                 .filter(p => pessoaSelecionadaAtual && p.id !== pessoaSelecionadaAtual.id && p.estaVisivel !== false)
                 .map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
@@ -2086,14 +2271,13 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                                 <div id="resultado-verificacao-conjunta"></div>
                              </div>`;
 
-            // --- Card: Média de Participações (vs Global) ---
             let mediaGlobalDesignacoes = 0;
             let comparacaoStr = "Não foi possível calcular a média global (dados globais de designações ou pessoas não carregados).";
             const countPessoaAtual = designacoesFiltradas.length;
 
             const filtroMesVal = document.getElementById('filtro-mes')?.value || "";
             const filtroAnoVal = document.getElementById('filtro-ano')?.value || "";
-            const filtroElementoVal = document.getElementById('filtro-elemento')?.value || ""; // Filtro principal da pessoa
+            const filtroElementoVal = document.getElementById('filtro-elemento')?.value || "";
             const filtroSemanaVal = document.getElementById('filtro-semana')?.value || "";
 
             if (todasDesignacoesGlobaisCarregadas && todasPessoas.length > 0) {
@@ -2101,9 +2285,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     const matchMes = !filtroMesVal || d.mes === filtroMesVal;
                     const matchAno = !filtroAnoVal || d.ano === filtroAnoVal;
                     const matchElemento = !filtroElementoVal || d.nome === filtroElementoVal;
-                     // Match 'semana' (descriptive) or 'semanaISO' based on how filtroSemanaVal is structured
                     const matchSemana = !filtroSemanaVal || (d.semana === filtroSemanaVal) || (!d.semana && d.semanaISO && `Semana ISO ${d.semanaISO} (${d.ano})` === filtroSemanaVal);
-
                     return matchMes && matchAno && matchElemento && matchSemana;
                 });
 
@@ -2140,7 +2322,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     <p style="font-size:0.9em; line-height:1.5;">${comparacaoStr}</p>
                 </div>`;
 
-            // --- GRÁFICOS ---
             allCardsHtml += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
             
             const desigPorMes = {};
@@ -2150,7 +2331,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             designacoesFiltradas.forEach(d => {
                 const mesAnoKey = `${d.ano}-${String(d.mes).padStart(2, '0')}`;
                 desigPorMes[mesAnoKey] = (desigPorMes[mesAnoKey] || 0) + 1;
-                // Use 'semana' (descriptive) if available for chart label, otherwise use 'semanaISO'
                 const semanaLabel = d.semana || (d.semanaISO ? `ISO ${d.semanaISO} (${d.ano})` : "Semana Desconhecida");
                 if (semanaLabel !== "Semana Desconhecida") {
                     desigPorSemana[semanaLabel] = (desigPorSemana[semanaLabel] || 0) + 1;
@@ -2164,23 +2344,16 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Ano</h4><canvas id="chartDesigPorAno"></canvas></div>
             `;
 
-            // Define o innerHTML de statsContent UMA VEZ com todo o HTML acumulado
             statsContent.innerHTML = allCardsHtml;
 
-            // Agora que o DOM está estável, defina as funções de renderização de lista e anexe os listeners
-
-            // Função para renderizar lista de Elementos Mais Realizados
             function renderListaElementosPessoaInterna() {
                 const listaUl = document.getElementById('lista-elementos-pessoa');
                 const link = document.getElementById('link-mostrar-todos-elementos-pessoa');
                 if (!listaUl || !link) {
-                    // console.error("renderListaElementosPessoaInterna: UL ou Link não encontrado!");
                     return;
                 }
-
                 listaUl.innerHTML = '';
                 const dadosParaRenderizar = mostrandoTodosElementosPessoa ? todosElementosRealizadosOriginal : todosElementosRealizadosOriginal.slice(0, 5);
-
                 if (dadosParaRenderizar.length > 0) {
                     dadosParaRenderizar.forEach(([nome, count]) => {
                         const li = document.createElement('li');
@@ -2190,7 +2363,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 } else {
                     listaUl.innerHTML = '<li>Nenhum dado de elemento.</li>';
                 }
-
                 if (todosElementosRealizadosOriginal.length > 5) {
                     link.style.display = 'inline-block';
                     link.textContent = mostrandoTodosElementosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosElementosRealizadosOriginal.length})`;
@@ -2198,28 +2370,24 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     link.style.display = 'none';
                 }
             }
-            renderListaElementosPessoaInterna(); // Renderiza inicialmente
+            renderListaElementosPessoaInterna();
             const linkElementos = document.getElementById('link-mostrar-todos-elementos-pessoa');
             if (linkElementos) {
                 linkElementos.addEventListener('click', (e) => {
                     e.preventDefault();
                     mostrandoTodosElementosPessoa = !mostrandoTodosElementosPessoa;
-                    renderListaElementosPessoaInterna(); // Chama a função interna para re-renderizar
+                    renderListaElementosPessoaInterna();
                 });
             }
 
-            // Função para renderizar lista de Parceiros Mais Frequentes
             function renderListaParceirosPessoaInterna() {
                 const listaUl = document.getElementById('lista-parceiros-pessoa');
                 const link = document.getElementById('link-mostrar-todos-parceiros-pessoa');
                 if (!listaUl || !link) {
-                    // console.error("renderListaParceirosPessoaInterna: UL ou Link não encontrado!");
                     return;
                 }
-
                 listaUl.innerHTML = '';
                 const dadosParaRenderizar = mostrandoTodosParceirosPessoa ? todosParceirosFrequentesOriginal : todosParceirosFrequentesOriginal.slice(0, 3);
-
                 if (dadosParaRenderizar.length > 0) {
                     dadosParaRenderizar.forEach(([nome, count]) => {
                         const li = document.createElement('li');
@@ -2229,7 +2397,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 } else {
                     listaUl.innerHTML = '<li>Nenhum parceiro frequente ou só fez designações sozinho(a).</li>';
                 }
-
                 if (todosParceirosFrequentesOriginal.length > 3) {
                     link.style.display = 'inline-block';
                     link.textContent = mostrandoTodosParceirosPessoa ? 'Mostrar menos' : `Mostrar todos (${todosParceirosFrequentesOriginal.length})`;
@@ -2237,23 +2404,21 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     link.style.display = 'none';
                 }
             }
-            renderListaParceirosPessoaInterna(); // Renderiza inicialmente
+            renderListaParceirosPessoaInterna();
             const linkParceiros = document.getElementById('link-mostrar-todos-parceiros-pessoa');
             if(linkParceiros) {
                 linkParceiros.addEventListener('click', (e) => {
                     e.preventDefault();
                     mostrandoTodosParceirosPessoa = !mostrandoTodosParceirosPessoa;
-                    renderListaParceirosPessoaInterna(); // Chama a função interna para re-renderizar
+                    renderListaParceirosPessoaInterna();
                 });
             }
 
-            // Listener para Verificar Designação Conjunta
             const btnVerificar = document.getElementById('btn-verificar-conjunta');
             if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
 
-            // Renderizar Gráficos
             if (designacoesChart && typeof designacoesChart.destroy === 'function') designacoesChart.destroy();
-            const labelsElementosChart = Object.keys(contagemElementos); // Usar contagemElementos que já foi calculado
+            const labelsElementosChart = Object.keys(contagemElementos);
             const dataCountsElementosChart = Object.values(contagemElementos);
             if (labelsElementosChart.length > 0) {
                 designacoesChart = renderChart(designacoesChart, 'designacoesPorElementoChart', 'bar',
@@ -2272,22 +2437,20 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 });
             } else { const el = document.getElementById('chartDesigPorMes'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico mensal.</p>"; }
             
-            // Sort week labels if they are descriptive (e.g., "Maio 2025 | 5 - 11")
              const labelsSemana = Object.keys(desigPorSemana).sort((a, b) => {
                 const parseWeekString = (weekStr) => {
-                    if (weekStr.startsWith("ISO")) { // "ISO 19 (2025)"
+                    if (weekStr.startsWith("ISO")) {
                         const isoParts = weekStr.match(/ISO\s*(\d+)\s*\((\d{4})\)/);
-                        if (isoParts) return new Date(parseInt(isoParts[2]), 0, (parseInt(isoParts[1]) -1) * 7 + 1); // Approx start date
-                        return new Date(0); // Invalid
+                        if (isoParts) return new Date(parseInt(isoParts[2]), 0, (parseInt(isoParts[1]) -1) * 7 + 1);
+                        return new Date(0);
                     }
-                    // "Maio 2025 | 5 - 11"
                     const descParts = weekStr.match(/^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})/i);
                      const monthMap = { 'janeiro':0,'fevereiro':1,'março':2,'abril':3,'maio':4,'junho':5,'julho':6,'agosto':7,'setembro':8,'outubro':9,'novembro':10,'dezembro':11};
                     if (descParts) {
                         const monthNum = monthMap[descParts[1].toLowerCase()];
                         if (monthNum !== undefined) return new Date(parseInt(descParts[2]), monthNum, parseInt(descParts[3]));
                     }
-                    return new Date(0); // Invalid or unparseable
+                    return new Date(0);
                 };
                 return parseWeekString(a) - parseWeekString(b);
             });
@@ -2298,7 +2461,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     datasets: [{ label: 'Nº Designações', data: labelsSemana.map(k => desigPorSemana[k]), backgroundColor: 'rgba(153, 102, 255, 0.2)', borderColor: 'rgba(153, 102, 255, 1)'}]
                 }, { scales: { x: { ticks: { autoSkip: labelsSemana.length > 15, maxRotation: labelsSemana.length > 10 ? 90 : 0, minRotation: labelsSemana.length > 10 ? 45 : 0 } } } });
             } else { const el = document.getElementById('chartDesigPorSemana'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico semanal.</p>"; }
-
 
             const labelsAno = Object.keys(desigPorAno).sort();
             if (labelsAno.length > 0) {
@@ -2421,7 +2583,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     const modalToClose = document.getElementById(modalId);
                     if (modalToClose) fecharModal(modalToClose);
                 } else {
-                    // Fallback para fechar o modal pai mais próximo se data-modal-id não estiver presente
                     const parentModal = button.closest('.modal');
                     if (parentModal) fecharModal(parentModal);
                 }
@@ -2430,7 +2591,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
         window.addEventListener('click', (event) => {
             if (event.target.classList.contains('modal')) {
-                if (event.target.style.display === 'block') { // Só fecha se estiver visível
+                if (event.target.style.display === 'block') {
                     fecharModal(event.target);
                 }
             }
@@ -2455,23 +2616,22 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                         await updateDoc(docRef, pessoaData);
                         alert("Pessoa atualizada com sucesso!");
                     } else {
-                        pessoaData.estaVisivel = true; // Default para novas pessoas
+                        pessoaData.estaVisivel = true;
                         await addDoc(collection(db, "pessoas"), pessoaData);
                         alert("Pessoa criada com sucesso!");
                     }
                     formCriarPessoa.reset();
                     fecharModal(modalPessoa);
-                    await carregarPessoas(); // Recarrega a lista principal
+                    await carregarPessoas();
                     if (editId && pessoaSelecionadaAtual && pessoaSelecionadaAtual.id === editId) {
-                        // Se a pessoa editada era a selecionada, recarrega seus detalhes
                         const pessoaAtualizada = todasPessoas.find(p => p.id === editId);
                         if (pessoaAtualizada) {
-                            pessoaSelecionadaAtual = pessoaAtualizada; // Atualiza o objeto global
-                            carregarDesignacoesDaPessoa(pessoaAtualizada.id); // Recarrega designações e renderiza
-                        } else { // Pessoa pode ter sido removida por outro processo (improvável aqui)
-                             colunaDetalhesDiv.innerHTML = ''; // Limpa
+                            pessoaSelecionadaAtual = pessoaAtualizada;
+                            carregarDesignacoesDaPessoa(pessoaAtualizada.id);
+                        } else {
+                             colunaDetalhesDiv.innerHTML = '';
                              colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                             colunaDetalhesContent.style.display = 'flex'; // Mostra placeholder
+                             colunaDetalhesContent.style.display = 'flex';
                         }
                     }
                 } catch (error) { console.error("Erro ao salvar pessoa: ", error); alert("Erro: " + error.message); }
@@ -2486,7 +2646,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 const generoReuniao = generoElementoSelect.value;
                 if (!nomeElemento) { alert("O nome do elemento é obrigatório."); return; }
                 const elementoData = {
-                    designacao: nomeElemento, // Usar 'designacao' para o nome do elemento
+                    designacao: nomeElemento,
                     tipo: tipo,
                     generoReuniao: tipo === 'reuniao' ? generoReuniao : null,
                     criadoEm: serverTimestamp()
@@ -2496,7 +2656,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     alert("Elemento criado com sucesso!");
                     formCriarElemento.reset();
                     fecharModal(modalElemento);
-                    await carregarTodosElementosParaEstatisticas(); // Recarrega para dropdowns e stats
+                    await carregarTodosElementosParaEstatisticas();
                 } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Erro: " + error.message); }
             });
         }
@@ -2511,7 +2671,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 const dataStr = dataDesignacaoInput.value;
 
                 if (!nomeElemento) { alert("Selecione um elemento."); return; }
-                 if (!pA && !pB && !pC && nomeElemento !== "Orador Público") { // Orador público pode não ter pessoa local
+                 if (!pA && !pB && !pC && nomeElemento !== "Orador Público") {
                      alert("Selecione pelo menos uma pessoa para designações que não sejam 'Orador Público'.");
                      return;
                 }
@@ -2533,21 +2693,17 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     return;
                 }
 
-
                 const designacaoData = {
-                    nome: nomeElemento, // Nome do elemento da designação
-                    elementoId: elementoOriginalObj.id, // ID do elemento original
+                    nome: nomeElemento,
+                    elementoId: elementoOriginalObj.id,
                     pessoaA: pA || null, pessoaB: pB || null, pessoaC: pC || null,
                     participantes: participantes, data: dataStr, dia: dia.padStart(2, '0'),
                     mes: mes.padStart(2, '0'), ano: ano, criadoEm: serverTimestamp()
                 };
-                 // Adicionar semanaISO
                 try {
                     const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                      if (!isNaN(dateObj.getTime())) {
                         designacaoData.semanaISO = getISOWeek(dateObj);
-                        // Potentially add descriptive 'semana' string here if logic is available
-                        // designacaoData.semana = gerarStringSemanaDescritiva(dateObj);
                      } else {
                         console.warn("Data inválida ao criar designação, semanaISO não será definida:", dataStr);
                         designacaoData.semanaISO = null;
@@ -2556,29 +2712,16 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                      console.warn("Erro ao calcular semanaISO na criação da designação:", error);
                      designacaoData.semanaISO = null;
                 }
-                // Add Orador Público specific fields if applicable
-                if (nomeElemento === "Orador Público") {
-                    // These fields would ideally be in the "Criar Designação" modal if needed at creation time
-                    // For now, assuming they are not part of the creation form for simplicity,
-                    // but they are handled in the edit form.
-                    // If you add them to the creation modal, get their values here:
-                    // const temaOradorInput = document.getElementById('tema-orador-criar-modal');
-                    // const congregacaoOradorInput = document.getElementById('congregacao-orador-criar-modal');
-                    // if (temaOradorInput) designacaoData.tema = temaOradorInput.value.trim() || null;
-                    // if (congregacaoOradorInput) designacaoData.congregacao = congregacaoOradorInput.value.trim() || null;
-                }
-
 
                 try {
                     await addDoc(collection(db, "designacoes"), designacaoData);
                     alert("Designação criada com sucesso!");
                     formCriarDesignacao.reset();
                     fecharModal(modalDesignacao);
-                    // Se a pessoa atualmente selecionada participou, recarrega seus detalhes
                     if (pessoaSelecionadaAtual && (pessoaSelecionadaAtual.nome === pA || pessoaSelecionadaAtual.nome === pB || pessoaSelecionadaAtual.nome === pC)) {
                         await carregarDesignacoesDaPessoa(pessoaSelecionadaAtual.id);
                     }
-                    if (todasDesignacoesGlobaisCarregadas) todasDesignacoesGlobaisCarregadas = false; // Forçar recarregamento
+                    if (todasDesignacoesGlobaisCarregadas) todasDesignacoesGlobaisCarregadas = false;
                 } catch (error) { console.error("Erro ao criar designação: ", error); alert("Erro: " + error.message); }
             });
         }
@@ -2592,7 +2735,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
         function renderListaGerenciarPessoas() {
             if (!listaGerenciarPessoasUl) return;
-            listaGerenciarPessoasUl.innerHTML = ''; // Limpa antes de repopular
+            listaGerenciarPessoasUl.innerHTML = '';
             todasPessoas.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(pessoa => {
                 const li = document.createElement('li');
                 li.innerHTML = `
@@ -2610,7 +2753,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 `;
                 listaGerenciarPessoasUl.appendChild(li);
             });
-            // Reatribuir event listeners
             listaGerenciarPessoasUl.querySelectorAll('.btn-toggle-visibilidade').forEach(btn => btn.addEventListener('click', async (e) => {
                 await toggleVisibilidadePessoa(e.target.dataset.id, !(e.target.dataset.visivel === 'true'));
             }));
@@ -2623,9 +2765,28 @@ console.log("popularFiltros: Filtros de detalhes populados.");
         async function toggleVisibilidadePessoa(pessoaId, novoEstadoVisibilidade) {
             try {
                 await updateDoc(doc(db, "pessoas", pessoaId), { estaVisivel: novoEstadoVisibilidade });
-                await carregarPessoas(); // Recarrega todas as pessoas para atualizar a lista principal
-                renderListaGerenciarPessoas(); // Re-renderiza a lista no modal de gerenciamento
+                await carregarPessoas();
+                renderListaGerenciarPessoas();
             } catch (error) { console.error("Erro ao alterar visibilidade: ", error); alert("Erro."); }
+        }
+
+        function resetarColunaDetalhes() {
+            console.log("Resetando a coluna de detalhes para a visão inicial.");
+            const pessoasAtivas = document.querySelectorAll('#lista-pessoas li.active');
+            pessoasAtivas.forEach(li => {
+                li.classList.remove('active');
+            });
+            pessoaSelecionadaAtual = null;
+            if (colunaDetalhesDiv && colunaDetalhesContent) {
+                colunaDetalhesDiv.innerHTML = '';
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent);
+                colunaDetalhesContent.style.display = 'flex';
+            }
+        }
+
+        const tituloPessoasH2 = document.querySelector('#coluna-pessoas h2');
+        if (tituloPessoasH2) {
+            tituloPessoasH2.addEventListener('click', resetarColunaDetalhes);
         }
 
         function editarPessoa(pessoaId) {
@@ -2640,8 +2801,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             pregacaoPessoaSelect.value = pessoa.pregacao || '';
             modalPessoaTitulo.textContent = 'Editar Pessoa';
             btnSubmitPessoa.textContent = 'Salvar Alterações';
-            fecharModal(modalGerenciarPessoas); // Fecha o modal de gerenciar
-            abrirModal(modalPessoa); // Abre o modal de criar/editar pessoa
+            fecharModal(modalGerenciarPessoas);
+            abrirModal(modalPessoa);
         }
 
         async function removerPessoa(pessoaId) {
@@ -2650,41 +2811,35 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 alert("Pessoa removida.");
                 await carregarPessoas();
                 renderListaGerenciarPessoas();
-                 // Se a pessoa removida era a selecionada, limpa a coluna de detalhes
                  if (pessoaSelecionadaAtual && pessoaSelecionadaAtual.id === pessoaId) {
                     pessoaSelecionadaAtual = null;
-                    colunaDetalhesDiv.innerHTML = ''; // Limpa
-                    colunaDetalhesDiv.appendChild(colunaDetalhesContent); // Readiciona o placeholder
-                    colunaDetalhesContent.style.display = 'flex'; // Mostra o placeholder
+                    colunaDetalhesDiv.innerHTML = '';
+                    colunaDetalhesDiv.appendChild(colunaDetalhesContent);
+                    colunaDetalhesContent.style.display = 'flex';
                 }
             } catch (error) { console.error("Erro ao remover pessoa: ", error); alert("Erro."); }
         }
 
-        // --- FUNÇÕES PARA O CUSTOM MULTI-SELECT DE PESSOAS ---
         function initGsPessoasCustomMultiselect() {
             if (!gsPessoasSelectMulti || !gsPessoasSearchInputCustom || !gsPessoasDropdownCustomDiv || !gsSelectedPessoasAreaDiv) {
                 console.warn("Elementos do custom multi-select de pessoas não encontrados.");
                 return;
             }
-             // Ensure gsPessoasSelectMulti is populated if it's empty but todasPessoas has data
             if (gsPessoasSelectMulti.options.length === 0 && todasPessoas.length > 0) {
-                popularDropdownsPessoasNosModais(); // This should populate gsPessoasSelectMulti
+                popularDropdownsPessoasNosModais();
             }
-
 
             availablePessoasForCustomSelect = Array.from(gsPessoasSelectMulti.options).map(opt => ({
                 id: opt.value,
                 nome: opt.textContent
             }));
 
-            gsPessoasSearchInputCustom.removeEventListener('input', handleGsPessoasSearch); // Remove previous if any
+            gsPessoasSearchInputCustom.removeEventListener('input', handleGsPessoasSearch);
             gsPessoasSearchInputCustom.addEventListener('input', handleGsPessoasSearch);
 
-            gsPessoasSearchInputCustom.removeEventListener('focus', openDropdownAndRender); // Remove previous
+            gsPessoasSearchInputCustom.removeEventListener('focus', openDropdownAndRender);
             gsPessoasSearchInputCustom.addEventListener('focus', openDropdownAndRender);
-
-            // Clear previous selections in the hidden select and update visual tags
-            // Array.from(gsPessoasSelectMulti.options).forEach(opt => opt.selected = false); // Don't clear on tab switch
+            
             updateSelectedPessoasTagsDisplay();
         }
 
@@ -2692,7 +2847,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             renderGsPessoasDropdown(gsPessoasSearchInputCustom.value);
             gsPessoasDropdownCustomDiv.style.display = 'block';
         }
-
 
         function handleGsPessoasSearch(event) {
             const searchTerm = event.target.value.toLowerCase().trim();
@@ -2702,33 +2856,22 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
         function renderGsPessoasDropdown(searchTerm = "") {
             if (!gsPessoasDropdownCustomDiv) return;
-
             const selectedPessoaIds = Array.from(gsPessoasSelectMulti.selectedOptions).map(opt => opt.value);
-
             const filteredPessoas = availablePessoasForCustomSelect.filter(pessoa =>
                 pessoa.nome.toLowerCase().includes(searchTerm)
             );
-
             gsPessoasDropdownCustomDiv.innerHTML = '';
             const ul = document.createElement('ul');
-
-            if (filteredPessoas.length === 0 && searchTerm) {
+            if (filteredPessoas.length === 0) {
                 const li = document.createElement('li');
-                li.textContent = 'Nenhuma pessoa encontrada.';
+                li.textContent = searchTerm ? 'Nenhuma pessoa encontrada.' : 'Nenhuma pessoa disponível.';
                 li.style.color = '#777';
                 ul.appendChild(li);
-            } else if (filteredPessoas.length === 0 && !searchTerm && availablePessoasForCustomSelect.length === 0) {
-                const li = document.createElement('li');
-                li.textContent = 'Nenhuma pessoa disponível.';
-                li.style.color = '#777';
-                ul.appendChild(li);
-            }
-            else {
+            } else {
                  filteredPessoas.forEach(pessoa => {
                     const li = document.createElement('li');
                     li.textContent = pessoa.nome;
                     li.dataset.pessoaId = pessoa.id;
-
                     if (selectedPessoaIds.includes(pessoa.id)) {
                         li.classList.add('disabled');
                     } else {
@@ -2764,13 +2907,11 @@ console.log("popularFiltros: Filtros de detalhes populados.");
         function updateSelectedPessoasTagsDisplay() {
             if (!gsSelectedPessoasAreaDiv || !gsPessoasSelectMulti) return;
             gsSelectedPessoasAreaDiv.innerHTML = '';
-
             const selectedOptions = Array.from(gsPessoasSelectMulti.selectedOptions);
             selectedOptions.forEach(option => {
                 const tagDiv = document.createElement('div');
                 tagDiv.className = 'pessoa-tag';
                 tagDiv.textContent = option.textContent;
-
                 const removeBtn = document.createElement('button');
                 removeBtn.className = 'remove-tag-btn';
                 removeBtn.innerHTML = '&times;';
@@ -2780,31 +2921,23 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     e.stopPropagation();
                     removePessoaFromComparison(option.value);
                 });
-
                 tagDiv.appendChild(removeBtn);
                 gsSelectedPessoasAreaDiv.appendChild(tagDiv);
             });
         }
 
-
-        // --- Funções para o NOVO MODAL DE ESTATÍSTICAS GLOBAIS ---
-
-        // --- FUNÇÃO PARA GERENCIAR SUBMENU DA ABA "ANÁLISES ANTERIORES" ---
         function setupGsOldSubmenu() {
             const gsOldContentDiv = document.getElementById('gs-old-content');
             if (!gsOldContentDiv) {
                 console.warn("Div gs-old-content não encontrada para configurar submenu.");
                 return;
             }
-
             const submenuButtons = gsOldContentDiv.querySelectorAll('.gs-old-submenu-button');
-            const submenuSections = gsOldContentDiv.querySelectorAll('#gs-old-content > .stats-card-section'); // More specific selector
-
+            const submenuSections = gsOldContentDiv.querySelectorAll('#gs-old-content > .stats-card-section');
             submenuButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     submenuButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-
                     const targetSectionId = button.dataset.submenuTarget;
                     submenuSections.forEach(section => {
                         section.classList.remove('active-submenu-section');
@@ -2815,17 +2948,14 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 });
             });
             
-            // Ensure one sub-tab is active by default if none are explicitly set
             let activeSubmenuButton = gsOldContentDiv.querySelector('.gs-old-submenu-button.active');
             if (!activeSubmenuButton && submenuButtons.length > 0) {
-                submenuButtons[0].classList.add('active'); // Make first button active
+                submenuButtons[0].classList.add('active');
                 activeSubmenuButton = submenuButtons[0];
             }
             
-            // Hide all sections first
             submenuSections.forEach(section => section.classList.remove('active-submenu-section'));
             
-            // Then show the one corresponding to the (now) active button
             if (activeSubmenuButton) {
                 const targetId = activeSubmenuButton.dataset.submenuTarget;
                 const targetSection = document.getElementById(targetId);
@@ -2849,7 +2979,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 if (targetContentId === 'gs-total-content') {
                     atualizarAbaTotalGlobalStats();
                 } else if (targetContentId === 'gs-pessoas-content') {
-                     initGsPessoasCustomMultiselect(); // Ensure it's initialized when tab becomes active
+                     initGsPessoasCustomMultiselect();
                 } else if (targetContentId === 'gs-designacoes-content') {
                     popularListaElementosAbaDesignacoes();
                 } else if (targetContentId === 'gs-old-content') {
@@ -2857,13 +2987,12 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 }
             });
         });
-         // Close custom dropdown if clicked outside
+
         document.addEventListener('click', (e) => {
             if (gsPessoasCustomMultiselectDiv && !gsPessoasCustomMultiselectDiv.contains(e.target) && gsPessoasDropdownCustomDiv) {
                 gsPessoasDropdownCustomDiv.style.display = 'none';
             }
         });
-
 
         async function carregarTodasDesignacoesParaStatsGlobais() {
             if (todasDesignacoesGlobaisCarregadas) {
@@ -2883,11 +3012,9 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                              if (!isNaN(dateObj.getTime())) {
                                 data.semanaISO = getISOWeek(dateObj);
                             } else {
-                                // console.warn("Data inválida para designação global, semanaISO não calculada:", data.data, docSnap.id);
                                 data.semanaISO = null;
                             }
                         } catch (e) {
-                            // console.warn("Erro ao converter data para semanaISO (global):", data.data, docSnap.id, e);
                             data.semanaISO = null;
                         }
                     }
@@ -2904,9 +3031,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
         function popularFiltrosStatsGlobais() {
             if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
-            if (todosElementos.length === 0 && !document.getElementById('gs-total-filtro-elemento-tipo')) { /* If no elements, can't populate element filters*/ }
-            if (todasPessoas.length === 0 && !document.getElementById('gs-pessoa-esp-select')) { /* If no people, can't populate people filters */ }
-
+            if (todosElementos.length === 0 && !document.getElementById('gs-total-filtro-elemento-tipo')) { }
+            if (todasPessoas.length === 0 && !document.getElementById('gs-pessoa-esp-select')) { }
 
             const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
             const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
@@ -2924,40 +3050,30 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 const currentVal = select.value;
                 select.innerHTML = '<option value="">Todos</option>';
                 mesesUnicos.forEach(mes => select.appendChild(new Option(getNomeMes(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
-                // Try to preserve selection if still valid, otherwise default to "Todos"
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
 
             [gsTopPessoasAnoSelect, gsTodasDesigAnoSelect, gsPessoaEspAnoFiltroSelect, gsTotalFiltroAnoSelect, gsPessoasFiltroAnoSelect, gsDesignacoesFiltroAnoSelect].forEach(select => {
                 if (!select) return;
-                // const currentVal = select.value; // Previous selection no longer preserved for year by default
                 select.innerHTML = '<option value="">Todos</option>';
                 anosUnicos.forEach(ano => select.appendChild(new Option(ano, ano)));
-                // MODIFICATION: Set default to most recent year if available
                 if (anosUnicos.length > 0) {
                     select.value = anosUnicos[0];
                 } else {
-                    select.value = ""; // Default to "Todos" if no years
+                    select.value = "";
                 }
             });
 
-            [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => { // Adicionado gsTopPessoasElementoSelect
+            [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => {
                 if (!select) return;
                 const currentVal = select.value;
-                select.innerHTML = '<option value="">Todos Elementos</option>'; // Default option
+                select.innerHTML = '<option value="">Todos Elementos</option>';
                 elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
-                 // Try to preserve selection if still valid, otherwise default to "Todos Elementos"
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
 
             console.log("Filtros do modal de estatísticas globais populados/atualizados.");
         }
-
-
-
-
-
-
 
         function getPessoaById(id) {
             return todasPessoas.find(p => p.id === id);
@@ -2971,8 +3087,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             if (!todasDesignacoesGlobaisCarregadas) {
                 await carregarTodasDesignacoesParaStatsGlobais();
                 if (!todasDesignacoesGlobaisCarregadas) {
-                     gsTotalNumDesignacoesSpan.textContent = "-"; // Indicate data not loaded
-                     // Clear other fields as well
+                     gsTotalNumDesignacoesSpan.textContent = "-";
                     return;
                 }
             }
@@ -3008,14 +3123,14 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             gsTotalNumDesigItSpan.textContent = countIt;
             gsTotalNumDesigOutroIdiomaSpan.textContent = countOutroIdioma;
 
-            renderListaTiposDesignacaoTotal(); // This filters elements based on another dropdown
+            renderListaTiposDesignacaoTotal();
 
             const dadosGraficoTotal = {};
             const dadosGraficoGenero = { Masculino: {}, Feminino: {} };
             const dadosGraficoIdioma = { Português: {}, Italiano: {}, Outro: {} };
 
             designacoesFiltradas.forEach(d => {
-                const chaveMesAno = `${d.ano}-${String(d.mes).padStart(2,'0')}`; // Ensure month is padded
+                const chaveMesAno = `${d.ano}-${String(d.mes).padStart(2,'0')}`;
                 dadosGraficoTotal[chaveMesAno] = (dadosGraficoTotal[chaveMesAno] || 0) + 1;
 
                 Object.keys(d.participantes || {}).forEach(nomeParticipante => {
@@ -3056,7 +3171,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 ]}, { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } } }
             );
 
-            const numMesesConsiderados = sortedLabels.length || 1; // Avoid division by zero
+            const numMesesConsiderados = sortedLabels.length || 1;
             gsTotalMediaDesignacoesSpan.textContent = (designacoesFiltradas.length / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigMascSpan.textContent = (countMasc / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigFemSpan.textContent = (countFem / numMesesConsiderados).toFixed(1);
@@ -3074,48 +3189,39 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             }
             setSectionLoadingState('gs-total-elementos', true);
             const tipoReuniaoFiltro = gsTotalFiltroElementoTipoSelect.value;
-            const anoFiltroGlobal = gsTotalFiltroAnoSelect.value; // Get global year filter
-            const mesFiltroGlobal = gsTotalFiltroMesSelect.value; // Get global month filter
-
+            const anoFiltroGlobal = gsTotalFiltroAnoSelect.value;
+            const mesFiltroGlobal = gsTotalFiltroMesSelect.value;
 
             const elementosFiltradosPorTipo = todosElementos.filter(el => {
                 if (tipoReuniaoFiltro && el.tipo === 'reuniao') {
                     return el.generoReuniao === tipoReuniaoFiltro;
                 }
-                if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false; // If filter is for a meeting type, non-meeting elements are out
-                return true; // If no tipoReuniaoFiltro, or element is not 'reuniao' and filter is not for 'reuniao'
+                if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false;
+                return true;
             });
 
             gsTotalElementosListUl.innerHTML = '';
             let countElementosExibidos = 0;
 
-            if (elementosFiltradosPorTipo.length === 0) {
-                // gsTotalElementosListUl.innerHTML = '<li>Nenhum tipo de elemento corresponde ao filtro de reunião.</li>';
-            } else {
+            if (elementosFiltradosPorTipo.length > 0) {
                  elementosFiltradosPorTipo.forEach(el => {
                     const nomeEl = el.designacao || el.nome;
-                    // Count occurrences of this element within the globally filtered designações (by year/month)
                     const countDesigElemento = todasDesignacoesGlobais.filter(d => {
                         const matchAno = !anoFiltroGlobal || d.ano === anoFiltroGlobal;
                         const matchMes = !mesFiltroGlobal || String(d.mes).padStart(2,'0') === String(mesFiltroGlobal).padStart(2,'0');
                         return d.nome === nomeEl && matchAno && matchMes;
                     }).length;
-
-                    if (countDesigElemento > 0 || !tipoReuniaoFiltro) { // Show if has occurrences or if no type filter (shows all elements)
+                    if (countDesigElemento > 0 || !tipoReuniaoFiltro) {
                         const li = document.createElement('li');
                         li.classList.add('clickable');
                         li.innerHTML = `${nomeEl} <span class="count">${countDesigElemento} ocorrências</span>`;
-                        li.addEventListener('click', () => abrirModalInstancias(nomeEl)); // abrirModalInstancias will use its own filters or global ones
+                        li.addEventListener('click', () => abrirModalInstancias(nomeEl));
                         gsTotalElementosListUl.appendChild(li);
                         countElementosExibidos++;
                     }
                 });
             }
             gsTotalElementosCountSpan.textContent = countElementosExibidos;
-             if (countElementosExibidos === 0 && (tipoReuniaoFiltro || anoFiltroGlobal || mesFiltroGlobal)) {
-                // gsTotalElementosListUl.innerHTML = '<li>Nenhum elemento com ocorrências para os filtros atuais.</li>';
-                // The :empty::before pseudo-element should handle this now.
-            }
 
             setSectionLoadingState('gs-total-elementos', false);
         }
@@ -3136,9 +3242,9 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
             const anoFiltro = gsPessoasFiltroAnoSelect.value;
             const mesFiltro = gsPessoasFiltroMesSelect.value;
-            const semanaFiltro = gsPessoasFiltroSemanaInput.value; // This is ISO week number
-            const generoFiltro = gsPessoasFiltroGeneroSelect.value; // Filters based on person's gender
-            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value; // Filters based on person's language
+            const semanaFiltro = gsPessoasFiltroSemanaInput.value;
+            const generoFiltro = gsPessoasFiltroGeneroSelect.value;
+            const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value;
 
             gsPessoasComparisonAreaDiv.innerHTML = '';
 
@@ -3146,24 +3252,17 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 const pessoaObj = getPessoaById(pessoaId);
                 if (!pessoaObj) continue;
 
-                // Apply gender/language filters for the person *before* iterating designacoes
                 if (generoFiltro && pessoaObj.genero !== generoFiltro) continue;
                 if (idiomaFiltro && pessoaObj.idioma !== idiomaFiltro) continue;
 
-
                 let designacoesDaPessoaFiltradas = todasDesignacoesGlobais.filter(d => {
                     if (!d.participantes || !d.participantes[pessoaObj.nome]) return false;
-
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
                     const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
-
                     let matchSemana = true;
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
                     }
-                    // Genero/Idioma já foi filtrado para a pessoa em si.
-                    // Se precisar filtrar designações por genero/idioma dos *outros* participantes, a lógica seria mais complexa aqui.
-                    // Por agora, parece que o filtro de genero/idioma é para as *pessoas* sendo comparadas.
                     return matchAno && matchMes && matchSemana;
                 });
 
@@ -3171,25 +3270,22 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 card.className = 'pessoa-comparison-card';
                 let cardHTML = `<h5>${pessoaObj.nome} <small>(${pessoaObj.genero}, ${pessoaObj.idioma})</small></h5><ul>`;
                 cardHTML += `<li>Total Designações (filt.): <span class="stat-value">${designacoesDaPessoaFiltradas.length}</span></li>`;
-
                 const contagemElementosPessoa = designacoesDaPessoaFiltradas.reduce((acc, d) => {
                     acc[d.nome] = (acc[d.nome] || 0) + 1;
                     return acc;
                 }, {});
                 const top3Elementos = Object.entries(contagemElementosPessoa).sort((a,b) => b[1]-a[1]).slice(0,3);
-
                 cardHTML += `<li>Top Elementos:</li><ul>`;
                 if (top3Elementos.length > 0) {
                     top3Elementos.forEach(([elNome, count]) => cardHTML += `<li>${elNome}: ${count}</li>`);
                 } else {
                     cardHTML += `<li>Nenhum com filtros atuais</li>`;
                 }
-                cardHTML += `</ul>`;
-                cardHTML += `</ul>`;
+                cardHTML += `</ul></ul>`;
                 card.innerHTML = cardHTML;
                 gsPessoasComparisonAreaDiv.appendChild(card);
             }
-            if(gsPessoasComparisonAreaDiv.innerHTML === '') { // If all selected people were filtered out by genero/idioma
+            if(gsPessoasComparisonAreaDiv.innerHTML === '') {
                  gsPessoasComparisonAreaDiv.innerHTML = '<p style="text-align:center; color:#777;">Nenhuma pessoa corresponde aos filtros de Gênero/Idioma ou não têm designações nos outros filtros.</p>';
             }
 
@@ -3201,16 +3297,12 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado ou lista não encontrada.</li>';
                 return;
             }
-             setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros'); // Pass button ID
+             setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros');
             gsDesignacoesTiposListUl.innerHTML = '';
-
             if (todosElementos.length === 0) {
-                // gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado.</li>'; // :empty::before will handle
                 setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
                 return;
             }
-
-
             todosElementos.forEach(el => {
                 const nomeEl = el.designacao || el.nome;
                 const li = document.createElement('li');
@@ -3218,7 +3310,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 li.classList.add('clickable');
                 li.dataset.elementoNome = nomeEl;
                 li.addEventListener('click', () => {
-                    abrirModalInstancias(nomeEl, true); // true = aplicar filtros da aba "Designações"
+                    abrirModalInstancias(nomeEl, true);
                 });
                 gsDesignacoesTiposListUl.appendChild(li);
             });
@@ -3235,20 +3327,17 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             let instanciasFiltradas = todasDesignacoesGlobais.filter(d => d.nome === nomeElemento);
 
             if (aplicarFiltrosDaAbaDesignacoes) {
-                // Use values from the "Designações" tab filters
                 const diaFiltro = gsDesignacoesFiltroDiaInput.value;
                 const mesFiltro = gsDesignacoesFiltroMesSelect.value;
                 const anoFiltro = gsDesignacoesFiltroAnoSelect.value;
-                const semanaFiltro = gsDesignacoesFiltroSemanaInput.value; // Assumes ISO week number
-                const generoFiltroParticipante = gsDesignacoesFiltroGeneroSelect.value; // Filtro de Gênero do *Participante*
-                const idiomaFiltroParticipante = gsDesignacoesFiltroIdiomaSelect.value; // Filtro de Idioma do *Participante*
-
+                const semanaFiltro = gsDesignacoesFiltroSemanaInput.value;
+                const generoFiltroParticipante = gsDesignacoesFiltroGeneroSelect.value;
+                const idiomaFiltroParticipante = gsDesignacoesFiltroIdiomaSelect.value;
 
                 instanciasFiltradas = instanciasFiltradas.filter(d => {
                     const matchDia = !diaFiltro || d.dia === String(diaFiltro).padStart(2, '0');
                     const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                     const matchAno = !anoFiltro || d.ano === anoFiltro;
-
                     let matchSemana = true;
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
@@ -3256,35 +3345,32 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     
                     let atendeFiltroParticipante = true;
                     if (generoFiltroParticipante || idiomaFiltroParticipante) {
-                        atendeFiltroParticipante = false; // Assume false until a participant matches
+                        atendeFiltroParticipante = false;
                         if (d.participantes) {
                             for (const nomeP of Object.keys(d.participantes)) {
-                                if (d.participantes[nomeP]) { // Only consider actual participants
+                                if (d.participantes[nomeP]) {
                                     const pessoa = todasPessoas.find(p => p.nome === nomeP);
                                     if (pessoa) {
                                         const matchGeneroEsteP = !generoFiltroParticipante || pessoa.genero === generoFiltroParticipante;
                                         const matchIdiomaEsteP = !idiomaFiltroParticipante || pessoa.idioma === idiomaFiltroParticipante;
-                                        if(matchGeneroEsteP && matchIdiomaEsteP) { // If this participant matches both (or non-set filters)
+                                        if(matchGeneroEsteP && matchIdiomaEsteP) {
                                             atendeFiltroParticipante = true;
-                                            break; // Found a matching participant for this designation
+                                            break;
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
-
                     return matchDia && matchMes && matchAno && matchSemana && atendeFiltroParticipante;
                 });
             }
 
             instanciasFiltradas.sort((a, b) => {
-                 // Use Date objects for robust sorting
                 const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
                 const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-                return dateB - dateA; // Sort descending
+                return dateB - dateA;
             });
 
             modalInstanciasListUl.innerHTML = '';
@@ -3340,25 +3426,19 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
 
-            gsTopPessoasMostrandoApenasTop5 = true; // Reset state to show top 5 initially
-            renderTopPessoasList(); // Call without argument
+            gsTopPessoasMostrandoApenasTop5 = true;
+            renderTopPessoasList();
             setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
         }
 
-        function renderTopPessoasList() { // Argument `apenasTop5` removed
+        function renderTopPessoasList() {
             if (!gsTopPessoasListUl || !gsTopPessoasMostrarTodosLink) return;
-            gsTopPessoasListUl.innerHTML = ''; // Clear previous
+            gsTopPessoasListUl.innerHTML = '';
 
-            // Use the global state variable
             const dadosParaRenderizar = gsTopPessoasMostrandoApenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
 
-            if (dadosParaRenderizar.length === 0 && topPessoasDadosCompletos.length > 0) {
-                // This case means we are trying to show top 5 of an empty filtered list, or all of an empty list
-                // Let the :empty::before CSS handle it if topPessoasDadosCompletos is truly empty
-            } else if (dadosParaRenderizar.length === 0 && topPessoasDadosCompletos.length === 0) {
-                // :empty::before CSS will show "Nenhum dado..."
-            }
-            else {
+            if (dadosParaRenderizar.length === 0) {
+            } else {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
                     li.innerHTML = `${item.nome} <span class="count">${item.count}</span>`;
@@ -3367,7 +3447,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             }
 
             gsTopPessoasMostrarTodosLink.style.display = topPessoasDadosCompletos.length > 5 ? 'inline-block' : 'none';
-            // Update text based on the global state
             gsTopPessoasMostrarTodosLink.textContent = gsTopPessoasMostrandoApenasTop5 ? `Mostrar lista completa (${topPessoasDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
@@ -3379,7 +3458,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 return;
             }
 
-
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
             const elementoFiltro = gsTodasDesigElementoSelect.value;
@@ -3390,20 +3468,16 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 return matchMes && matchAno && matchElemento;
             }).sort((a, b) => {
-                // Use Date objects for robust sorting
                 const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
                 const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-                return dateB - dateA; // Sort descending
+                return dateB - dateA;
             });
 
             gsTodasDesigListUl.innerHTML = '';
             if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'none';
 
-            if (designacoesFiltradasGlobal.length === 0) {
-                // gsTodasDesigListUl.innerHTML = '<li>Nenhuma designação encontrada.</li>'; // :empty::before handles this
-            }
-            else {
+            if (designacoesFiltradasGlobal.length > 0) {
                 designacoesFiltradasGlobal.forEach(d => {
                     const li = document.createElement('li');
                     const participantesStr = [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean).join(', ');
@@ -3432,7 +3506,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
-            const elementoFiltro = gsTodasDesigElementoSelect.value; // Filtro de elemento também se aplica aqui
+            const elementoFiltro = gsTodasDesigElementoSelect.value;
 
             let designacoesParaAgrupar = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
@@ -3451,24 +3525,18 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
             if (gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
             gsTodasDesigAgrupadoContainerDiv.style.display = 'block';
-            gsTopElementosAgrupadosMostrandoApenasTop5 = true; // Reset state
-            renderTopElementosAgrupadosList(); // Call without argument
+            gsTopElementosAgrupadosMostrandoApenasTop5 = true;
+            renderTopElementosAgrupadosList();
             setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-agrupar');
         }
 
-        function renderTopElementosAgrupadosList() { // Argument `apenasTop5` removed
+        function renderTopElementosAgrupadosList() {
             if (!gsTodasDesigAgrupadoListUl || !gsTodasDesigAgrupadoMostrarTodosLink) return;
             gsTodasDesigAgrupadoListUl.innerHTML = '';
 
-            // Use the global state variable
             const dadosParaRenderizar = gsTopElementosAgrupadosMostrandoApenasTop5 ? topElementosAgrupadosDadosCompletos.slice(0, 5) : topElementosAgrupadosDadosCompletos;
 
-            if (dadosParaRenderizar.length === 0 && topElementosAgrupadosDadosCompletos.length > 0) {
-                // As above, let :empty::before handle empty list message
-            } else if (dadosParaRenderizar.length === 0 && topElementosAgrupadosDadosCompletos.length === 0) {
-                // :empty::before
-            }
-            else {
+            if (dadosParaRenderizar.length > 0) {
                 dadosParaRenderizar.forEach(item => {
                     const li = document.createElement('li');
                     li.innerHTML = `${item.nome} <span class="count">${item.count}</span>`;
@@ -3476,7 +3544,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 });
             }
             gsTodasDesigAgrupadoMostrarTodosLink.style.display = topElementosAgrupadosDadosCompletos.length > 5 ? 'inline-block' : 'none';
-            // Update text based on the global state
             gsTodasDesigAgrupadoMostrarTodosLink.textContent = gsTopElementosAgrupadosMostrandoApenasTop5 ? `Mostrar lista completa (${topElementosAgrupadosDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
@@ -3489,9 +3556,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 return;
             }
 
-
             const pessoaIdSelecionada = gsPessoaEspSelect.value;
-            const pessoaObj = getPessoaById(pessoaIdSelecionada); // Usa a função helper
+            const pessoaObj = getPessoaById(pessoaIdSelecionada);
             const nomePessoaSelecionada = pessoaObj ? pessoaObj.nome : null;
 
             const elementoFiltro = gsPessoaEspElementoFiltroSelect.value;
@@ -3513,7 +3579,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
             const designacoesDaPessoa = designacoesFiltradas.filter(d => d.participantes && d.participantes[nomePessoaSelecionada]);
             const totalDesigPessoa = designacoesDaPessoa.length;
-            let mediaGeral = 0, totalDesigOutrasPessoasNoPeriodo = 0, numeroOutrasPessoasComDesigNoPeriodo = 0;
+            let mediaGeral = 0;
 
             if (todasPessoas.length > 1) {
                 const outrasPessoasVisiveis = todasPessoas.filter(p => p.nome !== nomePessoaSelecionada && p.estaVisivel !== false);
@@ -3523,20 +3589,16 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                     const desigDestaOutra = designacoesFiltradas.filter(d => d.participantes && d.participantes[outraPessoa.nome]).length;
                     if (desigDestaOutra > 0) { somaDesigOutrasPessoas += desigDestaOutra; countPessoasComDesig++; }
                 });
-                totalDesigOutrasPessoasNoPeriodo = somaDesigOutrasPessoas;
-                numeroOutrasPessoasComDesigNoPeriodo = countPessoasComDesig;
-                if (numeroOutrasPessoasComDesigNoPeriodo > 0) mediaGeral = totalDesigOutrasPessoasNoPeriodo / numeroOutrasPessoasComDesigNoPeriodo;
+                if (countPessoasComDesig > 0) mediaGeral = somaDesigOutrasPessoas / countPessoasComDesig;
             }
 
             let htmlResultado = `<p><strong>${nomePessoaSelecionada}</strong> teve <strong>${totalDesigPessoa}</strong> designações no período.</p>`;
-            if (numeroOutrasPessoasComDesigNoPeriodo > 0) {
-                 htmlResultado += `<p>Média para outras ${numeroOutrasPessoasComDesigNoPeriodo} pessoas (visíveis): <strong>${mediaGeral.toFixed(1)}</strong>.</p>`;
+            if (mediaGeral > 0) {
+                 htmlResultado += `<p>Média para outras pessoas: <strong>${mediaGeral.toFixed(1)}</strong>.</p>`;
                 if (totalDesigPessoa > mediaGeral) htmlResultado += `<p>Desempenho: <span class="acima-media">Acima da média</span>.</p>`;
                 else if (totalDesigPessoa < mediaGeral) htmlResultado += `<p>Desempenho: <span class="abaixo-media">Abaixo da média</span>.</p>`;
                 else htmlResultado += `<p>Desempenho: <span class="na-media">Na média</span>.</p>`;
-            } else if (todasPessoas.filter(p => p.estaVisivel !== false).length === 1 && todasPessoas.filter(p => p.estaVisivel !== false)[0].nome === nomePessoaSelecionada) {
-                 htmlResultado += `<p>Única pessoa visível no sistema.</p>`;
-            } else htmlResultado += `<p>Nenhuma outra pessoa (visível) com designações no período para comparação.</p>`;
+            } 
 
             const desigPessoaPorElemento = designacoesDaPessoa.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
             const sortedDesigPessoaPorElemento = Object.entries(desigPessoaPorElemento).sort((a,b) => b[1] - a[1]);
@@ -3555,11 +3617,9 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             const canvasEl = document.getElementById(canvasId);
             if (!canvasEl) { console.error(`Canvas ${canvasId} não encontrado.`); return null; }
             const ctx = canvasEl.getContext('2d');
-
             if (chartInstance && typeof chartInstance.destroy === 'function') {
                 chartInstance.destroy();
             }
-
             const defaultOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -3575,19 +3635,16 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             }
         }
 
-        // --- Event Listeners para Estatísticas Globais ---
         if (btnGlobalStats) {
             btnGlobalStats.addEventListener('click', async () => {
                 console.log("Botão de Estatísticas Globais clicado.");
-                abrirModal(modalGlobalStats); // Open modal first to show loading state inside it
+                abrirModal(modalGlobalStats);
 
-                // Show loading spinners and disable controls
                 document.querySelectorAll('#modal-global-stats .loading-spinner').forEach(s => s.style.display = 'block');
                 document.querySelectorAll('#modal-global-stats .stats-apply-button, #modal-global-stats .stats-filters select, #modal-global-stats .stats-filters input').forEach(b => b.disabled = true);
 
                 if (todosElementos.length === 0) await carregarTodosElementosParaEstatisticas();
                 if (todasPessoas.length === 0) await carregarPessoas(); 
-
                 if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
 
                 popularFiltrosStatsGlobais();
@@ -3597,26 +3654,24 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 if (activeTab) {
                     const activeTabTargetId = activeTab.dataset.tabTarget;
                     if (activeTabTargetId === 'gs-total-content') {
-                         await atualizarAbaTotalGlobalStats(); // Make it async if it contains await
+                         await atualizarAbaTotalGlobalStats();
                     } else if (activeTabTargetId === 'gs-pessoas-content') {
                          initGsPessoasCustomMultiselect();
                     } else if (activeTabTargetId === 'gs-designacoes-content') {
                         popularListaElementosAbaDesignacoes();
                     } else if (activeTabTargetId === 'gs-old-content') {
-                        setupGsOldSubmenu(); // This sets up clicks, content loaded by individual functions
+                        setupGsOldSubmenu();
                     }
-                } else { // If no tab is active, activate the first one
+                } else {
                     const firstTabButton = document.querySelector('#modal-global-stats .global-stats-tab-button');
                     if(firstTabButton) {
-                        firstTabButton.click(); // This will trigger the logic above for the first tab
+                        firstTabButton.click();
                     }
                 }
 
-                // Hide loading spinners and enable controls
                 document.querySelectorAll('#modal-global-stats .loading-spinner').forEach(s => s.style.display = 'none');
                 document.querySelectorAll('#modal-global-stats .stats-apply-button, #modal-global-stats .stats-filters select, #modal-global-stats .stats-filters input').forEach(b => b.disabled = false);
 
-                // Clear previous results for "Análises Anteriores" when opening modal
                 if(gsTopPessoasListUl) gsTopPessoasListUl.innerHTML = '';
                 if(gsTopPessoasMostrarTodosLink) gsTopPessoasMostrarTodosLink.style.display = 'none';
                 if(gsTodasDesigListUl) gsTodasDesigListUl.innerHTML = '';
@@ -3626,12 +3681,10 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 if(gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = '';
                 if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; 
 
-                // Ensure the correct sub-tab for "Análises Anteriores" is shown if it's the active main tab
                 const currentActiveMainTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
                 if (currentActiveMainTab && currentActiveMainTab.dataset.tabTarget === 'gs-old-content') {
                     setupGsOldSubmenu();
                 }
-
             });
         } else { console.warn("Botão btnGlobalStats não encontrado."); }
 
@@ -3640,8 +3693,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
         if(btnGsPessoasComparar) btnGsPessoasComparar.addEventListener('click', compararPessoasSelecionadas);
         if(btnGsDesignacoesAplicarFiltros) {
              btnGsDesignacoesAplicarFiltros.addEventListener('click', () => {
-                popularListaElementosAbaDesignacoes(); // Re-renders types list; modal for instances will apply these filters
-                // alert("Filtros definidos. Clique num tipo de designação para ver as instâncias filtradas.");
+                popularListaElementosAbaDesignacoes();
             });
         }
 
@@ -3649,8 +3701,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
         if (gsTopPessoasMostrarTodosLink) {
             gsTopPessoasMostrarTodosLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                gsTopPessoasMostrandoApenasTop5 = !gsTopPessoasMostrandoApenasTop5; // Toggle the state
-                renderTopPessoasList(); // Re-render based on the new state
+                gsTopPessoasMostrandoApenasTop5 = !gsTopPessoasMostrandoApenasTop5;
+                renderTopPessoasList();
             });
         }
         if (btnGsTodasDesigAplicar) btnGsTodasDesigAplicar.addEventListener('click', exibirTodasDesignacoes);
@@ -3658,19 +3710,15 @@ console.log("popularFiltros: Filtros de detalhes populados.");
         if (gsTodasDesigAgrupadoMostrarTodosLink) {
             gsTodasDesigAgrupadoMostrarTodosLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                gsTopElementosAgrupadosMostrandoApenasTop5 = !gsTopElementosAgrupadosMostrandoApenasTop5; // Toggle the state
-                renderTopElementosAgrupadosList(); // Re-render based on the new state
+                gsTopElementosAgrupadosMostrandoApenasTop5 = !gsTopElementosAgrupadosMostrandoApenasTop5;
+                renderTopElementosAgrupadosList();
             });
         }
         if (btnGsPessoaEspAplicar) btnGsPessoaEspAplicar.addEventListener('click', analisarDesempenhoPessoa);
 
-
-        // --- FUNÇÕES PARA O MODAL DE RANKING ---
-        // Helper function (can be defined globally or within script scope if not already)
         function getNomeMesRanking(numMes) {
             if (!numMes || isNaN(parseInt(numMes))) return "";
             try {
-                // Ensure month is 1-indexed for Date constructor, so subtract 1
                 return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
             } catch (e) {
                 console.error("Erro em getNomeMesRanking:", e);
@@ -3683,10 +3731,8 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 console.error("Modal de Ranking não encontrado.");
                 return;
             }
-            // Visual cue for loading, if applicable to the filter container
             const rankingFiltersContainer = document.getElementById('ranking-filters-container');
             if (rankingFiltersContainer) rankingFiltersContainer.style.opacity = "0.5";
-
 
             if (!todasDesignacoesGlobaisCarregadas) {
                 console.log("Modal Ranking: Carregando todas as designações globais...");
@@ -3707,7 +3753,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             popularFiltrosRankingPopup();
             setDefaultRankingFilters();
             ordemAtualElementosRanking = [...ORDEM_PADRAO_ELEMENTOS_RANKING];
-            renderRankingList(); // Render list after filters are set
+            renderRankingList();
             abrirModal(modalRanking);
         }
 
@@ -3727,10 +3773,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
             const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
 
-            const monthMap = {
-                'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6,
-                'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12
-            };
+            const monthMap = { 'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 };
 
             const semanasCompletas = todasDesignacoesGlobais
                 .filter(d => d.semana && typeof d.semana === 'string')
@@ -3766,7 +3809,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
             uniqueSemanas.sort((a, b) => {
                 if (a.year !== b.year) return b.year - a.year;
-                if (a.month !== b.month) return b.month - a.month;
+                if (a.month !== b.month) return b.month - b.month;
                 return b.startDay - b.startDay;
             });
 
@@ -3810,7 +3853,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
 
         function setDefaultRankingFilters() {
              if (!rankingFiltroAnoSelect || !rankingFiltroMesSelect || !rankingFiltroSemanaSelect) return;
-
             if (todasDesignacoesGlobais.length === 0) {
                  rankingFiltroAnoSelect.value = "";
                  rankingFiltroMesSelect.value = "";
@@ -3822,40 +3864,38 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             todasDesignacoesGlobais.forEach(d => {
                 if (d.data && d.ano && d.mes && d.dia) {
                     try {
-                        const [day, month, year] = d.data.split('/'); // Ensure correct parsing based on DD/MM/YYYY
+                        const [day, month, year] = d.data.split('/');
                         const dataAtual = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                         if (!isNaN(dataAtual.getTime())) {
                             if (!maisRecente || dataAtual > maisRecente.dataObj) {
                                 maisRecente = { ...d, dataObj: dataAtual };
                             }
                         }
-                    } catch (e) { /* ignore parse errors for this record */ }
+                    } catch (e) { }
                 }
             });
 
             if (maisRecente) {
                 rankingFiltroAnoSelect.value = maisRecente.ano || "";
                 rankingFiltroMesSelect.value = String(maisRecente.mes).padStart(2,'0') || "";
-
                 if (maisRecente.semana && typeof maisRecente.semana === 'string') {
                     const semanaOptionExists = Array.from(rankingFiltroSemanaSelect.options).some(opt => opt.value === maisRecente.semana);
                     if (semanaOptionExists) {
                         rankingFiltroSemanaSelect.value = maisRecente.semana;
                     } else {
-                         rankingFiltroSemanaSelect.value = ""; // Default to "Todas" if exact match not found
+                         rankingFiltroSemanaSelect.value = "";
                     }
                 } else {
                     rankingFiltroSemanaSelect.value = "";
                 }
             } else {
-                // Fallback: select "Todos" or "Todas"
                 rankingFiltroAnoSelect.value = "";
                 rankingFiltroMesSelect.value = "";
                 rankingFiltroSemanaSelect.value = "";
             }
         }
 
-    function renderRankingList() {
+        function renderRankingList() {
             if (!listaRankingDesignacoesUl) return;
             listaRankingDesignacoesUl.innerHTML = '<div class="loading-spinner" style="margin: 10px auto; display: block;"></div>';
 
@@ -3864,13 +3904,12 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             const semanaFiltroValor = rankingFiltroSemanaSelect ? rankingFiltroSemanaSelect.value : "";
 
             const designacoesDaSemanaSelecionada = todasDesignacoesGlobais.filter(d => {
-                const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
-                let matchSemana = true;
                 if (semanaFiltroValor) {
-                    matchSemana = (d.semana === semanaFiltroValor);
+                    return d.semana === semanaFiltroValor;
                 }
-                return matchAno && matchMes && matchSemana;
+                const matchAno = !anoFiltro || d.ano === anoFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2, '0') === String(mesFiltro).padStart(2, '0');
+                return matchAno && matchMes;
             });
 
             listaRankingDesignacoesUl.innerHTML = '';
@@ -3902,9 +3941,7 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 }
 
                 const designacoesParaEsteElemento = designacoesAgrupadasPorNome[nomeElemento] || [];
-
-                // --- INÍCIO DA LÓGICA MODIFICADA ---
-                // Apenas renderiza algo se EXISTIREM designações para este elemento.
+                
                 if (designacoesParaEsteElemento.length > 0) {
                     designacoesParaEsteElemento.forEach((designacaoEspecifica, itemIndex) => {
                         const li = document.createElement('li');
@@ -3914,13 +3951,37 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                         nomeSpan.className = 'designacao-nome';
                         nomeSpan.textContent = (itemIndex === 0) ? nomeElemento : '';
 
-                        const participantesSpan = document.createElement('span');
-                        participantesSpan.className = 'designacao-participantes';
+                        const participantesContainer = document.createElement('span');
+                        participantesContainer.className = 'designacao-participantes';
                         
-                        const participantesNomes = [designacaoEspecifica.pessoaA, designacaoEspecifica.pessoaB, designacaoEspecifica.pessoaC].filter(Boolean).join(' & ');
-                        participantesSpan.textContent = participantesNomes || "Ninguém designado";
-                        if (!participantesNomes) {
-                            participantesSpan.classList.add('ninguem');
+                        const participantesNomes = [designacaoEspecifica.pessoaA, designacaoEspecifica.pessoaB, designacaoEspecifica.pessoaC].filter(Boolean);
+
+                        if (participantesNomes.length > 0) {
+                            participantesNomes.forEach((nome, idx) => {
+                                let posicao = '';
+                                if (designacaoEspecifica.pessoaA === nome) posicao = 'pessoaA';
+                                else if (designacaoEspecifica.pessoaB === nome) posicao = 'pessoaB';
+                                else if (designacaoEspecifica.pessoaC === nome) posicao = 'pessoaC';
+
+                                if (posicao) {
+                                    const nomeEditavelSpan = document.createElement('span');
+                                    nomeEditavelSpan.className = 'participante-editavel';
+                                    nomeEditavelSpan.textContent = nome;
+                                    nomeEditavelSpan.dataset.designacaoId = designacaoEspecifica.id;
+                                    nomeEditavelSpan.dataset.originalNome = nome;
+                                    nomeEditavelSpan.dataset.posicao = posicao;
+                                    nomeEditavelSpan.onclick = iniciarEdicaoParticipante;
+                                    
+                                    participantesContainer.appendChild(nomeEditavelSpan);
+
+                                    if (idx < participantesNomes.length - 1) {
+                                        participantesContainer.append(' & ');
+                                    }
+                                }
+                            });
+                        } else {
+                            participantesContainer.textContent = "Ninguém designado";
+                            participantesContainer.classList.add('ninguem');
                         }
 
                         const reorderDiv = document.createElement('div');
@@ -3929,23 +3990,20 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                         if (itemIndex === 0) {
                             const btnUp = document.createElement('button');
                             btnUp.innerHTML = '<i class="fas fa-arrow-up"></i>';
-                            btnUp.title = "Subir";
                             btnUp.disabled = index === 0 || ordemAtualElementosRanking[index - 1].startsWith("---");
                             btnUp.onclick = () => moverElementoRanking(index, 'up');
 
                             const btnDown = document.createElement('button');
                             btnDown.innerHTML = '<i class="fas fa-arrow-down"></i>';
-                            btnDown.title = "Descer";
                             const nextElementIsSeparator = (index + 1 < ordemAtualElementosRanking.length) && ordemAtualElementosRanking[index + 1].startsWith("---");
                             btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || nextElementIsSeparator;
                             btnDown.onclick = () => moverElementoRanking(index, 'down');
-
                             reorderDiv.appendChild(btnUp);
                             reorderDiv.appendChild(btnDown);
                         }
 
                         li.appendChild(nomeSpan);
-                        li.appendChild(participantesSpan);
+                        li.appendChild(participantesContainer);
                         li.appendChild(reorderDiv);
                         listaRankingDesignacoesUl.appendChild(li);
                     });
@@ -3953,8 +4011,86 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             });
         }
 
+        function iniciarEdicaoParticipante(event) {
+            const spanElement = event.target;
+            const { designacaoId, originalNome, posicao } = spanElement.dataset;
 
-        // --- EVENT LISTENERS ---
+            const select = document.createElement('select');
+            
+            const cancelOption = new Option("— Cancelar Edição —", "");
+            select.appendChild(cancelOption);
+
+            todasPessoas
+                .filter(p => p.estaVisivel !== false)
+                .forEach(pessoa => {
+                    const option = new Option(pessoa.nome, pessoa.nome);
+                    if (pessoa.nome === originalNome) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+
+            const reverterParaSpan = () => {
+                select.replaceWith(spanElement);
+            };
+            
+            select.onchange = () => {
+                const novoNome = select.value;
+                if (novoNome && novoNome !== originalNome) {
+                    atualizarParticipanteDaDesignacao(designacaoId, posicao, novoNome, originalNome);
+                } else {
+                    reverterParaSpan();
+                }
+            };
+
+            select.onblur = reverterParaSpan;
+
+            spanElement.replaceWith(select);
+            select.focus();
+        }
+
+        async function atualizarParticipanteDaDesignacao(designacaoId, posicao, novoNome, nomeAntigo) {
+            console.log(`Atualizando designação ${designacaoId}: Trocando ${nomeAntigo} por ${novoNome} na posição ${posicao}.`);
+
+            const designacaoRef = doc(db, "designacoes", designacaoId);
+
+            try {
+                const docSnap = await getDoc(designacaoRef);
+                if (!docSnap.exists()) {
+                    throw new Error("Documento da designação não foi encontrado!");
+                }
+
+                const designacaoAtual = docSnap.data();
+                const participantesAtuais = { ...designacaoAtual.participantes };
+
+                delete participantesAtuais[nomeAntigo];
+                participantesAtuais[novoNome] = true;
+
+                const updateData = {
+                    [posicao]: novoNome,
+                    participantes: participantesAtuais,
+                    ultimaModificacao: serverTimestamp()
+                };
+
+                await updateDoc(designacaoRef, updateData);
+
+                const index = todasDesignacoesGlobais.findIndex(d => d.id === designacaoId);
+                if (index > -1) {
+                    todasDesignacoesGlobais[index][posicao] = novoNome;
+                    todasDesignacoesGlobais[index].participantes = participantesAtuais;
+                }
+                
+                renderRankingList();
+                
+                alert(`Designação atualizada com sucesso!`);
+
+            } catch (error) {
+                console.error("Erro ao atualizar participante da designação:", error);
+                alert("Falha ao atualizar a designação. Verifique o console para mais detalhes.");
+                renderRankingList();
+            }
+        }
+
         if (btnRankingPopup) {
             btnRankingPopup.addEventListener('click', abrirModalRanking);
         }
@@ -3963,8 +4099,6 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
         }
 
-
-        // --- Inicialização ---
         window.onload = async () => {
             console.log("Window onload: Iniciando aplicação.");
             if (!listaPessoasUl || !colunaDetalhesDiv || !colunaDetalhesContent || !modalGlobalStats) {
@@ -3972,43 +4106,44 @@ console.log("popularFiltros: Filtros de detalhes populados.");
                 alert("Erro crítico ao carregar. Verifique o console.");
                 return;
             }
+
             await carregarPessoas();
             await carregarTodosElementosParaEstatisticas();
-            // Don't await carregarTodasDesignacoesParaStatsGlobais here to speed up initial load.
-            // It will be loaded on demand when Global Stats or Ranking modal is opened.
-            // await carregarTodasDesignacoesParaStatsGlobais();
-            popularDropdownsPessoasNosModais();
+            popularDropdownsPessoasNosModais(); 
 
-            if(colunaDetalhesDiv && colunaDetalhesContent){
-                colunaDetalhesDiv.innerHTML = '';
-                colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                colunaDetalhesContent.style.display = 'flex';
-            }
-
-            // Setup initial state for Global Stats Modal Tabs
-            const primeiraAbaBtnGlobal = document.querySelector('#modal-global-stats .global-stats-tab-button');
-            let activeMainTabInitially = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
-
-            if (!activeMainTabInitially && primeiraAbaBtnGlobal) { // If no tab is active, make the first one active
-                primeiraAbaBtnGlobal.classList.add('active');
-                activeMainTabInitially = primeiraAbaBtnGlobal; // Update for below logic
+            if (colunaDetalhesDiv && colunaDetalhesContent) {
+                colunaDetalhesDiv.innerHTML = ''; 
+                colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
+                colunaDetalhesContent.style.display = 'flex'; 
             }
             
-            // Ensure corresponding content for the active tab is shown
-            if (activeMainTabInitially) {
-                const targetContentId = activeMainTabInitially.dataset.tabTarget;
-                document.querySelectorAll('#modal-global-stats .global-stats-tab-content').forEach(tc => tc.classList.remove('active'));
+            const primeiraAbaBtnGlobal = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button');
+            if (primeiraAbaBtnGlobal && !document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active')) {
+                primeiraAbaBtnGlobal.classList.add('active');
+                const targetContentId = primeiraAbaBtnGlobal.dataset.tabTarget;
                 const targetContent = document.getElementById(targetContentId);
                 if (targetContent) targetContent.classList.add('active');
                 
-                // Specific setup for "Análises Anteriores" if it's the active tab
-                if (targetContentId === 'gs-old-content') {
+                if (targetContentId === 'gs-total-content') await carregarTodasDesignacoesParaStatsGlobais().then(atualizarAbaTotalGlobalStats);
+                else if (targetContentId === 'gs-pessoas-content') initGsPessoasCustomMultiselect();
+                else if (targetContentId === 'gs-designacoes-content') popularListaElementosAbaDesignacoes();
+                else if (targetContentId === 'gs-old-content') { 
                     setupGsOldSubmenu();
                 }
-                // Initial data load for 'gs-total-content' is handled when its tab is clicked or modal opened
+            } else {
+                const activeMainTab = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active');
+                if (activeMainTab && activeMainTab.dataset.tabTarget === 'gs-old-content') {
+                    setupGsOldSubmenu();
+                }
             }
 
-
+            if (btnRankingPopup) {
+                btnRankingPopup.addEventListener('click', abrirModalRanking);
+            }
+            if (btnRankingAplicarFiltros) {
+                btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
+            }
+            
             console.log("Inicialização concluída.");
         };
 
@@ -4016,86 +4151,19 @@ console.log("popularFiltros: Filtros de detalhes populados.");
             const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
             if (newIndex < 0 || newIndex >= ordemAtualElementosRanking.length) return;
-            // Prevent swapping with a separator or moving past it in a way that breaks groups
             if (ordemAtualElementosRanking[newIndex].startsWith("---")) {
-                 // If trying to move up into a separator, try moving to index before separator
                  if (direction === 'up' && newIndex > 0 && ordemAtualElementosRanking[newIndex-1] && !ordemAtualElementosRanking[newIndex-1].startsWith("---")) {
-                    [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex-1]] =
-                    [ordemAtualElementosRanking[newIndex-1], ordemAtualElementosRanking[currentIndex]];
-                 }
-                 // If trying to move down into a separator, try moving to index after separator
-                 else if (direction === 'down' && newIndex < ordemAtualElementosRanking.length - 1 && ordemAtualElementosRanking[newIndex+1] && !ordemAtualElementosRanking[newIndex+1].startsWith("---")) {
-                     [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex+1]] =
-                     [ordemAtualElementosRanking[newIndex+1], ordemAtualElementosRanking[currentIndex]];
+                    [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex-1]] = [ordemAtualElementosRanking[newIndex-1], ordemAtualElementosRanking[currentIndex]];
+                 } else if (direction === 'down' && newIndex < ordemAtualElementosRanking.length - 1 && ordemAtualElementosRanking[newIndex+1] && !ordemAtualElementosRanking[newIndex+1].startsWith("---")) {
+                     [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex+1]] = [ordemAtualElementosRanking[newIndex+1], ordemAtualElementosRanking[currentIndex]];
                  } else {
-                    return; // Cannot make a valid swap
+                    return;
                  }
             } else {
-                 [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex]] =
-                 [ordemAtualElementosRanking[newIndex], ordemAtualElementosRanking[currentIndex]];
+                 [ordemAtualElementosRanking[currentIndex], ordemAtualElementosRanking[newIndex]] = [ordemAtualElementosRanking[newIndex], ordemAtualElementosRanking[currentIndex]];
             }
-
             renderRankingList();
         }
-
-
-
-
-
-
-
-
-        // --- EVENT LISTENERS ---
-        if (btnRankingPopup) {
-            btnRankingPopup.addEventListener('click', abrirModalRanking);
-        }
-
-        if (btnRankingAplicarFiltros) {
-            btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
-        }
-
-
-        // --- Inicialização ---
-        window.onload = async () => {
-            console.log("Window onload: Iniciando aplicação.");
-            if (!listaPessoasUl || !colunaDetalhesDiv || !colunaDetalhesContent || !modalGlobalStats) {
-                console.error("ERRO CRÍTICO: Elementos DOM essenciais não encontrados. A aplicação pode não funcionar.");
-                alert("Erro crítico ao carregar. Verifique o console.");
-                return;
-            }
-            await carregarPessoas();
-            await carregarTodosElementosParaEstatisticas();
-            await carregarTodasDesignacoesParaStatsGlobais(); 
-            popularDropdownsPessoasNosModais(); 
-
-            if(colunaDetalhesDiv && colunaDetalhesContent){
-                colunaDetalhesDiv.innerHTML = ''; 
-                colunaDetalhesDiv.appendChild(colunaDetalhesContent); 
-                colunaDetalhesContent.style.display = 'flex'; 
-            }
-
-            const primeiraAbaBtnGlobal = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button');
-            if (primeiraAbaBtnGlobal && !document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active')) {
-                primeiraAbaBtnGlobal.classList.add('active');
-                 const targetContentId = primeiraAbaBtnGlobal.dataset.tabTarget;
-                 const targetContent = document.getElementById(targetContentId);
-                 if (targetContent) targetContent.classList.add('active');
-                 
-                 if (targetContentId === 'gs-total-content') atualizarAbaTotalGlobalStats();
-                 else if (targetContentId === 'gs-pessoas-content') initGsPessoasCustomMultiselect();
-                 else if (targetContentId === 'gs-designacoes-content') popularListaElementosAbaDesignacoes();
-                 else if (targetContentId === 'gs-old-content') { 
-                    setupGsOldSubmenu();
-                 }
-            } else {
-                const activeMainTab = document.querySelector('.modal-global-stats-tabs .global-stats-tab-button.active');
-                if (activeMainTab && activeMainTab.dataset.tabTarget === 'gs-old-content') {
-                    setupGsOldSubmenu();
-                }
-            }
-            console.log("Inicialização concluída.");
-        };
-
     </script>
 </body>
 </html>
