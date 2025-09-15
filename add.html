@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Designações Automaticamente v5.1</title> <!-- Versão incrementada -->
+    <style>
+        /* ... CSS permanece o mesmo ... */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: calc(100% - 22px);
+            min-height: 350px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #messages {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            border: 1px solid #dce4e6;
+            min-height: 50px;
+            white-space: pre-wrap; 
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; font-weight: bold; }
+        .info { color: #2980b9; }
+        .warning { color: #f39c12; }
+
+
+        button#cancelButton:hover {
+            background-color: #c0392b;
+        }
+        #previewTableContainer table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #previewTableContainer th, #previewTableContainer td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #previewTableContainer th {
+            background-color: #f2f2f2;
+        }
+
+
+    </style>
+</head>
+<body>
+ <div class="container">
+        <h2>Criador Automático de Designações</h2>
+        
+        <!-- Secção de Instruções (Atualizada) -->
+        <div id="instructionsSection">
+             <p><strong>NOTA:</strong> O sistema verificará se designações idênticas (mesmos participantes A, B, C, nome da designação, e data) já existem antes de gravar.</p>
+            <p><strong>Formato Obrigatório:</strong> Cole o texto começando com o mês/ano e o intervalo de dias da semana, exatamente como no exemplo abaixo:</p>
+            <pre style="background-color: #f0f0f0; border: 1px dashed #ccc; padding: 10px; border-radius: 4px; font-family: monospace;">AGOSTO 2025
+4 - 10
+PRESIDENTE:	Arnaldo Cerqueira
+...</pre>
+            <p><strong>Regras Importantes:</strong></p>
+            <ul style="padding-left: 20px;">
+                <li>Processe <strong>uma semana de cada vez</strong>. Colar o texto de várias semanas ao mesmo tempo causará erros.</li>
+                <li>A separação entre a designação e os participantes deve ser feita com <strong>dois pontos (:)</strong> ou um <strong>Tab</strong>.</li>
+                <li>Os participantes numa mesma designação devem ser separados por uma <strong>barra (/)</strong>.</li>
+                <li>Mantenha a estrutura original do programa, incluindo os cabeçalhos das secções, pois são essenciais para a análise.</li>
+            </ul>
+        </div>
+
+        <!-- Secção de Entrada de Dados -->
+        <div id="inputSection">
+            <textarea id="programText" placeholder="Cole aqui o texto do programa..."></textarea>
+            <button id="processButton">Processar e Pré-visualizar</button>
+        </div>
+
+        <!-- Secção de Pré-visualização (NOVA E ESCONDIDA) -->
+        <div id="previewSection" style="display: none;">
+            <h3>Pré-visualização das Designações a Criar</h3>
+            <p>Confira a lista abaixo. Se estiver tudo correto, clique em "Confirmar e Gravar".</p>
+            <div id="previewTableContainer" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #ddd; padding: 5px;">
+                <!-- A tabela será inserida aqui pelo JavaScript -->
+            </div>
+            <button id="confirmSaveButton">Confirmar e Gravar</button>
+            <button id="cancelButton" style="background-color: #e74c3c;">Cancelar</button>
+        </div>
+
+
+        <h3>Log de Processamento:</h3>
+        <div id="messages">Aguardando processamento...</div>
+    </div>
+
+     <script type="module">
+    // Importar as funções necessárias dos SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = { // SUA CONFIGURAÇÃO FIREBASE AQUI
+        apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
+        authDomain: "theeye-c3ace.firebaseapp.com",
+        projectId: "theeye-c3ace",
+        storageBucket: "theeye-c3ace.firebasestorage.app",
+        messagingSenderId: "742355525459",
+        appId: "1:742355525459:web:fbe84a9594be4bedc28ba6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- Elementos DOM ---
+    let programTextInput, processButton, messagesDivEl, confirmSaveButton, cancelButton, previewSection, previewTableContainer, inputSection;
+    
+    // --- Variável de estado para guardar as designações preparadas ---
+    let designacoesParaGravar = [];
+
+    const mesesMap = {
+        "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4, "maio": 5,
+        "junho": 6, "julho": 7, "agosto": 8, "setembro": 9, "outubro": 10,
+        "novembro": 11, "dezembro": 12
+    };
+
+    const elementosDb = {
+        "5hisbU82rotbleHgeD5M": "Áudio/Vídeo", "9I1AvNZdjb68cxb0kQje": "Presidente Fim de Semana",
+        "AMP1cKGEQCDJtYBPpwss": "Viver como Cristãos", "IikOtWuKFuJAhzOHx3o9": "Pérolas",
+        "JLrhTXlA2oR3pJLS1hO3": "Oração Inicial Semana", "JiWZMez1Q9g24pgLjAuT": "Indicador",
+        "KzizEzxcuEkNPhnzFrD9": "Zoom", "MGl9RFx98g4L1EGUREYe": "Fazer Discípulos",
+        "RODHXmnVcuBPIwhVZAJ0": "Estudo Bíblico", "Rx8RQCehBwvcpW7EN2he": "Leitor da Sentinela",
+        "T7Dd5kBu5z9WHcQqy6Mx": "Orador Público", "VnfOre1uUq6Hur1cqgkI": "Iniciar Conversas",
+        "WF0EIaVvHY176rW6xKco": "Dirigente Sentinela", "Z1D38weOcgM8t9LgTJ73": "Oração Final Semana",
+        "aUkXTYQyCrn3BKPE0aAy": "Discurso (x minutos)", "bQcLDG2TLViKFLUOKsAM": "Oração Inicial Fim de Semana",
+        "bd7nJ2B4QFJIgUiBUsNx": "Oração Final Fim de Semana", "cDZgjLVYMJLEMjbt955W": "Cultivar o Interesse",
+        "coRCuXkBUIMX3vXXE6Lz": "Micro 2", "eBK13PjZq9NstCq3STRH": "Presidente Semana",
+        "eDmUUYVNaRJ8e0SOtaQL": "Oração Inicial Fim de Semana", 
+        "fo4BtdjUM95J3YnQi5oD": "Leitura da Bíblia", "gLXkhWVI6041rZBHsrGU": "Explicar Crenças",
+        "i2gy4yrD1wCH43sm9iO2": "Leitor do Estudo Bíblico", "oZP0YFMIZbO7VGrUUlYQ": "Micro Palco",
+        "rvmDHEqBmSsRtN4OXz76": "Tesouros"
+    };
+
+    function logMessage(message, type = "info") {
+        if (!messagesDivEl) messagesDivEl = document.getElementById('messages');
+        const entry = document.createElement('div');
+        entry.textContent = message;
+        entry.className = `log-entry ${type}`;
+        messagesDivEl.appendChild(entry);
+        messagesDivEl.scrollTop = messagesDivEl.scrollHeight;
+    }
+    
+    function clearMessages() {
+        if (!messagesDivEl) messagesDivEl = document.getElementById('messages');
+        messagesDivEl.innerHTML = '';
+    }
+    
+    function resetUI() {
+        logMessage("Processo cancelado ou concluído. Pronto para uma nova análise.", "info");
+        inputSection.style.display = 'block';
+        previewSection.style.display = 'none';
+        processButton.disabled = false;
+        programTextInput.value = '';
+        previewTableContainer.innerHTML = '';
+        designacoesParaGravar = [];
+    }
+
+    function displayPreview(designations) {
+        if (designations.length === 0) {
+            logMessage("Nenhuma designação válida foi encontrada para pré-visualizar. Verifique o texto e o log de erros.", "warning");
+            processButton.disabled = false;
+            return;
+        }
+
+        let tableHTML = `<table style="width:100%; border-collapse: collapse;"><thead><tr><th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Data</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Designação</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Participantes</th></tr></thead><tbody>`;
+        for (const desig of designations) {
+            const participants = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(p => p).join(' / ');
+            tableHTML += `<tr><td style="border: 1px solid #ddd; padding: 8px;">${desig.data}</td><td style="border: 1px solid #ddd; padding: 8px;">${desig.nome}</td><td style="border: 1px solid #ddd; padding: 8px;">${participants || 'N/A'}</td></tr>`;
+        }
+        tableHTML += `</tbody></table>`;
+        
+        previewTableContainer.innerHTML = tableHTML;
+        inputSection.style.display = 'none';
+        previewSection.style.display = 'block';
+        logMessage(`Pré-visualização gerada com ${designations.length} designações. Por favor, confirme.`, "info");
+    }
+    
+    async function processAndPreviewDesignations() {
+        programTextInput = document.getElementById('programText');
+        processButton = document.getElementById('processButton');
+        messagesDivEl = document.getElementById('messages');
+        inputSection = document.getElementById('inputSection');
+        previewSection = document.getElementById('previewSection');
+        previewTableContainer = document.getElementById('previewTableContainer');
+
+        clearMessages();
+        logMessage("Iniciando processamento e análise do texto...", "info");
+        processButton.disabled = true;
+
+        const text = programTextInput.value;
+        if (!text.trim()) {
+            logMessage("A caixa de texto está vazia.", "error");
+            processButton.disabled = false;
+            return;
+        }
+
+        let designacoesPreparadas = [];
+        
+        try {
+            const lines = text.split('\n').map(line => line.trim());
+            let anoGlobalBase = 0, mesGlobalBase = 0;
+            let diaQuarta = 0, mesParaQuarta = 0, anoParaQuarta = 0;
+            let diaSabado = 0, mesParaSabado = 0, anoParaSabado = 0;
+            let semanaCompletaStr = ""; 
+
+            const linhaMesAnoOriginal = lines[0]; 
+            const linhaSemanaOriginal = lines[1];  
+            semanaCompletaStr = `${linhaMesAnoOriginal} | ${linhaSemanaOriginal}`;
+            
+            const primeiraLinhaParts = linhaMesAnoOriginal.toLowerCase().split(" ");
+            mesGlobalBase = mesesMap[primeiraLinhaParts[0]];
+            anoGlobalBase = parseInt(primeiraLinhaParts[1]);
+            if (!mesGlobalBase || !anoGlobalBase) throw new Error("Não foi possível determinar Mês/Ano da primeira linha.");
+            
+            const semanaParts = linhaSemanaOriginal.split("-").map(p => p.trim());
+            if (semanaParts.length < 2 || isNaN(parseInt(semanaParts[0]))) {
+                throw new Error("Formato da segunda linha (semana) inválido. Ex: '4 - 10'");
+            }
+            
+            const diaInicioSemanaNum = parseInt(semanaParts[0]);
+            let dataBaseParaProcura = new Date(anoGlobalBase, mesGlobalBase - 1, diaInicioSemanaNum);
+            
+            for (let i = 0; i < 14; i++) { 
+                const diaDaSemanaLoop = dataBaseParaProcura.getDay();
+                if (diaDaSemanaLoop === 3 && diaQuarta === 0) { 
+                    diaQuarta = dataBaseParaProcura.getDate(); mesParaQuarta = dataBaseParaProcura.getMonth() + 1; anoParaQuarta = dataBaseParaProcura.getFullYear();
+                }
+                if (diaDaSemanaLoop === 6 && diaSabado === 0) {
+                    diaSabado = dataBaseParaProcura.getDate(); mesParaSabado = dataBaseParaProcura.getMonth() + 1; anoParaSabado = dataBaseParaProcura.getFullYear();
+                }
+                if (diaQuarta !== 0 && diaSabado !== 0) break;
+                dataBaseParaProcura.setDate(dataBaseParaProcura.getDate() + 1);
+            }
+
+            if (diaQuarta === 0 || diaSabado === 0) {
+                 throw new Error(`Não foi possível determinar os dias de Quarta e/ou Sábado.`);
+            }
+            
+            logMessage(`Mês/Ano base: ${String(mesGlobalBase).padStart(2,'0')}/${anoGlobalBase}`, "info");
+            logMessage(`Data Reunião Semana: ${String(diaQuarta).padStart(2,'0')}/${String(mesParaQuarta).padStart(2,'0')}/${anoParaQuarta}`, "info");
+            logMessage(`Data Reunião Fim de Semana: ${String(diaSabado).padStart(2,'0')}/${String(mesParaSabado).padStart(2,'0')}/${anoParaSabado}`, "info");
+
+            let seccaoAtual = "inicio";
+            let diaAtualNum = diaQuarta, mesAtualNum = mesParaQuarta, anoAtualNum = anoParaQuarta;
+            let oradorPendente = null;
+
+            for (let i = 2; i < lines.length; i++) {
+                let linha = lines[i];
+                if (!linha) continue; 
+
+                if (linha.includes("💎 TESOUROS DA PALAVRA DE DEUS")) { seccaoAtual = "antesEmpenhe"; diaAtualNum = diaQuarta; mesAtualNum = mesParaQuarta; anoAtualNum = anoParaQuarta; continue; }
+                if (linha.includes("🌾 EMPENHE-SE NO MINISTÉRIO")) { seccaoAtual = "empenheMinisterio"; diaAtualNum = diaQuarta; mesAtualNum = mesParaQuarta; anoAtualNum = anoParaQuarta; continue; }
+                if (linha.includes("🐏 VIVER COMO CRISTÃOS")) { seccaoAtual = "viverCristaos"; diaAtualNum = diaQuarta; mesAtualNum = mesParaQuarta; anoAtualNum = anoParaQuarta; continue; }
+                if (linha.includes("💬 REUNIÃO PÚBLICA")) { seccaoAtual = "publica"; diaAtualNum = diaSabado; mesAtualNum = mesParaSabado; anoAtualNum = anoParaSabado; continue; }
+                if (linha.includes("🖐️ ESTUDO DE A SENTINELA")) { seccaoAtual = "sentinela"; diaAtualNum = diaSabado; mesAtualNum = mesParaSabado; anoAtualNum = anoParaSabado; continue; }
+                if (linha.includes("⚙️ TECNICAS")) { seccaoAtual = "tecnicas"; diaAtualNum = diaQuarta; mesAtualNum = mesParaQuarta; anoAtualNum = anoParaQuarta; continue; }
+                if (linha.includes("GRUPO DE LIMPEZA")) { continue; }
+
+                let elementoId = null;
+                let participantesNomes = [];
+                let rotuloDesignacao = linha;
+                
+                let matchParticipantes = linha.match(/^([\w\sÀ-ú()/.:-]+?)(?:\s*:\s*|\t+)(.+)$/);
+                if (matchParticipantes && matchParticipantes[1] && matchParticipantes[2]) {
+                    rotuloDesignacao = matchParticipantes[1].trim();
+                    participantesNomes = matchParticipantes[2].split('/').map(p => p.trim()).filter(p => p && p.length > 0);
+                } else { 
+                    let tabSplit = linha.split(/\t+/);
+                    if (tabSplit.length >= 1) {
+                        rotuloDesignacao = tabSplit[0].trim();
+                        if (tabSplit.length > 1 && tabSplit[1] && tabSplit[1].trim()) {
+                             participantesNomes = tabSplit.slice(1).join(' ').split('/').map(p => p.trim()).filter(p => p && p.length > 0);
+                        } else { participantesNomes = []; }
+                    } else { 
+                         rotuloDesignacao = linha.trim(); participantesNomes = [];
+                    }
+                }
+
+                rotuloDesignacao = rotuloDesignacao.replace(/\s*Designação\s*\d+/i, '').trim();
+
+                if (oradorPendente) {
+                    if (linha.toUpperCase().startsWith("CONGREGAÇÃO:")) { oradorPendente.congregacao = linha.substring("CONGREGAÇÃO:".length).trim(); continue; }
+                    if (linha.toUpperCase().startsWith("TEMA:")) {
+                        oradorPendente.tema = linha.substring("TEMA:".length).trim();
+                        designacoesPreparadas.push({...oradorPendente, semana: semanaCompletaStr}); 
+                        oradorPendente = null; continue;
+                    }
+                }
+
+                const rotuloUpper = rotuloDesignacao.toUpperCase();
+                const dataStr = `${String(diaAtualNum).padStart(2, '0')}/${String(mesAtualNum).padStart(2, '0')}/${String(anoAtualNum)}`;
+
+                // --- INÍCIO DAS REGRAS DE MAPEAMENTO (AGORA COMPLETAS) ---
+                if (seccaoAtual === "inicio" || seccaoAtual === "antesEmpenhe") {
+                    if (rotuloUpper.startsWith("PRESIDENTE")) elementoId = "eBK13PjZq9NstCq3STRH";
+                    else if (rotuloUpper.startsWith("ORAÇÃO INICIAL")) elementoId = "JLrhTXlA2oR3pJLS1hO3";
+                    else if (rotuloUpper.startsWith("TESOUROS")) elementoId = "rvmDHEqBmSsRtN4OXz76";
+                    else if (rotuloUpper.startsWith("PÉROLAS")) elementoId = "IikOtWuKFuJAhzOHx3o9";
+                    else if (rotuloUpper.startsWith("LEITURA DA BÍBLIA")) elementoId = "fo4BtdjUM95J3YnQi5oD";
+                } else if (seccaoAtual === "empenheMinisterio") {
+                    if (rotuloUpper.startsWith("INICIAR CONVERSAS")) elementoId = "VnfOre1uUq6Hur1cqgkI";
+                    else if (rotuloUpper.startsWith("CULTIVAR O INTERESSE")) elementoId = "cDZgjLVYMJLEMjbt955W";
+                    else if (rotuloUpper.startsWith("FAZER DISCÍPULOS")) elementoId = "MGl9RFx98g4L1EGUREYe";
+                    else if (rotuloUpper.startsWith("EXPLICAR CRENÇAS")) elementoId = "gLXkhWVI6041rZBHsrGU";
+                    else if (rotuloUpper.startsWith("DISCURSO - VÍDEO")) { continue; } 
+                    else if (rotuloUpper.startsWith("DISCURSO")) { elementoId = "aUkXTYQyCrn3BKPE0aAy"; }
+                } else if (seccaoAtual === "viverCristaos") {
+                    if (rotuloUpper.startsWith("1ª PARTE")) elementoId = "AMP1cKGEQCDJtYBPpwss";
+                    else if (rotuloUpper.startsWith("2ª PARTE")) elementoId = "AMP1cKGEQCDJtYBPpwss";
+                    else if (rotuloUpper.startsWith("3ª PARTE")) elementoId = "AMP1cKGEQCDJtYBPpwss";
+                    else if (rotuloUpper.startsWith("ESTUDO BÍBL. CONG")) elementoId = "RODHXmnVcuBPIwhVZAJ0";
+                    else if (rotuloUpper.startsWith("LEITOR")) elementoId = "i2gy4yrD1wCH43sm9iO2";
+                    else if (rotuloUpper.startsWith("ORAÇÃO FINAL")) elementoId = "Z1D38weOcgM8t9LgTJ73";
+                } else if (seccaoAtual === "publica") {
+                    if (rotuloUpper.startsWith("PRESIDENTE")) elementoId = "9I1AvNZdjb68cxb0kQje";
+                    else if (rotuloUpper.startsWith("ORADOR")) { 
+                        elementoId = "T7Dd5kBu5z9WHcQqy6Mx"; 
+                        oradorPendente = {
+                            ano: String(anoAtualNum), mes: String(mesAtualNum).padStart(2,'0'), dia: String(diaAtualNum).padStart(2,'0'), data: dataStr,
+                            elementoId: elementoId, nome: elementosDb[elementoId],
+                            participantes: { [participantesNomes[0] || '']: true },
+                            pessoaA: participantesNomes[0] || null, pessoaB: null, pessoaC: null,
+                        };
+                        continue; 
+                    }
+                } else if (seccaoAtual === "sentinela") {
+                    if (rotuloUpper.startsWith("DIRIGENTE")) elementoId = "WF0EIaVvHY176rW6xKco";
+                    else if (rotuloUpper.startsWith("LEITOR")) elementoId = "Rx8RQCehBwvcpW7EN2he";
+                    else if (rotuloUpper.startsWith("ORAÇÃO FINAL")) elementoId = "bd7nJ2B4QFJIgUiBUsNx";
+                } else if (seccaoAtual === "tecnicas") {
+                    if (rotuloUpper.startsWith("SOM / VÍDEO")) elementoId = "5hisbU82rotbleHgeD5M";
+                    else if (rotuloUpper.startsWith("ZOOM (INDICADOR)")) elementoId = "KzizEzxcuEkNPhnzFrD9";
+                    else if (rotuloUpper.startsWith("INDICADOR")) elementoId = "JiWZMez1Q9g24pgLjAuT"; 
+                    else if (rotuloUpper.startsWith("MICROS")) {
+                        if (participantesNomes.length > 1) {
+                             designacoesPreparadas.push({
+                                ano: String(anoAtualNum), mes: String(mesAtualNum).padStart(2,'0'), dia: String(diaAtualNum).padStart(2,'0'), data: dataStr, semana: semanaCompletaStr, 
+                                elementoId: "coRCuXkBUIMX3vXXE6Lz", nome: elementosDb["coRCuXkBUIMX3vXXE6Lz"],
+                                participantes: { [participantesNomes[1]]: true },
+                                pessoaA: participantesNomes[1], pessoaB: null, pessoaC: null,
+                            });
+                        }
+                        elementoId = "oZP0YFMIZbO7VGrUUlYQ"; // Micro Palco para o primeiro nome
+                        participantesNomes = [participantesNomes[0]];
+                    }
+                    else if (rotuloUpper.startsWith("MICRO PALCO")) elementoId = "oZP0YFMIZbO7VGrUUlYQ";
+                }
+                // --- FIM DAS REGRAS DE MAPEAMENTO ---
+
+                if (elementoId && participantesNomes.length > 0) {
+                    const nomeFirestore = elementosDb[elementoId] || "Desconhecido";
+                    const participantesMap = {};
+                    participantesNomes.forEach(pNome => { if(pNome) participantesMap[pNome] = true; });
+                    const designacao = {
+                        ano: String(anoAtualNum), mes: String(mesAtualNum).padStart(2, '0'), dia: String(diaAtualNum).padStart(2, '0'), data: dataStr,
+                        semana: semanaCompletaStr, elementoId: elementoId, nome: nomeFirestore,
+                        participantes: participantesMap,
+                        pessoaA: participantesNomes[0] || null, pessoaB: participantesNomes[1] || null, pessoaC: participantesNomes[2] || null,
+                    };
+                    designacoesPreparadas.push(designacao);
+                    logMessage(`PREPARADO: ${nomeFirestore} - ${participantesNomes.join(', ')}`, "info");
+                } else if (elementoId && participantesNomes.length === 0) {
+                     logMessage(`Designação "${rotuloDesignacao}" ignorada por falta de participantes.`, "warning");
+                } else if (rotuloDesignacao && seccaoAtual !== "inicio" && !oradorPendente && !["CONGREGAÇÃO:", "TEMA:"].some(s => rotuloUpper.startsWith(s))) {
+                    logMessage(`Linha não mapeada: "${linha}"`, "warning");
+                }
+            }
+            
+            if (oradorPendente && oradorPendente.pessoaA) {
+                designacoesPreparadas.push({...oradorPendente, semana: semanaCompletaStr }); 
+            }
+
+        } catch (e) {
+            logMessage(`ERRO CRÍTICO na análise: ${e.message}`, "error");
+            processButton.disabled = false;
+            return;
+        }
+
+        designacoesParaGravar = designacoesPreparadas;
+        displayPreview(designacoesParaGravar);
+    }
+
+    async function saveDesignationsToFirebase() {
+        confirmSaveButton.disabled = true;
+        cancelButton.disabled = true;
+
+        if (designacoesParaGravar.length > 0) {
+            logMessage(`\nConfirmado! Iniciando gravação de ${designacoesParaGravar.length} designações...`, "info");
+            let contadorGravadas = 0;
+            let contadorDuplicadas = 0;
+
+            for (const desig of designacoesParaGravar) {
+                const designacaoParaGravar = { ...desig, criadoEm: serverTimestamp() };
+                const q = query(collection(db, "designacoes"),
+                    where("pessoaA", "==", designacaoParaGravar.pessoaA),
+                    where("pessoaB", "==", designacaoParaGravar.pessoaB),
+                    where("pessoaC", "==", designacaoParaGravar.pessoaC),
+                    where("nome", "==", designacaoParaGravar.nome),
+                    where("data", "==", designacaoParaGravar.data)
+                );
+                try {
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        logMessage(`DUPLICADO: ${designacaoParaGravar.nome} com ${designacaoParaGravar.pessoaA || ''}`, "warning");
+                        contadorDuplicadas++;
+                    } else {
+                        await addDoc(collection(db, "designacoes"), designacaoParaGravar);
+                        logMessage(`GRAVADO: ${designacaoParaGravar.nome} com ${designacaoParaGravar.pessoaA || ''}`, "success");
+                        contadorGravadas++;
+                    }
+                } catch (error) {
+                     logMessage(`ERRO ao gravar "${designacaoParaGravar.nome}": ${error.message}.`, "error");
+                }
+            }
+            logMessage(`\nGravação concluída. ${contadorGravadas} gravadas, ${contadorDuplicadas} duplicadas.`, "info");
+            
+            logMessage("\nIniciando etapa de limpeza de registos vazios...", "info");
+            try {
+                const qClean = query(collection(db, "designacoes"), where("pessoaA", "==", null), where("pessoaB", "==", null), where("pessoaC", "==", null));
+                const snapshotToClean = await getDocs(qClean);
+                if (!snapshotToClean.empty) {
+                    logMessage(`Encontradas ${snapshotToClean.size} designações vazias. Eliminando...`, "warning");
+                    for (const docToDelete of snapshotToClean.docs) {
+                        await deleteDoc(docToDelete.ref);
+                    }
+                    logMessage(`${snapshotToClean.size} designações vazias eliminadas.`, "success");
+                } else {
+                    logMessage("Nenhuma designação vazia para limpar.", "info");
+                }
+            } catch (cleanError) {
+                logMessage(`ERRO durante a limpeza: ${cleanError.message}.`, "error");
+            }
+
+        } else {
+            logMessage("Nenhuma designação para gravar.", "warning");
+        }
+        
+        resetUI();
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        processButton = document.getElementById('processButton');
+        confirmSaveButton = document.getElementById('confirmSaveButton');
+        cancelButton = document.getElementById('cancelButton');
+        
+        if (processButton) {
+             processButton.addEventListener('click', processAndPreviewDesignations);
+        }
+        if (confirmSaveButton) {
+             confirmSaveButton.addEventListener('click', saveDesignationsToFirebase);
+        }
+        if (cancelButton) {
+             cancelButton.addEventListener('click', resetUI);
+        }
+    });
+</script>
+</body>
+</html>
