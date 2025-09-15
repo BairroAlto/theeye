@@ -674,6 +674,7 @@
             <button id="btn-criar-pessoa-fab" class="fab-option">👤 Criar Pessoa</button>
             <button id="btn-criar-elemento-fab" class="fab-option">📄 Criar Elemento</button>
             <button id="btn-criar-designacao-fab" class="fab-option">📌 Criar Designação</button>
+            <a href="add.html" class="fab-option" style="text-decoration: none;">📋 Adicionar Escala</a>
         </div>
     </div>
 
@@ -1660,10 +1661,13 @@
                 console.warn("popularFiltros: Elementos de filtro não encontrados.");
                 return;
             }
-            const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano))].sort((a, b) => b - a);
+
+               // MODIFIED: Added .filter(Boolean) for robustness and parseInt in sort
+               const anos = [...new Set(designacoesDaPessoaAtual.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
             const elementos = [...new Set(designacoesDaPessoaAtual.map(d => d.nome))].sort((a, b) => a.localeCompare(b));
 
             // Usar 'semana' descritiva se disponível, senão 'semanaISO'
+           // Usar 'semana' descritiva se disponível, senão 'semanaISO'
             const semanasUnicasComDatas = designacoesDaPessoaAtual
                 .filter(d => (d.semana && typeof d.semana === 'string') || d.semanaISO) // Ensure one of them exists
                 .map(d => ({
@@ -1686,14 +1690,21 @@
                 });
 
 
-            const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.valorSemana}">${item.textoSemana}</option>`).join('');
+                const semanasOptions = semanasUnicasComDatas.map(item => `<option value="${item.valorSemana}">${item.textoSemana}</option>`).join('');
 
-            filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
-            filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
-            filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
+filtroAnoSelect.innerHTML = '<option value="">Todos</option>' + anos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
+// MODIFICATION: Set default to most recent year
+if (anos.length > 0) {
+    filtroAnoSelect.value = anos[0];
+} else {
+    filtroAnoSelect.value = "";
+}
 
-            console.log("popularFiltros: Filtros de detalhes populados.");
-        }
+filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
+filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
+
+console.log("popularFiltros: Filtros de detalhes populados.");
+}
 
         function aplicarEAtualizarFiltros() {
             console.log("aplicarEAtualizarFiltros: Aplicando filtros.");
@@ -2913,15 +2924,21 @@
                 const currentVal = select.value;
                 select.innerHTML = '<option value="">Todos</option>';
                 mesesUnicos.forEach(mes => select.appendChild(new Option(getNomeMes(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
+                // Try to preserve selection if still valid, otherwise default to "Todos"
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
 
             [gsTopPessoasAnoSelect, gsTodasDesigAnoSelect, gsPessoaEspAnoFiltroSelect, gsTotalFiltroAnoSelect, gsPessoasFiltroAnoSelect, gsDesignacoesFiltroAnoSelect].forEach(select => {
                 if (!select) return;
-                const currentVal = select.value;
+                // const currentVal = select.value; // Previous selection no longer preserved for year by default
                 select.innerHTML = '<option value="">Todos</option>';
                 anosUnicos.forEach(ano => select.appendChild(new Option(ano, ano)));
-                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
+                // MODIFICATION: Set default to most recent year if available
+                if (anosUnicos.length > 0) {
+                    select.value = anosUnicos[0];
+                } else {
+                    select.value = ""; // Default to "Todos" if no years
+                }
             });
 
             [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => { // Adicionado gsTopPessoasElementoSelect
@@ -2929,11 +2946,18 @@
                 const currentVal = select.value;
                 select.innerHTML = '<option value="">Todos Elementos</option>'; // Default option
                 elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
+                 // Try to preserve selection if still valid, otherwise default to "Todos Elementos"
                 if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
             });
 
             console.log("Filtros do modal de estatísticas globais populados/atualizados.");
         }
+
+
+
+
+
+
 
         function getPessoaById(id) {
             return todasPessoas.find(p => p.id === id);
@@ -3687,7 +3711,7 @@
             abrirModal(modalRanking);
         }
 
-        function popularFiltrosRankingPopup() {
+     function popularFiltrosRankingPopup() {
             if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) {
                 console.error("Elementos de filtro do modal de ranking não encontrados.");
                 return;
@@ -3725,12 +3749,10 @@
                                     return { year, month: monthNumber, startDay, originalString: d.semana, sortDate };
                                 }
                             } catch (e) {
-                                // console.warn("Error parsing date for semana string:", d.semana, e);
                                 return null;
                             }
                         }
                     }
-                    // console.warn("Could not parse semana string for ranking filters:", d.semana);
                     return null;
                 })
                 .filter(item => item !== null);
@@ -3742,26 +3764,22 @@
                 return acc;
             }, []);
 
-            uniqueSemanas.sort((a, b) => { // Sort by date: most recent year, then month, then day
+            uniqueSemanas.sort((a, b) => {
                 if (a.year !== b.year) return b.year - a.year;
                 if (a.month !== b.month) return b.month - a.month;
-                return b.startDay - a.startDay;
+                return b.startDay - b.startDay;
             });
 
-            // Populate Meses
             const currentMesVal = rankingFiltroMesSelect.value;
             rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
             mesesUnicos.forEach(mes => rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
             rankingFiltroMesSelect.value = currentMesVal;
 
-
-            // Populate Anos
             const currentAnoVal = rankingFiltroAnoSelect.value;
             rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
             anosUnicos.forEach(ano => rankingFiltroAnoSelect.appendChild(new Option(ano, ano)));
             rankingFiltroAnoSelect.value = currentAnoVal;
 
-            // Populate Semanas (Descriptive)
             const currentSemanaVal = rankingFiltroSemanaSelect.value;
             rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
             let currentYearForOptgroup = null;
@@ -3780,14 +3798,13 @@
                 if (optgroup) {
                     optgroup.appendChild(option);
                 } else {
-                    rankingFiltroSemanaSelect.appendChild(option); // Fallback
+                    rankingFiltroSemanaSelect.appendChild(option);
                 }
             });
-             // Attempt to restore previous selection or set to default ""
             if (Array.from(rankingFiltroSemanaSelect.options).some(opt => opt.value === currentSemanaVal)) {
                  rankingFiltroSemanaSelect.value = currentSemanaVal;
             } else {
-                rankingFiltroSemanaSelect.value = ""; // Default to "Todas" if previous value not found
+                rankingFiltroSemanaSelect.value = "";
             }
         }
 
@@ -3838,20 +3855,17 @@
             }
         }
 
-        function renderRankingList() {
+    function renderRankingList() {
             if (!listaRankingDesignacoesUl) return;
             listaRankingDesignacoesUl.innerHTML = '<div class="loading-spinner" style="margin: 10px auto; display: block;"></div>';
 
-            // Ensure filter elements exist before trying to read their values
             const mesFiltro = rankingFiltroMesSelect ? rankingFiltroMesSelect.value : "";
             const anoFiltro = rankingFiltroAnoSelect ? rankingFiltroAnoSelect.value : "";
             const semanaFiltroValor = rankingFiltroSemanaSelect ? rankingFiltroSemanaSelect.value : "";
 
             const designacoesDaSemanaSelecionada = todasDesignacoesGlobais.filter(d => {
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                // Ensure mes comparison is robust, d.mes should be padded if it comes as '5' vs '05'
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
-
                 let matchSemana = true;
                 if (semanaFiltroValor) {
                     matchSemana = (d.semana === semanaFiltroValor);
@@ -3859,16 +3873,15 @@
                 return matchAno && matchMes && matchSemana;
             });
 
-            listaRankingDesignacoesUl.innerHTML = ''; // Clear loading spinner
+            listaRankingDesignacoesUl.innerHTML = '';
 
-            if (designacoesDaSemanaSelecionada.length === 0 && (anoFiltro || mesFiltro || semanaFiltroValor)) {
-                listaRankingDesignacoesUl.innerHTML = '<li>Nenhuma designação encontrada para os filtros selecionados.</li>';
-                return; // Stop further processing
-            } else if (designacoesDaSemanaSelecionada.length === 0 && !anoFiltro && !mesFiltro && !semanaFiltroValor) {
-                 listaRankingDesignacoesUl.innerHTML = '<li>Selecione filtros para ver o ranking.</li>';
-                 return; // Stop further processing
+            if (designacoesDaSemanaSelecionada.length === 0) {
+                const msg = (anoFiltro || mesFiltro || semanaFiltroValor) 
+                    ? 'Nenhuma designação encontrada para os filtros selecionados.' 
+                    : 'Selecione filtros para ver o ranking.';
+                listaRankingDesignacoesUl.innerHTML = `<li>${msg}</li>`;
+                return;
             }
-
 
             const designacoesAgrupadasPorNome = designacoesDaSemanaSelecionada.reduce((acc, desig) => {
                 const nomeElementoBase = desig.nome && desig.nome.startsWith("Discurso") ? "Discurso" : desig.nome;
@@ -3880,98 +3893,64 @@
                 return acc;
             }, {});
 
-            let hasContentRendered = false;
             ordemAtualElementosRanking.forEach((nomeElemento, index) => {
-                if (nomeElemento === "---SEP---") {
-                    const hr = document.createElement('hr');
-                    hr.className = 'ranking-section-separator';
-                    listaRankingDesignacoesUl.appendChild(hr);
-                    hasContentRendered = true;
-                    return;
-                }
-                if (nomeElemento === "---PARAGRAPH_SEP---") {
-                    const liSep = document.createElement('li');
-                    liSep.className = 'ranking-paragraph-separator';
-                    listaRankingDesignacoesUl.appendChild(liSep);
-                    hasContentRendered = true;
+                if (nomeElemento.startsWith("---")) {
+                    const separator = document.createElement(nomeElemento === "---SEP---" ? 'hr' : 'li');
+                    separator.className = nomeElemento === "---SEP---" ? 'ranking-section-separator' : 'ranking-paragraph-separator';
+                    listaRankingDesignacoesUl.appendChild(separator);
                     return;
                 }
 
                 const designacoesParaEsteElemento = designacoesAgrupadasPorNome[nomeElemento] || [];
-                let shouldRenderItem = false;
 
+                // --- INÍCIO DA LÓGICA MODIFICADA ---
+                // Apenas renderiza algo se EXISTIREM designações para este elemento.
                 if (designacoesParaEsteElemento.length > 0) {
-                    shouldRenderItem = true;
-                } else if (anoFiltro || mesFiltro || semanaFiltroValor) { // Filters are active, show "Nenhuma ocorrência"
-                     shouldRenderItem = true;
-                } else { // No filters active, this is initial state. Show template items.
-                    shouldRenderItem = true;
+                    designacoesParaEsteElemento.forEach((designacaoEspecifica, itemIndex) => {
+                        const li = document.createElement('li');
+                        li.dataset.elementoNome = nomeElemento;
+
+                        const nomeSpan = document.createElement('span');
+                        nomeSpan.className = 'designacao-nome';
+                        nomeSpan.textContent = (itemIndex === 0) ? nomeElemento : '';
+
+                        const participantesSpan = document.createElement('span');
+                        participantesSpan.className = 'designacao-participantes';
+                        
+                        const participantesNomes = [designacaoEspecifica.pessoaA, designacaoEspecifica.pessoaB, designacaoEspecifica.pessoaC].filter(Boolean).join(' & ');
+                        participantesSpan.textContent = participantesNomes || "Ninguém designado";
+                        if (!participantesNomes) {
+                            participantesSpan.classList.add('ninguem');
+                        }
+
+                        const reorderDiv = document.createElement('div');
+                        reorderDiv.className = 'reorder-buttons';
+                        
+                        if (itemIndex === 0) {
+                            const btnUp = document.createElement('button');
+                            btnUp.innerHTML = '<i class="fas fa-arrow-up"></i>';
+                            btnUp.title = "Subir";
+                            btnUp.disabled = index === 0 || ordemAtualElementosRanking[index - 1].startsWith("---");
+                            btnUp.onclick = () => moverElementoRanking(index, 'up');
+
+                            const btnDown = document.createElement('button');
+                            btnDown.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                            btnDown.title = "Descer";
+                            const nextElementIsSeparator = (index + 1 < ordemAtualElementosRanking.length) && ordemAtualElementosRanking[index + 1].startsWith("---");
+                            btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || nextElementIsSeparator;
+                            btnDown.onclick = () => moverElementoRanking(index, 'down');
+
+                            reorderDiv.appendChild(btnUp);
+                            reorderDiv.appendChild(btnDown);
+                        }
+
+                        li.appendChild(nomeSpan);
+                        li.appendChild(participantesSpan);
+                        li.appendChild(reorderDiv);
+                        listaRankingDesignacoesUl.appendChild(li);
+                    });
                 }
-
-                if (!shouldRenderItem) return; // Skip rendering this item if not needed
-
-
-                const li = document.createElement('li');
-                li.dataset.elementoNome = nomeElemento;
-
-                const nomeSpan = document.createElement('span');
-                nomeSpan.className = 'designacao-nome';
-                nomeSpan.textContent = nomeElemento;
-
-                const participantesSpan = document.createElement('span');
-                participantesSpan.className = 'designacao-participantes';
-
-
-                if (designacoesParaEsteElemento.length > 0) {
-                    const participantesNomes = designacoesParaEsteElemento.map(d =>
-                        [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean).join(' & ')
-                    ).filter(Boolean).join('; ');
-
-                    if (participantesNomes) {
-                         participantesSpan.textContent = participantesNomes;
-                    } else {
-                        // This case should ideally not be hit if length > 0 means there are participants.
-                        // However, if a designation could have participants but all are empty strings, this might occur.
-                        participantesSpan.textContent = "Ninguém designado";
-                        participantesSpan.classList.add('ninguem');
-                    }
-                } else {
-                    participantesSpan.textContent = "Nenhuma ocorrência";
-                    participantesSpan.classList.add('ninguem');
-                }
-                hasContentRendered = true;
-
-
-                const reorderDiv = document.createElement('div');
-                reorderDiv.className = 'reorder-buttons';
-                const btnUp = document.createElement('button');
-                btnUp.innerHTML = '<i class="fas fa-arrow-up"></i>';
-                btnUp.title = "Subir";
-                btnUp.disabled = index === 0 || ordemAtualElementosRanking[index-1].startsWith("---");
-                btnUp.onclick = () => moverElementoRanking(index, 'up');
-
-                const btnDown = document.createElement('button');
-                btnDown.innerHTML = '<i class="fas fa-arrow-down"></i>';
-                btnDown.title = "Descer";
-                // Check if next element exists and is not a separator
-                const nextElementIsSeparator = (index + 1 < ordemAtualElementosRanking.length) && ordemAtualElementosRanking[index + 1].startsWith("---");
-                btnDown.disabled = index === ordemAtualElementosRanking.length - 1 || nextElementIsSeparator;
-                btnDown.onclick = () => moverElementoRanking(index, 'down');
-
-
-                reorderDiv.appendChild(btnUp);
-                reorderDiv.appendChild(btnDown);
-
-                li.appendChild(nomeSpan);
-                li.appendChild(participantesSpan);
-                li.appendChild(reorderDiv);
-                listaRankingDesignacoesUl.appendChild(li);
             });
-
-            if (!hasContentRendered && !(anoFiltro || mesFiltro || semanaFiltroValor) ) {
-                // This message shows if the list is completely empty AND no filters are applied.
-                listaRankingDesignacoesUl.innerHTML = '<li>Use os filtros para gerar o ranking ou aguarde o carregamento dos dados.</li>';
-            }
         }
 
 
