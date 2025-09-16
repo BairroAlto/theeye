@@ -774,6 +774,33 @@
     }
 }
 
+   #coluna-detalhes #estatisticas-content .stat-card {
+            position: relative; /* Necessário para o posicionamento absoluto do botão */
+        }
+
+        .btn-expand-chart {
+            position: absolute;
+            top: 18px;
+            right: 15px;
+            background-color: #f0f2f5;
+            border: 1px solid #d1d9e0;
+            color: #555;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            transition: background-color 0.2s, color 0.2s;
+            z-index: 10;
+        }
+        .btn-expand-chart:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
     </style>
 </head>
 
@@ -1269,6 +1296,16 @@
         </div>
     </div>
 
+    <!-- Modal para expandir Gráfico -->
+    <div id="modal-grafico-expandido" class="modal">
+        <div class="modal-content" style="max-width: 90%; width: 800px;">
+            <span class="close-button" data-modal-id="modal-grafico-expandido">×</span>
+            <h3 id="modal-grafico-titulo">Gráfico Expandido</h3>
+            <div class="stats-chart-container" style="height: 60vh;">
+                <canvas id="canvas-grafico-expandido"></canvas>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         // Firebase SDK imports
@@ -1486,6 +1523,7 @@
 
         // Helper para custom multiselect
         let availablePessoasForCustomSelect = [];
+        let graficoExpandidoChart = null;
 
         // --- ESTADO PARA O RANKING ---
         let ordemAtualElementosRanking = [];
@@ -2387,7 +2425,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             });
         }
 
-        function renderizarEstatisticas() {
+      function renderizarEstatisticas() {
             console.log("renderizarEstatisticas: Iniciando");
             const statsContent = document.getElementById('estatisticas-content');
             if (!statsContent) { console.error("renderizarEstatisticas: #estatisticas-content não encontrado."); return; }
@@ -2467,7 +2505,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     });
                 });
 
-                const totalParticipacoesGlobal = Object.values(participacoesContagemGlobal).reduce((sum, val) => sum + val, 0);
+               const totalParticipacoesGlobal = Object.values(participacoesContagemGlobal).reduce((sum, val) => sum + val, 0);
                 const numPessoasComParticipacaoGlobal = Object.keys(participacoesContagemGlobal).length;
 
                 if (numPessoasComParticipacaoGlobal > 0) {
@@ -2490,8 +2528,14 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     <h4>Média de Participações (vs Global)</h4>
                     <p style="font-size:0.9em; line-height:1.5;">${comparacaoStr}</p>
                 </div>`;
-
-            allCardsHtml += `<div class="stat-card" id="designacoesPorElementoChartContainer"><h4>Designações por Elemento</h4><canvas id="designacoesPorElementoChart"></canvas></div>`;
+            
+            // --- INÍCIO DA ALTERAÇÃO ---
+            // Adicionado o botão de expandir a cada card de gráfico
+            allCardsHtml += `<div class="stat-card" id="designacoesPorElementoChartContainer">
+                                <h4>Designações por Elemento</h4>
+                                <button class="btn-expand-chart" data-chart-id="designacoesPorElementoChart" data-chart-title="Designações por Elemento (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                                <canvas id="designacoesPorElementoChart"></canvas>
+                             </div>`;
             
             const desigPorMes = {};
             const desigPorSemana = {}; 
@@ -2508,13 +2552,27 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             });
 
             allCardsHtml += `
-                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Mês</h4><canvas id="chartDesigPorMes"></canvas></div>
-                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Semana</h4><canvas id="chartDesigPorSemana"></canvas></div>
-                <div class="stat-card stats-chart-container-pessoa"><h4>Designações por Ano</h4><canvas id="chartDesigPorAno"></canvas></div>
+                <div class="stat-card stats-chart-container-pessoa">
+                    <h4>Designações por Mês</h4>
+                    <button class="btn-expand-chart" data-chart-id="chartDesigPorMes" data-chart-title="Designações por Mês (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                    <canvas id="chartDesigPorMes"></canvas>
+                </div>
+                <div class="stat-card stats-chart-container-pessoa">
+                    <h4>Designações por Semana</h4>
+                    <button class="btn-expand-chart" data-chart-id="chartDesigPorSemana" data-chart-title="Designações por Semana (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                    <canvas id="chartDesigPorSemana"></canvas>
+                </div>
+                <div class="stat-card stats-chart-container-pessoa">
+                    <h4>Designações por Ano</h4>
+                    <button class="btn-expand-chart" data-chart-id="chartDesigPorAno" data-chart-title="Designações por Ano (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                    <canvas id="chartDesigPorAno"></canvas>
+                </div>
             `;
+            // --- FIM DA ALTERAÇÃO ---
 
             statsContent.innerHTML = allCardsHtml;
 
+            // ... (o restante da função continua igual)
             function renderListaElementosPessoaInterna() {
                 const listaUl = document.getElementById('lista-elementos-pessoa');
                 const link = document.getElementById('link-mostrar-todos-elementos-pessoa');
@@ -2549,7 +2607,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 });
             }
 
-            function renderListaParceirosPessoaInterna() {
+          function renderListaParceirosPessoaInterna() {
                 const listaUl = document.getElementById('lista-parceiros-pessoa');
                 const link = document.getElementById('link-mostrar-todos-parceiros-pessoa');
                 if (!listaUl || !link) {
@@ -2583,7 +2641,8 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 });
             }
 
-            const btnVerificar = document.getElementById('btn-verificar-conjunta');
+
+          const btnVerificar = document.getElementById('btn-verificar-conjunta');
             if (btnVerificar) btnVerificar.addEventListener('click', verificarDesignacaoConjunta);
 
             if (designacoesChart && typeof designacoesChart.destroy === 'function') designacoesChart.destroy();
@@ -2598,7 +2657,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 if (chartContainer) { const canvas = chartContainer.querySelector('canvas'); if (canvas) canvas.outerHTML = "<p style='text-align:center; color:#777; margin-top:20px;'>Sem dados para exibir gráfico de elementos.</p>"; }
             }
 
-            const labelsMes = Object.keys(desigPorMes).sort();
+          const labelsMes = Object.keys(desigPorMes).sort();
             if (labelsMes.length > 0) {
                 designacoesPorMesChart = renderChart(designacoesPorMesChart, 'chartDesigPorMes', 'line', {
                     labels: labelsMes.map(l => { const [y,m] = l.split('-'); return `${m}/${y}`;}),
@@ -2624,7 +2683,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 return parseWeekString(a) - parseWeekString(b);
             });
 
-            if (labelsSemana.length > 0) {
+           if (labelsSemana.length > 0) {
                  designacoesPorSemanaChart = renderChart(designacoesPorSemanaChart, 'chartDesigPorSemana', 'bar', {
                     labels: labelsSemana,
                     datasets: [{ label: 'Nº Designações', data: labelsSemana.map(k => desigPorSemana[k]), backgroundColor: 'rgba(153, 102, 255, 0.2)', borderColor: 'rgba(153, 102, 255, 1)'}]
@@ -2638,6 +2697,15 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     datasets: [{ label: 'Nº Designações', data: labelsAno.map(k => desigPorAno[k]), backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)' }]
                 });
             } else { const el = document.getElementById('chartDesigPorAno'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico anual.</p>"; }
+             document.querySelectorAll('.btn-expand-chart').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const target = e.currentTarget;
+                    const chartId = target.dataset.chartId;
+                    const chartTitle = target.dataset.chartTitle;
+                    abrirModalGrafico(chartId, chartTitle);
+                });
+            });
+            // --- FIM DA ALTERAÇÃO ---
 
             console.log("renderizarEstatisticas: Estatísticas renderizadas com HTML único e listeners reatribuídos.");
         }
@@ -2683,6 +2751,49 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 resultadoDiv.textContent = `Não, não fizeram "${nomeElemento}" juntos neste período.`;
                 resultadoDiv.classList.add('error');
             }
+        }
+
+        function abrirModalGrafico(chartId, chartTitle) {
+            const modal = document.getElementById('modal-grafico-expandido');
+            const modalTitle = document.getElementById('modal-grafico-titulo');
+            if (!modal || !modalTitle) return;
+
+            let originalChartInstance = null;
+            // Identifica qual dos gráficos da página principal deve ser usado como fonte
+            switch (chartId) {
+                case 'designacoesPorElementoChart': originalChartInstance = designacoesChart; break;
+                case 'chartDesigPorMes': originalChartInstance = designacoesPorMesChart; break;
+                case 'chartDesigPorSemana': originalChartInstance = designacoesPorSemanaChart; break;
+                case 'chartDesigPorAno': originalChartInstance = designacoesPorAnoChart; break;
+            }
+
+            if (!originalChartInstance) {
+                alert("Erro: Não foi possível encontrar os dados do gráfico para expandir.");
+                return;
+            }
+
+            modalTitle.textContent = chartTitle;
+
+            const canvasExpandido = document.getElementById('canvas-grafico-expandido');
+            const ctx = canvasExpandido.getContext('2d');
+
+            // Destrói qualquer gráfico que já exista no modal para evitar sobreposições
+            if (graficoExpandidoChart) {
+                graficoExpandidoChart.destroy();
+            }
+
+            // Cria uma nova instância do Chart.js dentro do modal, usando a configuração do gráfico original
+            graficoExpandidoChart = new Chart(ctx, {
+                type: originalChartInstance.config.type,
+                data: originalChartInstance.config.data,
+                options: {
+                    ...originalChartInstance.config.options, // Copia as opções originais
+                    maintainAspectRatio: false, // Permite que o gráfico preencha o contêiner
+                    responsive: true
+                }
+            });
+
+            abrirModal(modal);
         }
 
         // --- Modais e FAB ---
@@ -4306,6 +4417,16 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 console.error("ERRO CRÍTICO: Elementos DOM essenciais não encontrados. A aplicação pode não funcionar.");
                 alert("Erro crítico ao carregar. Verifique o console.");
                 return;
+
+                 const closeButtonGrafico = document.querySelector('[data-modal-id="modal-grafico-expandido"]');
+        if (closeButtonGrafico) {
+            closeButtonGrafico.addEventListener('click', () => {
+                if (graficoExpandidoChart) {
+                    graficoExpandidoChart.destroy();
+                    graficoExpandidoChart = null; // Limpa a referência
+                }
+            });
+        }
             }
 
             await carregarPessoas();
@@ -4366,5 +4487,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             renderRankingList();
         }
     </script>
+
+    
 </body>
 </html>
