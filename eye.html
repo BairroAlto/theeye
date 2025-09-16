@@ -795,7 +795,7 @@
         <div id="coluna-detalhes" class="coluna"><div id="coluna-detalhes-content"><p>Selecione uma pessoa para ver os detalhes.</p></div></div>
     </div>
 
-    <div class="fab-container">
+  <div class="fab-container">
         <button id="btn-ranking-popup" class="fab-stats-button" title="Ranking da Reunião">
             <i class="fas fa-list-ol"></i>
         </button>
@@ -807,12 +807,14 @@
             <button id="btn-criar-elemento-fab" class="fab-option">📄 Criar Elemento</button>
             <button id="btn-criar-designacao-fab" class="fab-option">📌 Criar Designação</button>
             <a href="add.html" class="fab-option" style="text-decoration: none;">📋 Adicionar Escala</a>
+            <!-- LINHA ADICIONADA ABAIXO -->
+            <a href="addpregacao.html" class="fab-option" style="text-decoration: none;">🗺️ Adicionar Pregação</a>
         </div>
     </div>
 
     <div id="modal-pessoa" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-pessoa">×</span><h3 id="modal-pessoa-titulo">Criar Nova Pessoa</h3><form id="form-criar-pessoa"><input type="hidden" id="pessoa-id-edit"><div><label for="nome-pessoa">Nome:</label><input type="text" id="nome-pessoa" required></div><div><label for="idioma-pessoa">Idioma:</label><select id="idioma-pessoa"><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select></div><div><label for="genero-pessoa">Gênero:</label><select id="genero-pessoa"><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div><div><label for="cargo-pessoa">Cargo:</label><select id="cargo-pessoa"><option value="Publicador">Publicador</option><option value="Servo Ministerial">Servo Ministerial</option><option value="Ancião">Ancião</option></select></div><div><label for="pregacao-pessoa">Pregação:</label><select id="pregacao-pessoa"><option value="">Nenhum</option><option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option><option value="Pioneiro Regular">Pioneiro Regular</option></select></div><button type="submit" id="btn-submit-pessoa">Criar Pessoa</button></form></div></div>
     <div id="modal-gerenciar-pessoas" class="modal"><div class="modal-content modal-gerenciar"><span class="close-button" data-modal-id="modal-gerenciar-pessoas">×</span><h3>Gerenciar Pessoas</h3><p><small>Aqui você pode editar, remover ou ocultar pessoas da lista principal do site.</small></p><ul id="lista-gerenciar-pessoas"></ul></div></div>
-    <div id="modal-elemento" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-elemento">×</span><h3>Criar Novo Elemento</h3><form id="form-criar-elemento"><div><label for="nome-elemento-modal">Nome do Elemento:</label><input type="text" id="nome-elemento-modal" required></div><div><label for="tipo-elemento">Tipo:</label><select id="tipo-elemento"><option value="reuniao">Reunião</option><option value="pregacao">Pregação</option></select></div><div><label for="genero-elemento">Gênero (Reunião):</label><select id="genero-elemento"><option value="semana">Semana</option><option value="fim de semana">Fim de Semana</option><option value="tecnico">Técnico</option></select></div><button type="submit">Criar Elemento</button></form></div></div>
+    <div id="modal-elemento" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-elemento">×</span><h3>Criar Novo Elemento</h3><form id="form-criar-elemento"><div><label for="nome-elemento-modal">Nome do Elemento:</label><input type="text" id="nome-elemento-modal" required></div><div> <label for="emoji-elemento-modal">Emoji:</label> <input type="text" id="emoji-elemento-modal"> </div><div><label for="tipo-elemento">Tipo:</label><select id="tipo-elemento"><option value="reuniao">Reunião</option><option value="pregacao">Pregação</option></select></div><div><label for="genero-elemento">Gênero (Reunião):</label><select id="genero-elemento"><option value="semana">Semana</option><option value="fim de semana">Fim de Semana</option><option value="tecnico">Técnico</option></select></div><button type="submit">Criar Elemento</button></form></div></div>
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
 
     <!-- MODAL EDITAR DESIGNAÇÃO -->
@@ -1795,7 +1797,7 @@
             renderizarArquivo(filtroInicial);
         }
 
-       function renderizarArquivo(filtroGenero) {
+    function renderizarArquivo(filtroGenero) {
     console.log(`Renderizando arquivo com filtro: ${filtroGenero}`);
     const listaResultadosUl = document.getElementById('arquivo-resultados-lista');
     if (!listaResultadosUl) {
@@ -1806,20 +1808,18 @@
     listaResultadosUl.innerHTML = '<p style="text-align:center; color:#777; margin-top:20px;">Filtrando designações...</p>';
 
     // Filtra as designações da pessoa atual
-    const designacoesFiltradas = designacoesDaPessoaAtual.filter(desig => {
+  const designacoesDoArquivo = designacoesFiltradas.filter(desig => {
         const elemento = todosElementos.find(el => (el.designacao || el.nome) === desig.nome);
         if (!elemento) return false;
 
-        // O filtro "Pregação" é um 'tipo', enquanto os outros são 'generoReuniao'
         if (filtroGenero === 'pregacao') {
             return elemento.tipo === 'pregacao';
         }
-        // Para os outros filtros, verificamos o generoReuniao
         return elemento.generoReuniao === filtroGenero;
     });
 
     // Ordena por data, da mais recente para a mais antiga
-    const designacoesOrdenadas = [...designacoesFiltradas].sort((a, b) => {
+    const designacoesOrdenadas = [...designacoesDoArquivo].sort((a, b) => {
         const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
         const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
         return dateB - dateA;
@@ -1859,7 +1859,17 @@
         li.style.borderBottom = "1px solid #eee";
 
         const participantesString = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean).join(' - ');
-        li.textContent = `${dataFormatada} | ${desig.nome}: ${participantesString}`;
+        
+         let emojiPrefixo = ""; // Define um valor padrão
+    const elementoCorrespondente = todosElementos.find(el => (el.designacao || el.nome) === desig.nome);
+    if (elementoCorrespondente && elementoCorrespondente.emoji) {
+        emojiPrefixo = elementoCorrespondente.emoji + " "; // Adiciona o emoji e um espaço
+    }
+
+        // --- LINHA MODIFICADA ---
+        // Alterado de .textContent para .innerHTML para permitir a estilização com a tag <span>
+        li.innerHTML = `${dataFormatada} | ${emojiPrefixo}${desig.nome}: <span style="color: #0056b3; font-weight: 500;">${participantesString}</span>`;
+        
         listaResultadosUl.appendChild(li);
     });
 }
@@ -1934,11 +1944,23 @@
                 return matchMes && matchAno && matchElemento && matchSemana;
             });
 
-            const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)');
-            if (activeTabButton?.dataset.tab === 'historico') renderizarHistorico();
-            else if (activeTabButton?.dataset.tab === 'estatisticas') renderizarEstatisticas();
-            else if (document.getElementById('historico-content')?.classList.contains('active')) renderizarHistorico();
+          const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)');
+    if (activeTabButton?.dataset.tab === 'historico') {
+        renderizarHistorico();
+    } else if (activeTabButton?.dataset.tab === 'estatisticas') {
+        renderizarEstatisticas();
+    } 
+    // --- BLOCO ADICIONADO ---
+    else if (activeTabButton?.dataset.tab === 'arquivo') {
+        // Se a aba "Arquivo" está ativa, precisamos re-renderizá-la.
+        // Primeiro, descobrimos qual sub-aba está ativa.
+        const activeSubmenuButton = document.querySelector('#arquivo-content .gs-old-submenu-button.active');
+        if (activeSubmenuButton) {
+            const filtro = activeSubmenuButton.dataset.filtro;
+            renderizarArquivo(filtro); // Re-renderiza com os dados recém-filtrados
         }
+    }
+}
 
         function limparEAtualizarFiltros() {
             console.log("limparEAtualizarFiltros: Limpando filtros.");
@@ -2019,15 +2041,19 @@
                 const nomeElementoDesig = desig.nome;
                 const elementoCorrespondente = todosElementos.find(el => (el.designacao || el.nome) === nomeElementoDesig);
 
-                let emojiPrefixo = "";
-                if (elementoCorrespondente && elementoCorrespondente.tipo === 'reuniao') {
-                    switch (elementoCorrespondente.generoReuniao) {
-                        case 'tecnico': emojiPrefixo = "⚙️ "; break;
-                        case 'semana': emojiPrefixo = "💎 "; break;
-                        case 'fim de semana': emojiPrefixo = "💬 "; break;
-                        default: emojiPrefixo = ""; break;
-                    }
-                }
+              let emojiPrefixo = "";
+if (elementoCorrespondente && elementoCorrespondente.tipo === 'reuniao') {
+    switch (elementoCorrespondente.generoReuniao) {
+        case 'tecnico': emojiPrefixo = "⚙️ "; break;
+        case 'semana': emojiPrefixo = "💎 "; break;
+        case 'fim de semana': emojiPrefixo = "💬 "; break;
+        default: emojiPrefixo = ""; break;
+    }
+} 
+// --- BLOCO ADICIONADO ---
+else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
+    emojiPrefixo = "📣 ";
+}
 
                 const nomeElementoDisplay = desig.nome || 'Elemento sem nome';
                 const participantesNomesArray = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean);
@@ -2639,27 +2665,33 @@
         }
 
         if (formCriarElemento) {
-            formCriarElemento.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const nomeElemento = nomeElementoModalInput.value.trim();
-                const tipo = tipoElementoSelect.value;
-                const generoReuniao = generoElementoSelect.value;
-                if (!nomeElemento) { alert("O nome do elemento é obrigatório."); return; }
-                const elementoData = {
-                    designacao: nomeElemento,
-                    tipo: tipo,
-                    generoReuniao: tipo === 'reuniao' ? generoReuniao : null,
-                    criadoEm: serverTimestamp()
-                };
-                try {
-                    await addDoc(collection(db, "elementos"), elementoData);
-                    alert("Elemento criado com sucesso!");
-                    formCriarElemento.reset();
-                    fecharModal(modalElemento);
-                    await carregarTodosElementosParaEstatisticas();
-                } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Erro: " + error.message); }
-            });
-        }
+    formCriarElemento.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nomeElemento = nomeElementoModalInput.value.trim();
+        // --- LINHA ADICIONADA ---
+        const emoji = document.getElementById('emoji-elemento-modal').value.trim(); // Pega o valor do emoji
+        
+        const tipo = tipoElementoSelect.value;
+        const generoReuniao = generoElementoSelect.value;
+        if (!nomeElemento) { alert("O nome do elemento é obrigatório."); return; }
+        
+        const elementoData = {
+            designacao: nomeElemento,
+            // --- LINHA ADICIONADA ---
+            emoji: emoji || null, // Adiciona o emoji ao objeto (salva null se estiver vazio)
+            tipo: tipo,
+            generoReuniao: tipo === 'reuniao' ? generoReuniao : null,
+            criadoEm: serverTimestamp()
+        };
+        try {
+            await addDoc(collection(db, "elementos"), elementoData);
+            alert("Elemento criado com sucesso!");
+            formCriarElemento.reset();
+            fecharModal(modalElemento);
+            await carregarTodosElementosParaEstatisticas();
+        } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Erro: " + error.message); }
+    });
+}
 
         if (formCriarDesignacao) {
             formCriarDesignacao.addEventListener('submit', async (e) => {
