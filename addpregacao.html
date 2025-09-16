@@ -131,7 +131,7 @@
                 <li>Selecione o <strong>Ano</strong>, <strong>Mês</strong> e <strong>Elemento</strong> de pregação corretos.</li>
                 <li>Cole a lista de participantes na caixa de texto abaixo, de acordo com o formato do elemento selecionado.</li>
                 <li><strong>Formato para "Testemunho Público":</strong> Cole a lista completa com datas, grupos, nomes e locais. O sistema irá ignorar automaticamente linhas como "Pessoa 1", "Pessoa 2", etc.</li>
-                <li><strong>Formato para "Dirigente Saída":</strong> Cole a lista com dia, dia da semana, hora e nome do dirigente.</li>
+                <li><strong>Formato para "Dirigente Saída":</strong> Cole a lista com dia, dia da semana, hora e nome do dirigente. O sistema detetará automaticamente a mudança de mês se a lista abranger mais do que um.</li>
             </ol>
         </div>
 
@@ -228,15 +228,11 @@
                 return;
             }
 
-            const elementoSelecionado = elementosPregacao.find(el => el.id === elementoSelect.value);
-            const isTestemunho = elementoSelecionado.nome === "Testemunho Público";
-
-            let tableHTML = `<table><thead><tr><th>Data</th><th>Participantes</th><th>${isTestemunho ? 'Local' : 'Hora'}</th></tr></thead><tbody>`;
+            let tableHTML = `<table><thead><tr><th>Data</th><th>Participantes</th><th>Semana</th></tr></thead><tbody>`;
             
             for (const desig of designations) {
                 const participants = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(p => p).join(' / ');
-                const detail = isTestemunho ? desig.local : desig.hora;
-                tableHTML += `<tr><td>${desig.data}</td><td>${participants}</td><td>${detail}</td></tr>`;
+                tableHTML += `<tr><td>${desig.data}</td><td>${participants}</td><td>${desig.semana}</td></tr>`;
             }
             tableHTML += `</tbody></table>`;
             
@@ -245,10 +241,38 @@
             previewSection.style.display = 'block';
             logMessage(`Pré-visualização gerada com ${designations.length} designações. Por favor, confirme.`, "info");
         }
+        
+        /**
+         * Calcula o rótulo da semana no formato "Mês Ano | DiaSegunda - DiaDomingo".
+         * O mês e ano são determinados pela Segunda-feira da semana.
+         * @param {Date} date A data do evento.
+         * @returns {string} O rótulo formatado da semana.
+         */
+        function getWeekLabel(date) {
+            const tempDate = new Date(date);
+            
+            // Passo 1: Encontrar a Segunda-feira da semana.
+            // getDay() retorna 0 para Domingo, 1 para Segunda, ..., 6 para Sábado.
+            const dayOfWeek = tempDate.getDay();
+            const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Se for Domingo (0), recua 6 dias. Se for Terça (2), recua 1 dia (1-2).
+            const monday = new Date(tempDate.setDate(tempDate.getDate() + difference));
+
+            // Passo 2: Encontrar o Domingo da semana.
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            // Passo 3: Extrair os componentes da Segunda-feira para o rótulo.
+            const monthName = monday.toLocaleString('pt-PT', { month: 'long' });
+            const capitalizedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+            const year = monday.getFullYear();
+
+            // Passo 4: Montar a string final.
+            return `${capitalizedMonthName} ${year} | ${monday.getDate()} - ${sunday.getDate()}`;
+        }
+
 
         // --- Funções de Análise (Parsing) ---
 
-        // --- FUNÇÃO MODIFICADA ---
         function parseTestemunhoPublico(text, ano, mes) {
             logMessage("A analisar no formato 'Testemunho Público'...", "info");
             const designacoes = [];
@@ -286,8 +310,6 @@
                 }
 
                 if (dataAtual && trimmedLine && !['×'].includes(trimmedLine) && isNaN(trimmedLine)) {
-                    // ** AQUI ESTÁ A ALTERAÇÃO **
-                    // Ignora linhas que são "Pessoa 1", "Pessoa 2", etc. (insensível a maiúsculas/minúsculas)
                     const ignorePattern = /^pessoa\s+\d$/i;
                     if (!ignorePattern.test(trimmedLine)) {
                         grupoAtual.participantes.push(trimmedLine);
@@ -303,24 +325,39 @@
         }
         
         function parseDirigenteSaida(text, ano, mes) {
-            logMessage("A analisar no formato 'Dirigente Saída'...", "info");
+            logMessage("A analisar no formato 'Dirigente Saída' com deteção de mudança de mês...", "info");
             const designacoes = [];
             
             const regex = /(\d+)\s+(?:Quarta|Sábado|Domingo|Segunda|Terça|Quinta|Sexta)\s+([\d:h]+)\s+([\w\sÀ-ú]+?)(?=\s*\d+\s+(?:Quarta|Sábado|Domingo|Segunda|Terça|Quinta|Sexta)|$)/g;
             
             const matches = text.replace(/\n/g, ' ').matchAll(regex);
 
+            let currentAno = ano;
+            let currentMes = mes; // Mês no formato 1-12
+            let lastDay = 0; // Inicializa a 0 para garantir que o primeiro dia não acione a mudança
+
             for (const match of matches) {
                 const dia = parseInt(match[1]);
                 const hora = match[2];
                 const nome = match[3].trim();
 
+                // Verifica se o dia atual é menor que o anterior (ex: de 29 para 2)
+                if (dia < lastDay) {
+                    currentMes++; // Avança para o próximo mês
+                    if (currentMes > 12) {
+                        currentMes = 1; // Volta para Janeiro
+                        currentAno++;   // Avança para o próximo ano
+                    }
+                    logMessage(`Detetada mudança de mês para: ${currentMes}/${currentAno}`, "info");
+                }
+
                 if (!isNaN(dia) && hora && nome) {
                     designacoes.push({
-                        data: new Date(ano, mes - 1, dia),
+                        data: new Date(currentAno, currentMes - 1, dia), // JS usa meses 0-11
                         participantes: [nome],
                         hora: hora
                     });
+                    lastDay = dia; // Atualiza o último dia processado
                 } else {
                     logMessage(`Padrão encontrado mas dados inválidos: "${match[0]}"`, "warning");
                 }
@@ -382,7 +419,7 @@
                         mes: mesFormatado,
                         dia: diaFormatado,
                         data: `${diaFormatado}/${mesFormatado}/${anoFormatado}`,
-                        semana: `Pregação ${mesSelect.options[mesSelect.selectedIndex].text} ${anoFormatado}`,
+                        semana: getWeekLabel(dataObj),
                         semanaISO: getISOWeek(dataObj),
                         elementoId: elementoSelecionado.id,
                         nome: elementoSelecionado.nome,
