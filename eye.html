@@ -993,34 +993,35 @@
 
                 <div class="stats-card-section active-submenu-section" id="gs-old-sec-top-pessoas">
                     <h4><i class="fas fa-users stats-icon"></i> Pessoas com Mais Designações</h4>
-                    
-                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
-                    <div class="filters-container stats-filters" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-                        
-                        <!-- Linha 1: Ano | Mês | Elemento -->
-                        <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-top-pessoas-ano">Ano:</label>
-                            <select id="gs-top-pessoas-ano"><option value="">Todos</option></select>
+                    <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-top-pessoas-ano">Ano:</label>
+                                <select id="gs-top-pessoas-ano"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-top-pessoas-mes">Mês:</label>
+                                <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-top-pessoas-elemento">Elemento:</label>
+                                <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-top-pessoas-tipo">Tipo:</label>
+                                <select id="gs-top-pessoas-tipo">
+                                    <option value="">Todos</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="pregacao">Pregação</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button id="btn-gs-top-pessoas-aplicar" class="stats-apply-button">
+                                    <i class="fas fa-search stats-btn-icon"></i> Ver Top
+                                </button>
+                            </div>
                         </div>
-                        <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-top-pessoas-mes">Mês:</label>
-                            <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
-                        </div>
-                        <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-top-pessoas-elemento">Elemento:</label>
-                            <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
-                        </div>
-                        
-                        <!-- Botão de Ação -->
-                        <div>
-                            <button id="btn-gs-top-pessoas-aplicar" class="stats-apply-button">
-                                <i class="fas fa-search stats-btn-icon"></i> Ver Top
-                            </button>
-                        </div>
-
                     </div>
-                    <!-- FIM DA SEÇÃO MODIFICADA -->
-
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-top-pessoas-loading" style="display:none;"></div>
                         <ul id="gs-top-pessoas-list" class="stats-result-list"></ul>
@@ -1029,11 +1030,7 @@
                 </div>
                 <div class="stats-card-section" id="gs-old-sec-todas-designacoes">
                     <h4><i class="fas fa-list-alt stats-icon"></i> Todas as Designações</h4>
-                    
-                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-
-                        <!-- Linha 1: Ano | Mês | Elemento -->
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-todas-desig-ano">Ano:</label>
@@ -1047,9 +1044,15 @@
                                 <label for="gs-todas-desig-elemento">Elemento:</label>
                                 <select id="gs-todas-desig-elemento"><option value="">Todos</option></select>
                             </div>
+                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-todas-desig-tipo">Tipo:</label>
+                                <select id="gs-todas-desig-tipo">
+                                    <option value="">Todos</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="pregacao">Pregação</option>
+                                </select>
+                            </div>
                         </div>
-
-                        <!-- Botões de Ação -->
                         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                             <button id="btn-gs-todas-desig-aplicar" class="stats-apply-button">
                                 <i class="fas fa-list-ol stats-btn-icon"></i> Listar Detalhado
@@ -1059,8 +1062,6 @@
                             </button>
                         </div>
                     </div>
-                    <!-- FIM DA SEÇÃO MODIFICADA -->
-
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-todas-desig-loading" style="display:none;"></div>
                         <ul id="gs-todas-desig-list" class="stats-result-list"></ul>
@@ -1073,17 +1074,11 @@
                 </div>
                 <div class="stats-card-section" id="gs-old-sec-desempenho-individual">
                     <h4><i class="fas fa-user-chart stats-icon"></i> Desempenho Individual vs. Média</h4>
-                    
-                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-                        
-                        <!-- Linha 1: Pessoa -->
                         <div style="display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-pessoa-esp-select">Pessoa:</label>
                             <select id="gs-pessoa-esp-select"><option value="">-- Selecione --</option></select>
                         </div>
-                        
-                        <!-- Linha 2: Ano | Mês | Elemento -->
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                              <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-pessoa-esp-ano-filtro">Ano:</label>
@@ -1097,18 +1092,21 @@
                                 <label for="gs-pessoa-esp-elemento-filtro">Elemento:</label>
                                 <select id="gs-pessoa-esp-elemento-filtro"><option value="">-- Todos Elementos --</option></select>
                             </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoa-esp-tipo-filtro">Tipo:</label>
+                                <select id="gs-pessoa-esp-tipo-filtro">
+                                    <option value="">Todos</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="pregacao">Pregação</option>
+                                </select>
+                            </div>
                         </div>
-
-                        <!-- Botão de Ação -->
                         <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                             <button id="btn-gs-pessoa-esp-aplicar" class="stats-apply-button">
                                  <i class="fas fa-analytics stats-btn-icon"></i> Analisar
                             </button>
                         </div>
-
                     </div>
-                    <!-- FIM DA SEÇÃO MODIFICADA -->
-
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-pessoa-esp-loading" style="display:none;"></div>
                         <div id="gs-pessoa-esp-results" class="stats-result-text"></div>
@@ -1119,26 +1117,18 @@
             <!-- Conteúdo da Aba: Pessoas -->
             <div id="gs-pessoas-content" class="global-stats-tab-content">
                 <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
-                
-                <!-- INÍCIO DA SEÇÃO MODIFICADA -->
                 <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-
-                    <!-- Linha 1: Selecionar Pessoas -->
                     <div style="display: flex; flex-direction: column; gap: 5px;">
                         <label for="gs-pessoas-search-input-custom">Selecionar Pessoas:</label>
                         <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
                             <div class="selected-pessoas-area">
-                                <!-- Selected person tags will go here -->
                             </div>
                             <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
                             <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
-                                <!-- Filtered people list will appear here -->
                             </div>
                         </div>
-                        <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select> <!-- Original select, now hidden -->
+                        <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select>
                     </div>
-
-                    <!-- Linha 2: Ano | Mês | Semana -->
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-pessoas-filtro-ano">Ano:</label>
@@ -1153,33 +1143,33 @@
                             <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: calc(100% - 24px);">
                         </div>
                     </div>
-
-                    <!-- Linha 3: Gênero | Idioma -->
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px;">
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
                             <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
                         </div>
-                        <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px;">
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
                             <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
                         </div>
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-tipo">Tipo (Designação):</label>
+                             <select id="gs-pessoas-filtro-tipo">
+                                <option value="">Todos</option>
+                                <option value="reuniao">Reunião</option>
+                                <option value="pregacao">Pregação</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <!-- Botão de Ação -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                         <button id="btn-gs-pessoas-comparar" class="stats-apply-button">
                             <i class="fas fa-balance-scale stats-btn-icon"></i> Comparar Selecionadas
                         </button>
                     </div>
-
                 </div>
-                <!-- FIM DA SEÇÃO MODIFICADA -->
-
                 <div class="stats-results-container">
                     <div class="loading-spinner" id="gs-pessoas-loading" style="display:none;"></div>
                     <div id="gs-pessoas-comparison-area">
-                        <!-- Cards de comparação serão inseridos aqui -->
                     </div>
                 </div>
             </div>
@@ -1187,11 +1177,7 @@
             <!-- Conteúdo da Aba: Designações -->
             <div id="gs-designacoes-content" class="global-stats-tab-content">
                 <h4><i class="fas fa-clipboard-list stats-icon"></i> Explorar Tipos de Designação (Elementos)</h4>
-                
-                <!-- INÍCIO DA SEÇÃO MODIFICADA -->
                  <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-                    
-                    <!-- Linha 1: Dia | Mês | Ano | Semana -->
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 80px; display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-designacoes-filtro-dia">Dia:</label>
@@ -1210,8 +1196,6 @@
                             <input type="number" id="gs-designacoes-filtro-semana" placeholder="1-53" min="1" max="53">
                         </div>
                     </div>
-                    
-                    <!-- Linha 2: Genero | Idioma -->
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                             <label for="gs-designacoes-filtro-genero">Gênero (Participante):</label>
@@ -1221,18 +1205,21 @@
                             <label for="gs-designacoes-filtro-idioma">Idioma (Participante):</label>
                             <select id="gs-designacoes-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
                         </div>
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-tipo">Tipo (Elemento):</label>
+                            <select id="gs-designacoes-filtro-tipo">
+                                <option value="">Todos</option>
+                                <option value="reuniao">Reunião</option>
+                                <option value="pregacao">Pregação</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <!-- Botão de Ação -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                         <button id="btn-gs-designacoes-aplicar-filtros" class="stats-apply-button" title="Aplicar filtros à lista de tipos de designação e suas instâncias">
                             <i class="fas fa-filter stats-btn-icon"></i> Aplicar Filtros
                         </button>
                     </div>
-
                 </div>
-                <!-- FIM DA SEÇÃO MODIFICADA -->
-
                 <div class="stats-results-container">
                     <p>Clique num tipo de designação para ver as instâncias (com filtros aplicados).</p>
                     <div class="loading-spinner" id="gs-designacoes-tipos-loading" style="display:none;"></div>
@@ -1754,7 +1741,7 @@
             }
         }
 
-        function criarEstruturaDetalhes() {
+    function criarEstruturaDetalhes() {
             if (!colunaDetalhesDiv || !colunaDetalhesContent) {
                 console.error("ERRO CRÍTICO: colunaDetalhesDiv ou colunaDetalhesContent não encontrado em criarEstruturaDetalhes.");
                 return;
@@ -1769,6 +1756,8 @@
             }
             colunaDetalhesContent.style.display = 'none';
 
+            // --- INÍCIO DA ALTERAÇÃO ---
+            // Adicionado o <select> para o filtro de "Tipo"
             colunaDetalhesDiv.innerHTML = `
                 <h3>Detalhes de: <span id="nome-pessoa-detalhe">${pessoaSelecionadaAtual.nome}</span></h3>
                 <div class="tabs">
@@ -1791,6 +1780,12 @@
                         <label for="filtro-ano">Ano:</label><select id="filtro-ano"><option value="">Todos</option></select>
                         <label for="filtro-semana">Semana:</label><select id="filtro-semana"><option value="">Todas</option></select>
                         <label for="filtro-elemento">Elemento:</label><select id="filtro-elemento"><option value="">Todos</option></select>
+                        <label for="filtro-tipo">Tipo:</label>
+                        <select id="filtro-tipo">
+                            <option value="">Todos</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="pregacao">Pregação</option>
+                        </select>
                         <button id="btn-aplicar-filtros">Aplicar</button>
                         <button id="btn-limpar-filtros">Limpar</button>
                     </div>
@@ -1809,6 +1804,8 @@
                     </div>
                 </div>
                 <div id="estatisticas-content" class="tab-content"></div>`;
+            // --- FIM DA ALTERAÇÃO ---
+
             console.log("criarEstruturaDetalhes: Estrutura da segunda coluna criada com a aba Arquivo.");
 
             const tabBtnEditarModo = document.getElementById('tab-btn-editar-modo');
@@ -1843,7 +1840,7 @@
                 });
             });
 
-            editModeActive = false;
+           editModeActive = false;
             if (tabBtnEditarModo) {
                 tabBtnEditarModo.classList.remove('active-edit-mode');
                 tabBtnEditarModo.textContent = "Editar";
@@ -1863,7 +1860,7 @@
                 });
             }
 
-            const btnToggleFiltrosPessoa = document.getElementById('btn-toggle-filtros-pessoa');
+           const btnToggleFiltrosPessoa = document.getElementById('btn-toggle-filtros-pessoa');
             const filtrosWrapperMobile = document.querySelector('.filtros-wrapper-mobile'); 
 
             if (btnToggleFiltrosPessoa && filtrosWrapperMobile) {
@@ -1882,7 +1879,7 @@
                     }
                 });
                 
-                function adjustFilterDisplayOnLoadOrResize() {
+             function adjustFilterDisplayOnLoadOrResize() {
                     const isMobile = window.innerWidth <= 768;
                     filtrosWrapperMobile.style.display = '';
                     if (!isMobile) {
@@ -1991,13 +1988,16 @@
     });
 }
 
-        function popularFiltros() {
+       function popularFiltros() {
             console.log("popularFiltros: Iniciando");
             const filtroAnoSelect = document.getElementById('filtro-ano');
             const filtroElementoSelect = document.getElementById('filtro-elemento');
             const filtroSemanaSelect = document.getElementById('filtro-semana');
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const filtroTipoSelect = document.getElementById('filtro-tipo');
+            // --- FIM DA ALTERAÇÃO ---
 
-            if (!filtroAnoSelect || !filtroElementoSelect || !filtroSemanaSelect) {
+            if (!filtroAnoSelect || !filtroElementoSelect || !filtroSemanaSelect || !filtroTipoSelect) {
                 console.warn("popularFiltros: Elementos de filtro não encontrados.");
                 return;
             }
@@ -2038,8 +2038,19 @@
             filtroElementoSelect.innerHTML = '<option value="">Todos</option>' + elementos.map(el => `<option value="${el}">${el}</option>`).join('');
             filtroSemanaSelect.innerHTML = '<option value="">Todas</option>' + semanasOptions;
 
+            // --- INÍCIO DA ALTERAÇÃO ---
+            // Define o valor padrão do novo filtro para "Reunião"
+            if (filtroTipoSelect) {
+                filtroTipoSelect.value = "reuniao";
+            }
+            // --- FIM DA ALTERAÇÃO ---
+
             console.log("popularFiltros: Filtros de detalhes populados.");
         }
+
+
+
+
 
         function aplicarEAtualizarFiltros() {
             console.log("aplicarEAtualizarFiltros: Aplicando filtros.");
@@ -2047,37 +2058,48 @@
             const anoEl = document.getElementById('filtro-ano');
             const elemEl = document.getElementById('filtro-elemento');
             const semanaEl = document.getElementById('filtro-semana');
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipoEl = document.getElementById('filtro-tipo');
+            // --- FIM DA ALTERAÇÃO ---
 
             const mes = mesEl ? mesEl.value : "";
             const ano = anoEl ? anoEl.value : "";
             const elemento = elemEl ? elemEl.value : "";
             const semana = semanaEl ? semanaEl.value : "";
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipo = tipoEl ? tipoEl.value : "";
+            // --- FIM DA ALTERAÇÃO ---
 
             designacoesFiltradas = designacoesDaPessoaAtual.filter(d => {
                 const matchMes = !mes || d.mes === mes;
                 const matchAno = !ano || d.ano === ano;
                 const matchElemento = !elemento || d.nome === elemento;
                 const matchSemana = !semana || (d.semana === semana) || (!d.semana && d.semanaISO && `Semana ISO ${d.semanaISO} (${d.ano})` === semana);
-                return matchMes && matchAno && matchElemento && matchSemana;
+                
+                // --- INÍCIO DA ALTERAÇÃO ---
+                // Lógica para o filtro de tipo
+                const elementoCorrespondente = todosElementos.find(el => (el.designacao || el.nome) === d.nome);
+                const matchTipo = !tipo || (elementoCorrespondente && elementoCorrespondente.tipo === tipo);
+                // --- FIM DA ALTERAÇÃO ---
+
+                return matchMes && matchAno && matchElemento && matchSemana && matchTipo;
             });
 
           const activeTabButton = document.querySelector('#coluna-detalhes .tab-button.active:not(#tab-btn-editar-modo)');
-    if (activeTabButton?.dataset.tab === 'historico') {
-        renderizarHistorico();
-    } else if (activeTabButton?.dataset.tab === 'estatisticas') {
-        renderizarEstatisticas();
-    } 
-    // --- BLOCO ADICIONADO ---
-    else if (activeTabButton?.dataset.tab === 'arquivo') {
-        // Se a aba "Arquivo" está ativa, precisamos re-renderizá-la.
-        // Primeiro, descobrimos qual sub-aba está ativa.
-        const activeSubmenuButton = document.querySelector('#arquivo-content .gs-old-submenu-button.active');
-        if (activeSubmenuButton) {
-            const filtro = activeSubmenuButton.dataset.filtro;
-            renderizarArquivo(filtro); // Re-renderiza com os dados recém-filtrados
+            if (activeTabButton?.dataset.tab === 'historico') {
+                renderizarHistorico();
+            } else if (activeTabButton?.dataset.tab === 'estatisticas') {
+                renderizarEstatisticas();
+            } 
+            else if (activeTabButton?.dataset.tab === 'arquivo') {
+                const activeSubmenuButton = document.querySelector('#arquivo-content .gs-old-submenu-button.active');
+                if (activeSubmenuButton) {
+                    const filtro = activeSubmenuButton.dataset.filtro;
+                    renderizarArquivo(filtro);
+                }
+            }
         }
-    }
-}
+
 
         function limparEAtualizarFiltros() {
             console.log("limparEAtualizarFiltros: Limpando filtros.");
@@ -2085,10 +2107,14 @@
             const filtroAno = document.getElementById('filtro-ano');
             const filtroElemento = document.getElementById('filtro-elemento');
             const filtroSemana = document.getElementById('filtro-semana');
+            const filtroTipo = document.getElementById('filtro-tipo');
+
             if (filtroMes) filtroMes.value = "";
             if (filtroAno) filtroAno.value = "";
             if (filtroElemento) filtroElemento.value = "";
             if (filtroSemana) filtroSemana.value = "";
+            if (filtroTipo) filtroTipo.value = "";
+            
             aplicarEAtualizarFiltros();
         }
 
@@ -3375,7 +3401,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             setSectionLoadingState('gs-total-elementos', false);
         }
 
-        async function compararPessoasSelecionadas() {
+     async function compararPessoasSelecionadas() {
             setSectionLoadingState('gs-pessoas', true, 'btn-gs-pessoas-comparar');
             if (!gsPessoasSelectMulti || !gsPessoasComparisonAreaDiv) {
                  setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
@@ -3394,6 +3420,9 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             const semanaFiltro = gsPessoasFiltroSemanaInput.value;
             const generoFiltro = gsPessoasFiltroGeneroSelect.value;
             const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value;
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipoFiltro = document.getElementById('gs-pessoas-filtro-tipo').value;
+            // --- FIM DA ALTERAÇÃO ---
 
             gsPessoasComparisonAreaDiv.innerHTML = '';
 
@@ -3412,10 +3441,12 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
                     }
-                    return matchAno && matchMes && matchSemana;
+                    const elementoObj = getElementoByNome(d.nome);
+                    const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                    return matchAno && matchMes && matchSemana && matchTipo;
                 });
 
-                const card = document.createElement('div');
+            const card = document.createElement('div');
                 card.className = 'pessoa-comparison-card';
                 let cardHTML = `<h5>${pessoaObj.nome} <small>(${pessoaObj.genero}, ${pessoaObj.idioma})</small></h5><ul>`;
                 cardHTML += `<li>Total Designações (filt.): <span class="stat-value">${designacoesDaPessoaFiltradas.length}</span></li>`;
@@ -3441,18 +3472,23 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
         }
 
-        function popularListaElementosAbaDesignacoes() {
+      function popularListaElementosAbaDesignacoes() {
             if (!todosElementos || !gsDesignacoesTiposListUl) {
                 if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado ou lista não encontrada.</li>';
                 return;
             }
-             setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros');
+            setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros');
             gsDesignacoesTiposListUl.innerHTML = '';
-            if (todosElementos.length === 0) {
+            
+            const tipoFiltro = document.getElementById('gs-designacoes-filtro-tipo').value;
+            const elementosFiltrados = todosElementos.filter(el => !tipoFiltro || el.tipo === tipoFiltro);
+            
+            if (elementosFiltrados.length === 0) {
                 setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
                 return;
             }
-            todosElementos.forEach(el => {
+            
+            elementosFiltrados.forEach(el => { // <-- Alterado para usar a lista filtrada
                 const nomeEl = el.designacao || el.nome;
                 const li = document.createElement('li');
                 li.textContent = nomeEl;
@@ -3463,10 +3499,11 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 });
                 gsDesignacoesTiposListUl.appendChild(li);
             });
+            
              setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
         }
 
-        function abrirModalInstancias(nomeElemento, aplicarFiltrosDaAbaDesignacoes = false) {
+       function abrirModalInstancias(nomeElemento, aplicarFiltrosDaAbaDesignacoes = false) {
             if (!modalInstanciasDesignacao || !modalInstanciasTitulo || !modalInstanciasListUl) return;
 
             modalInstanciasTitulo.textContent = `Instâncias de: ${nomeElemento}`;
@@ -3482,6 +3519,11 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 const semanaFiltro = gsDesignacoesFiltroSemanaInput.value;
                 const generoFiltroParticipante = gsDesignacoesFiltroGeneroSelect.value;
                 const idiomaFiltroParticipante = gsDesignacoesFiltroIdiomaSelect.value;
+                // --- INÍCIO DA ALTERAÇÃO ---
+                // O filtro de tipo já foi aplicado na lista de elementos,
+                // mas adicionamos aqui por segurança e consistência.
+                const tipoFiltro = document.getElementById('gs-designacoes-filtro-tipo').value;
+                // --- FIM DA ALTERAÇÃO ---
 
                 instanciasFiltradas = instanciasFiltradas.filter(d => {
                     const matchDia = !diaFiltro || d.dia === String(diaFiltro).padStart(2, '0');
@@ -3491,6 +3533,11 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     if (semanaFiltro) {
                          matchSemana = d.semanaISO === parseInt(semanaFiltro);
                     }
+                    
+                    // --- INÍCIO DA ALTERAÇÃO ---
+                    const elementoObj = getElementoByNome(d.nome);
+                    const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                    // --- FIM DA ALTERAÇÃO ---
                     
                     let atendeFiltroParticipante = true;
                     if (generoFiltroParticipante || idiomaFiltroParticipante) {
@@ -3511,11 +3558,11 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                             }
                         }
                     }
-                    return matchDia && matchMes && matchAno && matchSemana && atendeFiltroParticipante;
+                    return matchDia && matchMes && matchAno && matchSemana && atendeFiltroParticipante && matchTipo;
                 });
             }
 
-            instanciasFiltradas.sort((a, b) => {
+         instanciasFiltradas.sort((a, b) => {
                 const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
                 const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
                 if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
@@ -3543,7 +3590,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             }
         }
 
-        async function calcularTopPessoas() {
+     async function calcularTopPessoas() {
             setSectionLoadingState('gs-top-pessoas', true, 'btn-gs-top-pessoas-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
             if (!gsTopPessoasListUl) { 
@@ -3553,13 +3600,20 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
 
             const mesFiltro = gsTopPessoasMesSelect.value;
             const anoFiltro = gsTopPessoasAnoSelect.value;
-            const elementoFiltro = gsTopPessoasElementoSelect.value; 
+            const elementoFiltro = gsTopPessoasElementoSelect.value;
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipoFiltro = document.getElementById('gs-top-pessoas-tipo').value;
+            // --- FIM DA ALTERAÇÃO ---
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchElemento = !elementoFiltro || d.nome === elementoFiltro; 
-                return matchMes && matchAno && matchElemento; 
+                const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
+                // --- INÍCIO DA ALTERAÇÃO ---
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                // --- FIM DA ALTERAÇÃO ---
+                return matchMes && matchAno && matchElemento && matchTipo;
             });
 
             const contagemPessoas = {};
@@ -3571,32 +3625,13 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 });
             });
 
-            topPessoasDadosCompletos = Object.entries(contagemPessoas)
+          topPessoasDadosCompletos = Object.entries(contagemPessoas)
                 .map(([nome, count]) => ({ nome, count }))
                 .sort((a, b) => b.count - a.count || a.nome.localeCompare(b.nome));
 
             gsTopPessoasMostrandoApenasTop5 = true;
             renderTopPessoasList();
             setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
-        }
-
-        function renderTopPessoasList() {
-            if (!gsTopPessoasListUl || !gsTopPessoasMostrarTodosLink) return;
-            gsTopPessoasListUl.innerHTML = '';
-
-            const dadosParaRenderizar = gsTopPessoasMostrandoApenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
-
-            if (dadosParaRenderizar.length === 0) {
-            } else {
-                dadosParaRenderizar.forEach(item => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${item.nome} <span class="count">${item.count}</span>`;
-                    gsTopPessoasListUl.appendChild(li);
-                });
-            }
-
-            gsTopPessoasMostrarTodosLink.style.display = topPessoasDadosCompletos.length > 5 ? 'inline-block' : 'none';
-            gsTopPessoasMostrarTodosLink.textContent = gsTopPessoasMostrandoApenasTop5 ? `Mostrar lista completa (${topPessoasDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
         async function exibirTodasDesignacoes() {
@@ -3610,12 +3645,19 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
             const elementoFiltro = gsTodasDesigElementoSelect.value;
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipoFiltro = document.getElementById('gs-todas-desig-tipo').value;
+            // --- FIM DA ALTERAÇÃO ---
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
-                return matchMes && matchAno && matchElemento;
+                // --- INÍCIO DA ALTERAÇÃO ---
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                // --- FIM DA ALTERAÇÃO ---
+                return matchMes && matchAno && matchElemento && matchTipo;
             }).sort((a, b) => {
                 const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
                 const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
@@ -3623,7 +3665,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 return dateB - dateA;
             });
 
-            gsTodasDesigListUl.innerHTML = '';
+          gsTodasDesigListUl.innerHTML = '';
             if (gsTodasDesigAgrupadoContainerDiv) gsTodasDesigAgrupadoContainerDiv.style.display = 'none';
 
             if (designacoesFiltradasGlobal.length > 0) {
@@ -3645,7 +3687,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             setSectionLoadingState('gs-todas-desig', false, 'btn-gs-todas-desig-aplicar');
         }
 
-        async function agruparDesignacoesPorElemento() {
+      async function agruparDesignacoesPorElemento() {
             setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-agrupar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
              if (!gsTodasDesigAgrupadoListUl || !gsTodasDesigAgrupadoContainerDiv) {
@@ -3656,12 +3698,19 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             const mesFiltro = gsTodasDesigMesSelect.value;
             const anoFiltro = gsTodasDesigAnoSelect.value;
             const elementoFiltro = gsTodasDesigElementoSelect.value;
+            // --- INÍCIO DA ALTERAÇÃO ---
+            const tipoFiltro = document.getElementById('gs-todas-desig-tipo').value;
+            // --- FIM DA ALTERAÇÃO ---
 
             let designacoesParaAgrupar = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
-                return matchMes && matchAno && matchElemento;
+                // --- INÍCIO DA ALTERAÇÃO ---
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                // --- FIM DA ALTERAÇÃO ---
+                return matchMes && matchAno && matchElemento && matchTipo;
             });
 
             const contagemElementos = designacoesParaAgrupar.reduce((acc, d) => {
@@ -3696,7 +3745,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             gsTodasDesigAgrupadoMostrarTodosLink.textContent = gsTopElementosAgrupadosMostrandoApenasTop5 ? `Mostrar lista completa (${topElementosAgrupadosDadosCompletos.length})` : 'Mostrar apenas Top 5';
         }
 
-        async function analisarDesempenhoPessoa() {
+       async function analisarDesempenhoPessoa() {
             setSectionLoadingState('gs-pessoa-esp', true, 'btn-gs-pessoa-esp-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
             if (todasPessoas.length === 0) await carregarPessoas();
@@ -3712,6 +3761,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             const elementoFiltro = gsPessoaEspElementoFiltroSelect.value;
             const anoFiltro = gsPessoaEspAnoFiltroSelect.value;
             const mesFiltro = gsPessoaEspMesFiltroSelect.value;
+            const tipoFiltro = document.getElementById('gs-pessoa-esp-tipo-filtro').value;
 
             if (!nomePessoaSelecionada) {
                 gsPessoaEspResultsDiv.innerHTML = "<p>Por favor, selecione uma pessoa para analisar.</p>";
@@ -3723,10 +3773,12 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
-                return matchElemento && matchAno && matchMes;
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                return matchElemento && matchAno && matchMes && matchTipo;
             });
 
-            const designacoesDaPessoa = designacoesFiltradas.filter(d => d.participantes && d.participantes[nomePessoaSelecionada]);
+         const designacoesDaPessoa = designacoesFiltradas.filter(d => d.participantes && d.participantes[nomePessoaSelecionada]);
             const totalDesigPessoa = designacoesDaPessoa.length;
             let mediaGeral = 0;
 
@@ -3749,7 +3801,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 else htmlResultado += `<p>Desempenho: <span class="na-media">Na média</span>.</p>`;
             } 
 
-            const desigPessoaPorElemento = designacoesDaPessoa.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
+          const desigPessoaPorElemento = designacoesDaPessoa.reduce((acc, d) => { acc[d.nome] = (acc[d.nome] || 0) + 1; return acc; }, {});
             const sortedDesigPessoaPorElemento = Object.entries(desigPessoaPorElemento).sort((a,b) => b[1] - a[1]);
             if(sortedDesigPessoaPorElemento.length > 0){
                 htmlResultado += `<p><strong>Detalhes por elemento para ${nomePessoaSelecionada}:</strong></p><ul>`;
