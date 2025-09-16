@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Designações de Pregação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: calc(100% - 22px);
+            min-height: 350px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        #messages {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #ecf0f1;
+            border: 1px solid #dce4e6;
+            min-height: 50px;
+            white-space: pre-wrap; 
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; font-weight: bold; }
+        .info { color: #2980b9; }
+        .warning { color: #f39c12; }
+        button#cancelButton:hover {
+            background-color: #c0392b;
+        }
+        #previewTableContainer table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #previewTableContainer th, #previewTableContainer td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #previewTableContainer th {
+            background-color: #f2f2f2;
+        }
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f4f8;
+            border-radius: 6px;
+            align-items: center;
+        }
+        .filters-container label {
+            font-weight: bold;
+        }
+        .filters-container select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+ <div class="container">
+        <h2>Criador de Designações de Pregação</h2>
+        
+        <div class="filters-container">
+            <label for="select-ano">Ano:</label>
+            <select id="select-ano"></select>
+            <label for="select-mes">Mês:</label>
+            <select id="select-mes"></select>
+            <label for="select-elemento">Elemento:</label>
+            <select id="select-elemento"><option value="">A carregar...</option></select>
+        </div>
+
+        <div id="instructionsSection">
+             <p><strong>Instruções:</strong></p>
+            <ol style="padding-left: 20px;">
+                <li>Selecione o <strong>Ano</strong>, <strong>Mês</strong> e <strong>Elemento</strong> de pregação corretos.</li>
+                <li>Cole a lista de participantes na caixa de texto abaixo, de acordo com o formato do elemento selecionado.</li>
+                <li><strong>Formato para "Testemunho Público":</strong> Cole a lista completa com datas, grupos, nomes e locais. O sistema irá ignorar automaticamente linhas como "Pessoa 1", "Pessoa 2", etc.</li>
+                <li><strong>Formato para "Dirigente Saída":</strong> Cole a lista com dia, dia da semana, hora e nome do dirigente.</li>
+            </ol>
+        </div>
+
+        <div id="inputSection">
+            <textarea id="programText" placeholder="Depois de selecionar as opções acima, cole aqui a lista de pregação..."></textarea>
+            <button id="processButton">Processar e Pré-visualizar</button>
+        </div>
+
+        <div id="previewSection" style="display: none;">
+            <h3>Pré-visualização das Designações a Criar</h3>
+            <p>Confira a lista abaixo. Se estiver tudo correto, clique em "Confirmar e Gravar".</p>
+            <div id="previewTableContainer" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #ddd; padding: 5px;">
+                <!-- A tabela será inserida aqui pelo JavaScript -->
+            </div>
+            <button id="confirmSaveButton">Confirmar e Gravar</button>
+            <button id="cancelButton" style="background-color: #e74c3c;">Cancelar</button>
+        </div>
+
+        <h3>Log de Processamento:</h3>
+        <div id="messages">Aguardando processamento...</div>
+    </div>
+
+     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAk3dHqtGWtnPq_B09rRzUj6WC5hxdd9io",
+            authDomain: "theeye-c3ace.firebaseapp.com",
+            projectId: "theeye-c3ace",
+            storageBucket: "theeye-c3ace.firebasestorage.app",
+            messagingSenderId: "742355525459",
+            appId: "1:742355525459:web:fbe84a9594be4bedc28ba6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- Elementos DOM ---
+        const anoSelect = document.getElementById('select-ano');
+        const mesSelect = document.getElementById('select-mes');
+        const elementoSelect = document.getElementById('select-elemento');
+        const programTextInput = document.getElementById('programText');
+        const processButton = document.getElementById('processButton');
+        const confirmSaveButton = document.getElementById('confirmSaveButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const messagesDivEl = document.getElementById('messages');
+        const inputSection = document.getElementById('inputSection');
+        const previewSection = document.getElementById('previewSection');
+        const previewTableContainer = document.getElementById('previewTableContainer');
+
+        let designacoesParaGravar = [];
+        let elementosPregacao = [];
+        const mesesMap = {
+            "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4, "maio": 5,
+            "junho": 6, "julho": 7, "agosto": 8, "setembro": 9, "outubro": 10,
+            "novembro": 11, "dezembro": 12
+        };
+
+        // --- Funções de Logging e UI ---
+        function logMessage(message, type = "info") {
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            entry.className = `log-entry ${type}`;
+            messagesDivEl.appendChild(entry);
+            messagesDivEl.scrollTop = messagesDivEl.scrollHeight;
+        }
+        
+        function clearMessages() {
+            messagesDivEl.innerHTML = '';
+        }
+
+        function resetUI() {
+            logMessage("Processo cancelado ou concluído. Pronto para uma nova análise.", "info");
+            inputSection.style.display = 'block';
+            previewSection.style.display = 'none';
+            processButton.disabled = false;
+            programTextInput.value = '';
+            previewTableContainer.innerHTML = '';
+            designacoesParaGravar = [];
+        }
+
+        function getISOWeek(date) {
+            const dt = new Date(date.valueOf());
+            dt.setDate(dt.getDate() + 4 - (dt.getDay() || 7));
+            const yearStart = new Date(dt.getFullYear(), 0, 1);
+            return Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function displayPreview(designations) {
+            if (designations.length === 0) {
+                logMessage("Nenhuma designação válida foi encontrada para pré-visualizar. Verifique o texto e o log de erros.", "warning");
+                processButton.disabled = false;
+                return;
+            }
+
+            const elementoSelecionado = elementosPregacao.find(el => el.id === elementoSelect.value);
+            const isTestemunho = elementoSelecionado.nome === "Testemunho Público";
+
+            let tableHTML = `<table><thead><tr><th>Data</th><th>Participantes</th><th>${isTestemunho ? 'Local' : 'Hora'}</th></tr></thead><tbody>`;
+            
+            for (const desig of designations) {
+                const participants = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(p => p).join(' / ');
+                const detail = isTestemunho ? desig.local : desig.hora;
+                tableHTML += `<tr><td>${desig.data}</td><td>${participants}</td><td>${detail}</td></tr>`;
+            }
+            tableHTML += `</tbody></table>`;
+            
+            previewTableContainer.innerHTML = tableHTML;
+            inputSection.style.display = 'none';
+            previewSection.style.display = 'block';
+            logMessage(`Pré-visualização gerada com ${designations.length} designações. Por favor, confirme.`, "info");
+        }
+
+        // --- Funções de Análise (Parsing) ---
+
+        // --- FUNÇÃO MODIFICADA ---
+        function parseTestemunhoPublico(text, ano, mes) {
+            logMessage("A analisar no formato 'Testemunho Público'...", "info");
+            const designacoes = [];
+            const lines = text.split('\n');
+            let dataAtual = null;
+            let grupoAtual = { participantes: [] };
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                const dateMatch = trimmedLine.match(/(?:domingo|sábado|segunda|terça|quarta|quinta|sexta),\s*(\d{1,2})\s*de\s*(\w+)\s*de\s*(\d{4})/i);
+
+                if (dateMatch) {
+                    if (grupoAtual.participantes.length > 0) {
+                        grupoAtual.local = grupoAtual.participantes.pop(); // A última linha era o local
+                        designacoes.push({ ...grupoAtual, data: dataAtual });
+                    }
+                    const dia = parseInt(dateMatch[1]);
+                    const mesTexto = dateMatch[2].toLowerCase();
+                    const anoTexto = parseInt(dateMatch[3]);
+                    const mesNum = mesesMap[mesTexto];
+                    if(dia && mesNum && anoTexto) {
+                       dataAtual = new Date(anoTexto, mesNum - 1, dia);
+                    }
+                    grupoAtual = { participantes: [] };
+                    continue;
+                }
+
+                if (trimmedLine.toLowerCase().startsWith('grupo')) {
+                    if (grupoAtual.participantes.length > 0) {
+                         grupoAtual.local = grupoAtual.participantes.pop();
+                         designacoes.push({ ...grupoAtual, data: dataAtual });
+                    }
+                    grupoAtual = { participantes: [] };
+                    continue;
+                }
+
+                if (dataAtual && trimmedLine && !['×'].includes(trimmedLine) && isNaN(trimmedLine)) {
+                    // ** AQUI ESTÁ A ALTERAÇÃO **
+                    // Ignora linhas que são "Pessoa 1", "Pessoa 2", etc. (insensível a maiúsculas/minúsculas)
+                    const ignorePattern = /^pessoa\s+\d$/i;
+                    if (!ignorePattern.test(trimmedLine)) {
+                        grupoAtual.participantes.push(trimmedLine);
+                    }
+                }
+            }
+             if (grupoAtual.participantes.length > 0) {
+                grupoAtual.local = grupoAtual.participantes.pop();
+                designacoes.push({ ...grupoAtual, data: dataAtual });
+            }
+
+            return designacoes;
+        }
+        
+        function parseDirigenteSaida(text, ano, mes) {
+            logMessage("A analisar no formato 'Dirigente Saída'...", "info");
+            const designacoes = [];
+            
+            const regex = /(\d+)\s+(?:Quarta|Sábado|Domingo|Segunda|Terça|Quinta|Sexta)\s+([\d:h]+)\s+([\w\sÀ-ú]+?)(?=\s*\d+\s+(?:Quarta|Sábado|Domingo|Segunda|Terça|Quinta|Sexta)|$)/g;
+            
+            const matches = text.replace(/\n/g, ' ').matchAll(regex);
+
+            for (const match of matches) {
+                const dia = parseInt(match[1]);
+                const hora = match[2];
+                const nome = match[3].trim();
+
+                if (!isNaN(dia) && hora && nome) {
+                    designacoes.push({
+                        data: new Date(ano, mes - 1, dia),
+                        participantes: [nome],
+                        hora: hora
+                    });
+                } else {
+                    logMessage(`Padrão encontrado mas dados inválidos: "${match[0]}"`, "warning");
+                }
+            }
+
+            if (designacoes.length === 0) {
+                logMessage("Nenhuma designação válida encontrada. Verifique se o texto corresponde ao formato 'Dia DiaDaSemana Hora Nome ...'", "warning");
+            }
+
+            return designacoes;
+        }
+
+        // --- Funções Principais ---
+
+        async function processAndPreviewDesignations() {
+            clearMessages();
+            logMessage("Iniciando processamento...", "info");
+            processButton.disabled = true;
+
+            const ano = anoSelect.value;
+            const mes = mesSelect.value;
+            const elementoId = elementoSelect.value;
+            const text = programTextInput.value;
+
+            if (!ano || !mes || !elementoId) {
+                logMessage("Por favor, selecione Ano, Mês e Elemento antes de processar.", "error");
+                processButton.disabled = false;
+                return;
+            }
+            if (!text.trim()) {
+                logMessage("A caixa de texto está vazia.", "error");
+                processButton.disabled = false;
+                return;
+            }
+
+            const elementoSelecionado = elementosPregacao.find(el => el.id === elementoId);
+            let designacoesProcessadas = [];
+            
+            try {
+                if (elementoSelecionado.nome === "Testemunho Público") {
+                    designacoesProcessadas = parseTestemunhoPublico(text, parseInt(ano), parseInt(mes));
+                } else if (elementoSelecionado.nome === "Dirigente Saída") {
+                    designacoesProcessadas = parseDirigenteSaida(text, parseInt(ano), parseInt(mes));
+                } else {
+                    throw new Error(`O processamento automático para "${elementoSelecionado.nome}" não está implementado.`);
+                }
+            
+                designacoesParaGravar = designacoesProcessadas.map(desig => {
+                    const dataObj = desig.data;
+                    const diaFormatado = String(dataObj.getDate()).padStart(2, '0');
+                    const mesFormatado = String(dataObj.getMonth() + 1).padStart(2, '0');
+                    const anoFormatado = dataObj.getFullYear();
+                    
+                    const participantesMap = {};
+                    desig.participantes.forEach(p => { participantesMap[p] = true; });
+
+                    return {
+                        ano: String(anoFormatado),
+                        mes: mesFormatado,
+                        dia: diaFormatado,
+                        data: `${diaFormatado}/${mesFormatado}/${anoFormatado}`,
+                        semana: `Pregação ${mesSelect.options[mesSelect.selectedIndex].text} ${anoFormatado}`,
+                        semanaISO: getISOWeek(dataObj),
+                        elementoId: elementoSelecionado.id,
+                        nome: elementoSelecionado.nome,
+                        pessoaA: desig.participantes[0] || null,
+                        pessoaB: desig.participantes[1] || null,
+                        pessoaC: desig.participantes[2] || null,
+                        participantes: participantesMap,
+                        local: desig.local || null,
+                        hora: desig.hora || null,
+                    };
+                });
+
+                displayPreview(designacoesParaGravar);
+
+            } catch (error) {
+                logMessage(`ERRO CRÍTICO: ${error.message}`, "error");
+                processButton.disabled = false;
+            }
+        }
+
+        async function saveDesignationsToFirebase() {
+            confirmSaveButton.disabled = true;
+            cancelButton.disabled = true;
+            logMessage(`\nConfirmado! A gravar ${designacoesParaGravar.length} designações...`, "info");
+            
+            let contadorGravadas = 0;
+            let contadorDuplicadas = 0;
+
+            for (const desig of designacoesParaGravar) {
+                const desigParaGravar = { ...desig, criadoEm: serverTimestamp() };
+                
+                const q = query(collection(db, "designacoes"),
+                    where("data", "==", desigParaGravar.data),
+                    where("nome", "==", desigParaGravar.nome),
+                    where("pessoaA", "==", desigParaGravar.pessoaA)
+                );
+                
+                try {
+                    const querySnapshot = await getDocs(q);
+                    const alreadyExists = !querySnapshot.empty && querySnapshot.docs.some(doc => {
+                        const data = doc.data();
+                        return data.pessoaB === desigParaGravar.pessoaB && (data.local === desigParaGravar.local || data.hora === desigParaGravar.hora);
+                    });
+
+                    if (alreadyExists) {
+                        logMessage(`DUPLICADO: ${desigParaGravar.nome} em ${desigParaGravar.data} com ${desigParaGravar.pessoaA}`, "warning");
+                        contadorDuplicadas++;
+                    } else {
+                        await addDoc(collection(db, "designacoes"), desigParaGravar);
+                        logMessage(`GRAVADO: ${desigParaGravar.nome} em ${desigParaGravar.data}`, "success");
+                        contadorGravadas++;
+                    }
+                } catch (error) {
+                    logMessage(`ERRO ao gravar "${desigParaGravar.nome}": ${error.message}`, "error");
+                }
+            }
+            
+            logMessage(`\nGravação concluída. ${contadorGravadas} gravadas, ${contadorDuplicadas} ignoradas.`, "info");
+            resetUI();
+        }
+
+        // --- Funções de Inicialização ---
+        function populateYearDropdown() {
+            const currentYear = new Date().getFullYear();
+            for (let i = 0; i < 3; i++) {
+                const year = currentYear + i;
+                anoSelect.add(new Option(year, year));
+            }
+            anoSelect.value = currentYear;
+        }
+
+        function populateMonthDropdown() {
+            const currentMonth = new Date().getMonth() + 1;
+            for (let i = 1; i <= 12; i++) {
+                const monthName = new Date(2000, i - 1, 1).toLocaleString('pt-PT', { month: 'long' });
+                mesSelect.add(new Option(monthName.charAt(0).toUpperCase() + monthName.slice(1), i));
+            }
+            mesSelect.value = currentMonth;
+        }
+
+        async function fetchAndPopulateElementosDropdown() {
+            try {
+                const q = query(collection(db, "elementos"), where("tipo", "==", "pregacao"));
+                const querySnapshot = await getDocs(q);
+                
+                elementoSelect.innerHTML = '<option value="">-- Selecione um Elemento --</option>';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const elemento = { id: doc.id, nome: data.designacao };
+                    elementosPregacao.push(elemento);
+                    elementoSelect.add(new Option(elemento.nome, elemento.id));
+                });
+            } catch (error) {
+                logMessage("Erro ao carregar elementos de pregação: " + error.message, "error");
+                elementoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            processButton.addEventListener('click', processAndPreviewDesignations);
+            confirmSaveButton.addEventListener('click', saveDesignationsToFirebase);
+            cancelButton.addEventListener('click', resetUI);
+            
+            populateYearDropdown();
+            populateMonthDropdown();
+            fetchAndPopulateElementosDropdown();
+        });
+
+    </script>
+</body>
+</html>
