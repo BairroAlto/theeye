@@ -776,6 +776,8 @@
 
     </style>
 </head>
+
+
 <body>
     <div class="main-container">
 
@@ -991,17 +993,34 @@
 
                 <div class="stats-card-section active-submenu-section" id="gs-old-sec-top-pessoas">
                     <h4><i class="fas fa-users stats-icon"></i> Pessoas com Mais Designações</h4>
-                    <div class="filters-container stats-filters">
-                        <label for="gs-top-pessoas-mes">Mês:</label>
-                        <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
-                        <label for="gs-top-pessoas-ano">Ano:</label>
-                        <select id="gs-top-pessoas-ano"><option value="">Todos</option></select>
-                        <label for="gs-top-pessoas-elemento">Elemento:</label>
-                        <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
-                        <button id="btn-gs-top-pessoas-aplicar" class="stats-apply-button">
-                            <i class="fas fa-search stats-btn-icon"></i> Ver Top
-                        </button>
+                    
+                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
+                    <div class="filters-container stats-filters" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                        
+                        <!-- Linha 1: Ano | Mês | Elemento -->
+                        <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-top-pessoas-ano">Ano:</label>
+                            <select id="gs-top-pessoas-ano"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-top-pessoas-mes">Mês:</label>
+                            <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-top-pessoas-elemento">Elemento:</label>
+                            <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
+                        </div>
+                        
+                        <!-- Botão de Ação -->
+                        <div>
+                            <button id="btn-gs-top-pessoas-aplicar" class="stats-apply-button">
+                                <i class="fas fa-search stats-btn-icon"></i> Ver Top
+                            </button>
+                        </div>
+
                     </div>
+                    <!-- FIM DA SEÇÃO MODIFICADA -->
+
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-top-pessoas-loading" style="display:none;"></div>
                         <ul id="gs-top-pessoas-list" class="stats-result-list"></ul>
@@ -1010,20 +1029,38 @@
                 </div>
                 <div class="stats-card-section" id="gs-old-sec-todas-designacoes">
                     <h4><i class="fas fa-list-alt stats-icon"></i> Todas as Designações</h4>
-                    <div class="filters-container stats-filters">
-                        <label for="gs-todas-desig-mes">Mês:</label>
-                        <select id="gs-todas-desig-mes"><option value="">Todos</option></select>
-                        <label for="gs-todas-desig-ano">Ano:</label>
-                        <select id="gs-todas-desig-ano"><option value="">Todos</option></select>
-                        <label for="gs-todas-desig-elemento">Elemento:</label>
-                        <select id="gs-todas-desig-elemento"><option value="">Todos</option></select>
-                        <button id="btn-gs-todas-desig-aplicar" class="stats-apply-button">
-                            <i class="fas fa-list-ol stats-btn-icon"></i> Listar Detalhado
-                        </button>
-                        <button id="btn-gs-todas-desig-agrupar" class="stats-apply-button">
-                            <i class="fas fa-layer-group stats-btn-icon"></i> Agrupar por Elemento
-                        </button>
+                    
+                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
+                    <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+
+                        <!-- Linha 1: Ano | Mês | Elemento -->
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-todas-desig-ano">Ano:</label>
+                                <select id="gs-todas-desig-ano"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-todas-desig-mes">Mês:</label>
+                                <select id="gs-todas-desig-mes"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-todas-desig-elemento">Elemento:</label>
+                                <select id="gs-todas-desig-elemento"><option value="">Todos</option></select>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                            <button id="btn-gs-todas-desig-aplicar" class="stats-apply-button">
+                                <i class="fas fa-list-ol stats-btn-icon"></i> Listar Detalhado
+                            </button>
+                            <button id="btn-gs-todas-desig-agrupar" class="stats-apply-button">
+                                <i class="fas fa-layer-group stats-btn-icon"></i> Agrupar por Elemento
+                            </button>
+                        </div>
                     </div>
+                    <!-- FIM DA SEÇÃO MODIFICADA -->
+
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-todas-desig-loading" style="display:none;"></div>
                         <ul id="gs-todas-desig-list" class="stats-result-list"></ul>
@@ -1036,19 +1073,42 @@
                 </div>
                 <div class="stats-card-section" id="gs-old-sec-desempenho-individual">
                     <h4><i class="fas fa-user-chart stats-icon"></i> Desempenho Individual vs. Média</h4>
-                    <div class="filters-container stats-filters">
-                        <label for="gs-pessoa-esp-select">Pessoa:</label>
-                        <select id="gs-pessoa-esp-select"><option value="">-- Selecione --</option></select>
-                        <label for="gs-pessoa-esp-elemento-filtro">Elemento:</label>
-                        <select id="gs-pessoa-esp-elemento-filtro"><option value="">-- Todos Elementos --</option></select>
-                        <label for="gs-pessoa-esp-ano-filtro">Ano:</label>
-                        <select id="gs-pessoa-esp-ano-filtro"><option value="">Todos</option></select>
-                        <label for="gs-pessoa-esp-mes-filtro">Mês:</label>
-                        <select id="gs-pessoa-esp-mes-filtro"><option value="">Todos</option></select>
-                        <button id="btn-gs-pessoa-esp-aplicar" class="stats-apply-button">
-                             <i class="fas fa-analytics stats-btn-icon"></i> Analisar
-                        </button>
+                    
+                    <!-- INÍCIO DA SEÇÃO MODIFICADA -->
+                    <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+                        
+                        <!-- Linha 1: Pessoa -->
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoa-esp-select">Pessoa:</label>
+                            <select id="gs-pessoa-esp-select"><option value="">-- Selecione --</option></select>
+                        </div>
+                        
+                        <!-- Linha 2: Ano | Mês | Elemento -->
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoa-esp-ano-filtro">Ano:</label>
+                                <select id="gs-pessoa-esp-ano-filtro"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoa-esp-mes-filtro">Mês:</label>
+                                <select id="gs-pessoa-esp-mes-filtro"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoa-esp-elemento-filtro">Elemento:</label>
+                                <select id="gs-pessoa-esp-elemento-filtro"><option value="">-- Todos Elementos --</option></select>
+                            </div>
+                        </div>
+
+                        <!-- Botão de Ação -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                            <button id="btn-gs-pessoa-esp-aplicar" class="stats-apply-button">
+                                 <i class="fas fa-analytics stats-btn-icon"></i> Analisar
+                            </button>
+                        </div>
+
                     </div>
+                    <!-- FIM DA SEÇÃO MODIFICADA -->
+
                     <div class="stats-results-container">
                         <div class="loading-spinner" id="gs-pessoa-esp-loading" style="display:none;"></div>
                         <div id="gs-pessoa-esp-results" class="stats-result-text"></div>
@@ -1059,35 +1119,63 @@
             <!-- Conteúdo da Aba: Pessoas -->
             <div id="gs-pessoas-content" class="global-stats-tab-content">
                 <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
-                <div class="stats-filters">
-                    <!-- CUSTOM MULTI-SELECT IMPLEMENTATION -->
-                    <label for="gs-pessoas-search-input-custom" style="display: block; margin-bottom: 5px;">Selecionar Pessoas:</label>
-                    <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
-                        <div class="selected-pessoas-area">
-                            <!-- Selected person tags will go here -->
+                
+                <!-- INÍCIO DA SEÇÃO MODIFICADA -->
+                <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+
+                    <!-- Linha 1: Selecionar Pessoas -->
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="gs-pessoas-search-input-custom">Selecionar Pessoas:</label>
+                        <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
+                            <div class="selected-pessoas-area">
+                                <!-- Selected person tags will go here -->
+                            </div>
+                            <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
+                            <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
+                                <!-- Filtered people list will appear here -->
+                            </div>
                         </div>
-                        <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
-                        <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
-                            <!-- Filtered people list will appear here -->
+                        <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select> <!-- Original select, now hidden -->
+                    </div>
+
+                    <!-- Linha 2: Ano | Mês | Semana -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-ano">Ano:</label>
+                            <select id="gs-pessoas-filtro-ano"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-mes">Mês:</label>
+                            <select id="gs-pessoas-filtro-mes"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-semana">Semana (Nº):</label>
+                            <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: calc(100% - 24px);">
                         </div>
                     </div>
-                    <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select> <!-- Original select, now hidden -->
-                    <!-- END OF CUSTOM MULTI-SELECT -->
 
-                    <label for="gs-pessoas-filtro-ano">Ano:</label>
-                    <select id="gs-pessoas-filtro-ano"><option value="">Todos</option></select>
-                    <label for="gs-pessoas-filtro-mes">Mês:</label>
-                    <select id="gs-pessoas-filtro-mes"><option value="">Todos</option></select>
-                    <label for="gs-pessoas-filtro-semana">Semana (Nº):</label>
-                    <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: 80px;">
-                    <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
-                    <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
-                     <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
-                    <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
-                    <button id="btn-gs-pessoas-comparar" class="stats-apply-button">
-                        <i class="fas fa-balance-scale stats-btn-icon"></i> Comparar Selecionadas
-                    </button>
+                    <!-- Linha 3: Gênero | Idioma -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
+                            <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
+                            <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
+                        </div>
+                    </div>
+
+                    <!-- Botão de Ação -->
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                        <button id="btn-gs-pessoas-comparar" class="stats-apply-button">
+                            <i class="fas fa-balance-scale stats-btn-icon"></i> Comparar Selecionadas
+                        </button>
+                    </div>
+
                 </div>
+                <!-- FIM DA SEÇÃO MODIFICADA -->
+
                 <div class="stats-results-container">
                     <div class="loading-spinner" id="gs-pessoas-loading" style="display:none;"></div>
                     <div id="gs-pessoas-comparison-area">
@@ -1099,23 +1187,52 @@
             <!-- Conteúdo da Aba: Designações -->
             <div id="gs-designacoes-content" class="global-stats-tab-content">
                 <h4><i class="fas fa-clipboard-list stats-icon"></i> Explorar Tipos de Designação (Elementos)</h4>
-                 <div class="stats-filters">
-                    <label for="gs-designacoes-filtro-dia">Dia:</label>
-                    <input type="number" id="gs-designacoes-filtro-dia" placeholder="1-31" min="1" max="31" style="width:70px">
-                    <label for="gs-designacoes-filtro-mes">Mês:</label>
-                    <select id="gs-designacoes-filtro-mes"><option value="">Todos</option></select>
-                    <label for="gs-designacoes-filtro-ano">Ano:</label>
-                    <select id="gs-designacoes-filtro-ano"><option value="">Todos</option></select>
-                    <label for="gs-designacoes-filtro-semana">Semana (Nº):</label>
-                    <input type="number" id="gs-designacoes-filtro-semana" placeholder="1-53" min="1" max="53" style="width: 80px;">
-                    <label for="gs-designacoes-filtro-genero">Gênero (Participante):</label>
-                    <select id="gs-designacoes-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
-                     <label for="gs-designacoes-filtro-idioma">Idioma (Participante):</label>
-                    <select id="gs-designacoes-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
-                    <button id="btn-gs-designacoes-aplicar-filtros" class="stats-apply-button" title="Aplicar filtros à lista de tipos de designação e suas instâncias">
-                        <i class="fas fa-filter stats-btn-icon"></i> Aplicar Filtros
-                    </button>
+                
+                <!-- INÍCIO DA SEÇÃO MODIFICADA -->
+                 <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+                    
+                    <!-- Linha 1: Dia | Mês | Ano | Semana -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 80px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-dia">Dia:</label>
+                            <input type="number" id="gs-designacoes-filtro-dia" placeholder="1-31" min="1" max="31">
+                        </div>
+                        <div style="flex: 2; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-mes">Mês:</label>
+                            <select id="gs-designacoes-filtro-mes"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 2; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-ano">Ano:</label>
+                            <select id="gs-designacoes-filtro-ano"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 100px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-semana">Semana (Nº):</label>
+                            <input type="number" id="gs-designacoes-filtro-semana" placeholder="1-53" min="1" max="53">
+                        </div>
+                    </div>
+                    
+                    <!-- Linha 2: Genero | Idioma -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-genero">Gênero (Participante):</label>
+                            <select id="gs-designacoes-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-designacoes-filtro-idioma">Idioma (Participante):</label>
+                            <select id="gs-designacoes-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
+                        </div>
+                    </div>
+
+                    <!-- Botão de Ação -->
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                        <button id="btn-gs-designacoes-aplicar-filtros" class="stats-apply-button" title="Aplicar filtros à lista de tipos de designação e suas instâncias">
+                            <i class="fas fa-filter stats-btn-icon"></i> Aplicar Filtros
+                        </button>
+                    </div>
+
                 </div>
+                <!-- FIM DA SEÇÃO MODIFICADA -->
+
                 <div class="stats-results-container">
                     <p>Clique num tipo de designação para ver as instâncias (com filtros aplicados).</p>
                     <div class="loading-spinner" id="gs-designacoes-tipos-loading" style="display:none;"></div>
