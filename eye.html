@@ -412,14 +412,14 @@
             margin-bottom: 10px; /* Spacing */
         }
 
-        .selected-pessoas-area {
+    .selected-items-area { /* Nome genérico */
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            flex-grow: 1; /* Allow tags to take up space */
+            flex-grow: 1;
         }
 
-        .pessoa-tag {
+        .item-tag { /* Nome genérico */
             background-color: #007bff;
             color: white;
             padding: 3px 8px;
@@ -430,7 +430,7 @@
             white-space: nowrap;
         }
 
-        .pessoa-tag .remove-tag-btn {
+        .item-tag .remove-tag-btn { /* Nome genérico */
             margin-left: 6px;
             cursor: pointer;
             font-weight: bold;
@@ -440,7 +440,7 @@
             color: white;
             padding: 0 2px;
         }
-        .pessoa-tag .remove-tag-btn:hover {
+        .item-tag .remove-tag-btn:hover {
             opacity: 0.8;
         }
 
@@ -617,11 +617,13 @@
         }
 
         /* Control visibility of the sections within gs-old-content */
-        #gs-old-content > .stats-card-section {
+       #gs-old-content > .stats-card-section,
+        #gs-pessoas-content > .stats-card-section {
             display: none; /* Hide all sections by default */
         }
 
-        #gs-old-content > .stats-card-section.active-submenu-section {
+        #gs-old-content > .stats-card-section.active-submenu-section,
+        #gs-pessoas-content > .stats-card-section.active-submenu-section {
             display: block; /* Show only the active section */
         }
 
@@ -908,9 +910,101 @@
     }
 }
 
+
+  .checkbox-multiselect-container {
+            position: relative;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .checkbox-multiselect-container:focus-within {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .dropdown-display {
+            padding: 9px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+        .dropdown-display::after { /* Adiciona a seta para baixo */
+            content: '▼';
+            font-size: 0.6em;
+            color: #888;
+        }
+
+        .dropdown-options {
+            display: none; /* Começa oculto */
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1051; /* Acima de outro conteúdo do modal */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-options.visible {
+            display: block;
+        }
+
+        .dropdown-options ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+        }
+        .dropdown-item:hover {
+            background-color: #f0f2f5;
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .dropdown-item label {
+            font-weight: normal;
+            font-size: 1em;
+            margin: 0;
+            width: 100%;
+        }
+
+        .dropdown-actions {
+            padding: 5px 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .dropdown-actions button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.85em;
+            padding: 4px;
+        }
+        .dropdown-actions button:hover {
+            text-decoration: underline;
+        }
+        
     </style>
 </head>
-
 
 <body>
     <div class="main-container">
@@ -943,7 +1037,6 @@
             <button id="btn-criar-elemento-fab" class="fab-option">📄 Criar Elemento</button>
             <button id="btn-criar-designacao-fab" class="fab-option">📌 Criar Designação</button>
             <a href="add.html" class="fab-option" style="text-decoration: none;">📋 Adicionar Escala</a>
-            <!-- LINHA ADICIONADA ABAIXO -->
             <a href="addpregacao.html" class="fab-option" style="text-decoration: none;">🗺️ Adicionar Pregação</a>
         </div>
     </div>
@@ -1017,12 +1110,11 @@
                 <button class="global-stats-tab-button" data-tab-target="gs-designacoes-content">Designações</button>
             </div>
 
-            <!-- Conteúdo da Aba: Visão Geral (MODIFICADO) -->
+            <!-- Conteúdo da Aba: Visão Geral -->
             <div id="gs-total-content" class="global-stats-tab-content active">
                 
                 <div class="stats-filters" style="flex-direction: column; align-items: stretch; gap: 12px;">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
-                        <!-- Filtros de Data -->
                         <div style="flex: 1; min-width: 120px;">
                             <label for="gs-total-filtro-ano">Ano:</label>
                             <select id="gs-total-filtro-ano" style="width: 100%;"><option value="">Todos</option></select>
@@ -1031,13 +1123,11 @@
                             <label for="gs-total-filtro-mes">Mês:</label>
                             <select id="gs-total-filtro-mes" style="width: 100%;"><option value="">Todos</option></select>
                         </div>
-                        
-                        <!-- Filtros de Elemento -->
                         <div style="flex: 1; min-width: 150px;">
                             <label for="gs-total-filtro-tipo-elemento">Tipo (Elemento):</label>
                             <select id="gs-total-filtro-tipo-elemento" style="width: 100%;">
                                 <option value="">Todos</option>
-                                <option value="reuniao">Reunião</option>
+                                <option value="reuniao" selected>Reunião</option>
                                 <option value="pregacao">Pregação</option>
                             </select>
                         </div>
@@ -1050,8 +1140,6 @@
                                 <option value="tecnico">Técnico</option>
                             </select>
                         </div>
-
-                        <!-- Filtros de Participante -->
                         <div style="flex: 1; min-width: 150px;">
                             <label for="gs-total-filtro-genero-participante">Gênero (Participante):</label>
                             <select id="gs-total-filtro-genero-participante" style="width: 100%;">
@@ -1069,7 +1157,6 @@
                                 <option value="Outro">Outro</option>
                             </select>
                         </div>
-                        
                         <div style="align-self: flex-end;">
                             <button id="btn-gs-total-aplicar-filtros" class="stats-apply-button">
                                 <i class="fas fa-filter stats-btn-icon"></i> Aplicar Filtros
@@ -1104,13 +1191,6 @@
                         <span id="gs-total-num-desig-outro-idioma" class="kpi-value">-</span>
                         <span class="kpi-label">Participações (Outro Idioma)</span>
                     </div>
-                </div>
-                
-                <h4><i class="fas fa-tasks stats-icon"></i> Lista de Tipos de Designação (Elementos)</h4>
-                <div class="stats-results-container">
-                    <div class="loading-spinner" id="gs-total-elementos-loading" style="display:none;"></div>
-                    <p>Total de elementos encontrados: <span id="gs-total-elementos-count">0</span></p>
-                    <ul id="gs-total-elementos-list" class="stats-result-list"></ul>
                 </div>
 
                 <h4><i class="fas fa-chart-line stats-icon"></i> Gráficos de Tendência</h4>
@@ -1155,12 +1235,11 @@
                 </div>
             </div>
 
-            <!-- Conteúdo da Aba: Análises Anteriores (o que já existia, now with submenu) -->
+            <!-- Conteúdo da Aba: Análises Anteriores (CORRIGIDO) -->
             <div id="gs-old-content" class="global-stats-tab-content">
                 <div class="gs-old-submenu-tabs">
                     <button class="gs-old-submenu-button active" data-submenu-target="gs-old-sec-top-pessoas">Top Pessoas</button>
                     <button class="gs-old-submenu-button" data-submenu-target="gs-old-sec-todas-designacoes">Todas Designações</button>
-                    <button class="gs-old-submenu-button" data-submenu-target="gs-old-sec-desempenho-individual">Desempenho Individual</button>
                 </div>
 
                 <div class="stats-card-section active-submenu-section" id="gs-old-sec-top-pessoas">
@@ -1175,10 +1254,24 @@
                                 <label for="gs-top-pessoas-mes">Mês:</label>
                                 <select id="gs-top-pessoas-mes"><option value="">Todos</option></select>
                             </div>
-                            <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
-                                <label for="gs-top-pessoas-elemento">Elemento:</label>
-                                <select id="gs-top-pessoas-elemento"><option value="">Todos Elementos</option></select>
+
+                  <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                                <label>Elemento(s):</label>
+                                <div id="gs-top-elementos-checkbox-multiselect" class="checkbox-multiselect-container" tabindex="0">
+                                    <div class="dropdown-display">
+                                        <span id="gs-top-elementos-display-text">Carregando...</span>
+                                    </div>
+                                    <div id="gs-top-elementos-options" class="dropdown-options">
+                                        <div class="dropdown-actions">
+                                            <button type="button" id="gs-top-elementos-select-all">Selecionar Todos</button>
+                                            <button type="button" id="gs-top-elementos-deselect-all">Limpar Seleção</button>
+                                        </div>
+                                        <ul id="gs-top-elementos-options-list"></ul>
+                                    </div>
+                                </div>
+                                <select id="gs-top-pessoas-elemento-multi-hidden" multiple style="display: none;"></select>
                             </div>
+
                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-top-pessoas-tipo">Tipo:</label>
                                 <select id="gs-top-pessoas-tipo">
@@ -1244,7 +1337,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="stats-card-section" id="gs-old-sec-desempenho-individual">
+            </div>
+
+            <!-- Conteúdo da Aba: Pessoas (CORRIGIDO) -->
+            <div id="gs-pessoas-content" class="global-stats-tab-content">
+                <div class="gs-old-submenu-tabs">
+                    <button class="gs-old-submenu-button active" data-submenu-target="gs-pessoas-sec-individual">Individual</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-pessoas-sec-comparacao">Comparação</button>
+                </div>
+
+                <div class="stats-card-section active-submenu-section" id="gs-pessoas-sec-individual">
                     <h4><i class="fas fa-user-chart stats-icon"></i> Desempenho Individual vs. Média</h4>
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
                         <div style="display: flex; flex-direction: column; gap: 5px;">
@@ -1284,64 +1386,63 @@
                         <div id="gs-pessoa-esp-results" class="stats-result-text"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Conteúdo da Aba: Pessoas -->
-            <div id="gs-pessoas-content" class="global-stats-tab-content">
-                <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
-                <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <label for="gs-pessoas-search-input-custom">Selecionar Pessoas:</label>
-                        <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
-                            <div class="selected-pessoas-area">
+                <div class="stats-card-section" id="gs-pessoas-sec-comparacao">
+                    <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
+                    <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label for="gs-pessoas-search-input-custom">Selecionar Pessoas:</label>
+                            <div id="gs-pessoas-custom-multiselect" class="custom-multiselect-container">
+                                <div class="selected-pessoas-area">
+                                </div>
+                                <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
+                                <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
+                                </div>
                             </div>
-                            <input type="text" id="gs-pessoas-search-input-custom" placeholder="Pesquisar e adicionar...">
-                            <div id="gs-pessoas-dropdown-custom" class="custom-multiselect-dropdown">
+                            <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select>
+                        </div>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-ano">Ano:</label>
+                                <select id="gs-pessoas-filtro-ano"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-mes">Mês:</label>
+                                <select id="gs-pessoas-filtro-mes"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-semana">Semana (Nº):</label>
+                                <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: calc(100% - 24px);">
                             </div>
                         </div>
-                        <select id="gs-pessoas-select-multi" multiple style="display: none; height: 1px; width: 1px; opacity: 0; position: absolute;"></select>
-                    </div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-ano">Ano:</label>
-                            <select id="gs-pessoas-filtro-ano"><option value="">Todos</option></select>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
+                                <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
+                                <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-pessoas-filtro-tipo">Tipo (Designação):</label>
+                                 <select id="gs-pessoas-filtro-tipo">
+                                    <option value="">Todos</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="pregacao">Pregação</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-mes">Mês:</label>
-                            <select id="gs-pessoas-filtro-mes"><option value="">Todos</option></select>
-                        </div>
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-semana">Semana (Nº):</label>
-                            <input type="number" id="gs-pessoas-filtro-semana" placeholder="1-53" min="1" max="53" style="width: calc(100% - 24px);">
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-genero">Gênero (Designação):</label>
-                            <select id="gs-pessoas-filtro-genero"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select>
-                        </div>
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-idioma">Idioma (Designação):</label>
-                            <select id="gs-pessoas-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
-                        </div>
-                        <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
-                            <label for="gs-pessoas-filtro-tipo">Tipo (Designação):</label>
-                             <select id="gs-pessoas-filtro-tipo">
-                                <option value="">Todos</option>
-                                <option value="reuniao">Reunião</option>
-                                <option value="pregacao">Pregação</option>
-                            </select>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                            <button id="btn-gs-pessoas-comparar" class="stats-apply-button">
+                                <i class="fas fa-balance-scale stats-btn-icon"></i> Comparar Selecionadas
+                            </button>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                        <button id="btn-gs-pessoas-comparar" class="stats-apply-button">
-                            <i class="fas fa-balance-scale stats-btn-icon"></i> Comparar Selecionadas
-                        </button>
-                    </div>
-                </div>
-                <div class="stats-results-container">
-                    <div class="loading-spinner" id="gs-pessoas-loading" style="display:none;"></div>
-                    <div id="gs-pessoas-comparison-area">
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-pessoas-loading" style="display:none;"></div>
+                        <div id="gs-pessoas-comparison-area">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1393,10 +1494,9 @@
                     </div>
                 </div>
                 <div class="stats-results-container">
-                    <p>Clique num tipo de designação para ver as instâncias (com filtros aplicados).</p>
+                    <p>Total de elementos encontrados: <span id="gs-designacoes-elementos-count">0</span></p>
                     <div class="loading-spinner" id="gs-designacoes-tipos-loading" style="display:none;"></div>
                     <ul id="gs-designacoes-tipos-list" class="stats-result-list">
-                        <!-- Lista de todos os elementos (tipos de designação) -->
                     </ul>
                 </div>
             </div>
@@ -1435,7 +1535,6 @@
             <div class="ranking-list-container">
                 <p><small>Use os botões <i class="fas fa-arrow-up"></i>/<i class="fas fa-arrow-down"></i> para reordenar os itens apenas para esta visualização.</small></p>
                 <ul id="lista-ranking-designacoes">
-                    <!-- Designações serão listadas aqui -->
                 </ul>
             </div>
         </div>
@@ -1513,6 +1612,11 @@
         const selectPessoaB = document.getElementById('select-pessoaB');
         const selectPessoaC = document.getElementById('select-pessoaC');
         const dataDesignacaoInput = document.getElementById('data-designacao');
+         const gsTopElementosCheckboxMultiselect = document.getElementById('gs-top-elementos-checkbox-multiselect');
+        const gsTopElementosDisplayText = document.getElementById('gs-top-elementos-display-text');
+        const gsTopElementosOptions = document.getElementById('gs-top-elementos-options');
+        const gsTopElementosOptionsList = document.getElementById('gs-top-elementos-options-list');
+        const gsTopPessoasElementoMultiHidden = document.getElementById('gs-top-pessoas-elemento-multi-hidden');
 
         // --- MODAL EDITAR DESIGNAÇÃO ELEMENTOS ---
         const modalEditarDesignacao = document.getElementById('modal-editar-designacao');
@@ -1567,9 +1671,6 @@
         const gsTotalFiltroMesSelect = document.getElementById('gs-total-filtro-mes');
         const btnGsTotalAplicarFiltros = document.getElementById('btn-gs-total-aplicar-filtros');
         const gsTotalFiltroElementoTipoSelect = document.getElementById('gs-total-filtro-elemento-tipo');
-        const gsTotalElementosCountSpan = document.getElementById('gs-total-elementos-count');
-        const gsTotalElementosListUl = document.getElementById('gs-total-elementos-list');
-        const gsTotalElementosLoading = document.getElementById('gs-total-elementos-loading');
         const gsTotalMediaDesignacoesSpan = document.getElementById('gs-total-media-designacoes');
         const gsTotalMediaDesigMascSpan = document.getElementById('gs-total-media-desig-masc');
         const gsTotalMediaDesigFemSpan = document.getElementById('gs-total-media-desig-fem');
@@ -1603,6 +1704,7 @@
         const btnGsDesignacoesAplicarFiltros = document.getElementById('btn-gs-designacoes-aplicar-filtros');
         const gsDesignacoesTiposLoading = document.getElementById('gs-designacoes-tipos-loading');
         const gsDesignacoesTiposListUl = document.getElementById('gs-designacoes-tipos-list');
+        const gsDesignacoesElementosCountSpan = document.getElementById('gs-designacoes-elementos-count');
 
         // --- ELEMENTOS DOM PARA O MODAL DE RANKING ---
         const btnRankingPopup = document.getElementById('btn-ranking-popup');
@@ -3274,6 +3376,102 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             updateSelectedPessoasTagsDisplay();
         }
 
+
+  let availableElementosForTopSelect = [];
+
+      
+
+      
+
+       function initGsTopElementosCheckboxMultiselect() {
+            if (!gsTopPessoasElementoMultiHidden || !gsTopElementosOptionsList || todosElementos.length === 0) return;
+
+            gsTopElementosOptionsList.innerHTML = '';
+            gsTopPessoasElementoMultiHidden.innerHTML = '';
+
+            todosElementos.forEach(el => {
+                const elNome = el.designacao || el.nome;
+
+                // Cria o item para o dropdown visível
+                const listItem = document.createElement('li');
+                listItem.className = 'dropdown-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `el-check-${el.id}`;
+                checkbox.value = elNome;
+                checkbox.checked = true; // Pré-selecionado por padrão
+                const label = document.createElement('label');
+                label.htmlFor = `el-check-${el.id}`;
+                label.textContent = elNome;
+                
+                listItem.appendChild(checkbox);
+                listItem.appendChild(label);
+                gsTopElementosOptionsList.appendChild(listItem);
+
+                // Cria a opção correspondente no select oculto
+                const option = new Option(elNome, elNome);
+                option.selected = true; // Pré-selecionado por padrão
+                gsTopPessoasElementoMultiHidden.appendChild(option);
+
+                // Adiciona o evento para sincronizar
+                checkbox.addEventListener('change', () => {
+                    option.selected = checkbox.checked;
+                    updateGsTopElementosDisplayText();
+                });
+            });
+
+            updateGsTopElementosDisplayText();
+
+            // Eventos para abrir/fechar o dropdown
+            gsTopElementosCheckboxMultiselect.addEventListener('click', (e) => {
+                if (!gsTopElementosOptions.contains(e.target)) { // Evita fechar ao clicar dentro
+                    gsTopElementosOptions.classList.toggle('visible');
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!gsTopElementosCheckboxMultiselect.contains(e.target)) {
+                    gsTopElementosOptions.classList.remove('visible');
+                }
+            });
+
+            // Eventos para os botões "Selecionar Todos" e "Limpar"
+            document.getElementById('gs-top-elementos-select-all').addEventListener('click', (e) => {
+                e.stopPropagation();
+                gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = true);
+                updateGsTopElementosDisplayText();
+            });
+
+            document.getElementById('gs-top-elementos-deselect-all').addEventListener('click', (e) => {
+                e.stopPropagation();
+                gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = false);
+                updateGsTopElementosDisplayText();
+            });
+        }
+
+        function updateGsTopElementosDisplayText() {
+            if (!gsTopElementosDisplayText || !gsTopPessoasElementoMultiHidden) return;
+            
+            const selectedCount = gsTopPessoasElementoMultiHidden.selectedOptions.length;
+            const totalCount = gsTopPessoasElementoMultiHidden.options.length;
+
+            if (selectedCount === totalCount) {
+                gsTopElementosDisplayText.textContent = 'Todos selecionados';
+            } else if (selectedCount === 0) {
+                gsTopElementosDisplayText.textContent = 'Nenhum selecionado';
+            } else {
+                gsTopElementosDisplayText.textContent = `${selectedCount} de ${totalCount} selecionados`;
+            }
+        }
+
+      
+
+      
+
+      
+
         function openDropdownAndRender() {
             renderGsPessoasDropdown(gsPessoasSearchInputCustom.value);
             gsPessoasDropdownCustomDiv.style.display = 'block';
@@ -3357,6 +3555,47 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             });
         }
 
+
+function setupGsPessoasSubmenu() {
+            const gsPessoasContentDiv = document.getElementById('gs-pessoas-content');
+            if (!gsPessoasContentDiv) {
+                console.warn("Div gs-pessoas-content não encontrada para configurar submenu.");
+                return;
+            }
+            const submenuButtons = gsPessoasContentDiv.querySelectorAll('.gs-old-submenu-button');
+            const submenuSections = gsPessoasContentDiv.querySelectorAll('#gs-pessoas-content > .stats-card-section');
+            submenuButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    submenuButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const targetSectionId = button.dataset.submenuTarget;
+                    submenuSections.forEach(section => {
+                        section.classList.remove('active-submenu-section');
+                        if (section.id === targetSectionId) {
+                            section.classList.add('active-submenu-section');
+                        }
+                    });
+                });
+            });
+            
+            let activeSubmenuButton = gsPessoasContentDiv.querySelector('.gs-old-submenu-button.active');
+            if (!activeSubmenuButton && submenuButtons.length > 0) {
+                submenuButtons[0].classList.add('active');
+                activeSubmenuButton = submenuButtons[0];
+            }
+            
+            submenuSections.forEach(section => section.classList.remove('active-submenu-section'));
+            
+            if (activeSubmenuButton) {
+                const targetId = activeSubmenuButton.dataset.submenuTarget;
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active-submenu-section');
+                }
+            }
+        }
+
+
         function setupGsOldSubmenu() {
             const gsOldContentDiv = document.getElementById('gs-old-content');
             if (!gsOldContentDiv) {
@@ -3396,7 +3635,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             }
         }
 
-        globalStatsTabButtons.forEach(button => {
+    globalStatsTabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
@@ -3411,6 +3650,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     atualizarAbaTotalGlobalStats();
                 } else if (targetContentId === 'gs-pessoas-content') {
                      initGsPessoasCustomMultiselect();
+                     setupGsPessoasSubmenu(); // <-- LINHA ADICIONADA
                 } else if (targetContentId === 'gs-designacoes-content') {
                     popularListaElementosAbaDesignacoes();
                 } else if (targetContentId === 'gs-old-content') {
@@ -3514,7 +3754,9 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             return todosElementos.find(el => (el.designacao || el.nome) === nome);
         }
 
-        async function atualizarAbaTotalGlobalStats() {
+
+
+async function atualizarAbaTotalGlobalStats() {
             if (!todasDesignacoesGlobaisCarregadas) {
                 await carregarTodasDesignacoesParaStatsGlobais();
                 if (!todasDesignacoesGlobaisCarregadas) {
@@ -3522,18 +3764,47 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     return;
                 }
             }
-             setSectionLoadingState('gs-total-elementos', true);
+            
+            // A chamada para setSectionLoadingState foi removida daqui
 
-            const anoFiltro = gsTotalFiltroAnoSelect.value;
-            const mesFiltro = gsTotalFiltroMesSelect.value;
+            const anoFiltro = document.getElementById('gs-total-filtro-ano').value;
+            const mesFiltro = document.getElementById('gs-total-filtro-mes').value;
+            const tipoElementoFiltro = document.getElementById('gs-total-filtro-tipo-elemento').value;
+            const generoReuniaoFiltro = document.getElementById('gs-total-filtro-genero-reuniao').value;
+            const generoParticipanteFiltro = document.getElementById('gs-total-filtro-genero-participante').value;
+            const idiomaParticipanteFiltro = document.getElementById('gs-total-filtro-idioma-participante').value;
 
             const designacoesFiltradas = todasDesignacoesGlobais.filter(d => {
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
-                return matchAno && matchMes;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2, '0') === String(mesFiltro).padStart(2, '0');
+                if (!matchAno || !matchMes) return false;
+
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipoElemento = !tipoElementoFiltro || (elementoObj && elementoObj.tipo === tipoElementoFiltro);
+                const matchGeneroReuniao = !generoReuniaoFiltro || (elementoObj && elementoObj.generoReuniao === generoReuniaoFiltro);
+                if (!matchTipoElemento || !matchGeneroReuniao) return false;
+
+                if (!generoParticipanteFiltro && !idiomaParticipanteFiltro) {
+                    return true;
+                }
+                
+                if (d.participantes) {
+                    return Object.keys(d.participantes).some(nomeParticipante => {
+                        const pessoa = todasPessoas.find(p => p.nome === nomeParticipante);
+                        if (pessoa) {
+                            const matchGeneroParticipante = !generoParticipanteFiltro || pessoa.genero === generoParticipanteFiltro;
+                            const matchIdiomaParticipante = !idiomaParticipanteFiltro || pessoa.idioma === idiomaParticipanteFiltro;
+                            return matchGeneroParticipante && matchIdiomaParticipante;
+                        }
+                        return false;
+                    });
+                }
+                
+                return false;
             });
 
-            gsTotalNumDesignacoesSpan.textContent = designacoesFiltradas.length;
+
+           gsTotalNumDesignacoesSpan.textContent = designacoesFiltradas.length;
             let countMasc = 0, countFem = 0, countPt = 0, countIt = 0, countOutroIdioma = 0;
 
             designacoesFiltradas.forEach(desig => {
@@ -3554,7 +3825,16 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             gsTotalNumDesigItSpan.textContent = countIt;
             gsTotalNumDesigOutroIdiomaSpan.textContent = countOutroIdioma;
 
-            renderListaTiposDesignacaoTotal();
+            const cardOutroIdioma = gsTotalNumDesigOutroIdiomaSpan.closest('.stats-kpi-card');
+            if (cardOutroIdioma) {
+                if (countOutroIdioma === 0) {
+                    cardOutroIdioma.style.display = 'none';
+                } else {
+                    cardOutroIdioma.style.display = 'block';
+                }
+            }
+
+            // A chamada para renderListaTiposDesignacaoTotal foi removida daqui
 
             const dadosGraficoTotal = {};
             const dadosGraficoGenero = { Masculino: {}, Feminino: {} };
@@ -3609,55 +3889,23 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             gsTotalMediaDesigPtSpan.textContent = (countPt / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigItSpan.textContent = (countIt / numMesesConsiderados).toFixed(1);
             gsTotalMediaDesigOutroSpan.textContent = (countOutroIdioma / numMesesConsiderados).toFixed(1);
-
-            setSectionLoadingState('gs-total-elementos', false);
-        }
-
-        function renderListaTiposDesignacaoTotal() {
-             if (!gsTotalFiltroElementoTipoSelect || !gsTotalElementosListUl || !gsTotalElementosCountSpan || !gsTotalElementosLoading) {
-                console.warn("Elementos da lista de tipos de designação na aba Total não encontrados.");
-                return;
-            }
-            setSectionLoadingState('gs-total-elementos', true);
-            const tipoReuniaoFiltro = gsTotalFiltroElementoTipoSelect.value;
-            const anoFiltroGlobal = gsTotalFiltroAnoSelect.value;
-            const mesFiltroGlobal = gsTotalFiltroMesSelect.value;
-
-            const elementosFiltradosPorTipo = todosElementos.filter(el => {
-                if (tipoReuniaoFiltro && el.tipo === 'reuniao') {
-                    return el.generoReuniao === tipoReuniaoFiltro;
+            
+            const cardMediaOutroIdioma = gsTotalMediaDesigOutroSpan.closest('.stats-kpi-card');
+            if (cardMediaOutroIdioma) {
+                if (countOutroIdioma === 0) {
+                    cardMediaOutroIdioma.style.display = 'none';
+                } else {
+                    cardMediaOutroIdioma.style.display = 'block';
                 }
-                if (tipoReuniaoFiltro && el.tipo !== 'reuniao') return false;
-                return true;
-            });
-
-            gsTotalElementosListUl.innerHTML = '';
-            let countElementosExibidos = 0;
-
-            if (elementosFiltradosPorTipo.length > 0) {
-                 elementosFiltradosPorTipo.forEach(el => {
-                    const nomeEl = el.designacao || el.nome;
-                    const countDesigElemento = todasDesignacoesGlobais.filter(d => {
-                        const matchAno = !anoFiltroGlobal || d.ano === anoFiltroGlobal;
-                        const matchMes = !mesFiltroGlobal || String(d.mes).padStart(2,'0') === String(mesFiltroGlobal).padStart(2,'0');
-                        return d.nome === nomeEl && matchAno && matchMes;
-                    }).length;
-                    if (countDesigElemento > 0 || !tipoReuniaoFiltro) {
-                        const li = document.createElement('li');
-                        li.classList.add('clickable');
-                        li.innerHTML = `${nomeEl} <span class="count">${countDesigElemento} ocorrências</span>`;
-                        li.addEventListener('click', () => abrirModalInstancias(nomeEl));
-                        gsTotalElementosListUl.appendChild(li);
-                        countElementosExibidos++;
-                    }
-                });
             }
-            gsTotalElementosCountSpan.textContent = countElementosExibidos;
-
-            setSectionLoadingState('gs-total-elementos', false);
+            
+            // A chamada para setSectionLoadingState foi removida daqui
         }
 
-     async function compararPessoasSelecionadas() {
+
+
+
+    async function compararPessoasSelecionadas() {
             setSectionLoadingState('gs-pessoas', true, 'btn-gs-pessoas-comparar');
             if (!gsPessoasSelectMulti || !gsPessoasComparisonAreaDiv) {
                  setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
@@ -3671,14 +3919,13 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 return;
             }
 
+            // Usa os filtros corretos da aba "Pessoas"
             const anoFiltro = gsPessoasFiltroAnoSelect.value;
             const mesFiltro = gsPessoasFiltroMesSelect.value;
             const semanaFiltro = gsPessoasFiltroSemanaInput.value;
             const generoFiltro = gsPessoasFiltroGeneroSelect.value;
             const idiomaFiltro = gsPessoasFiltroIdiomaSelect.value;
-            // --- INÍCIO DA ALTERAÇÃO ---
             const tipoFiltro = document.getElementById('gs-pessoas-filtro-tipo').value;
-            // --- FIM DA ALTERAÇÃO ---
 
             gsPessoasComparisonAreaDiv.innerHTML = '';
 
@@ -3702,7 +3949,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     return matchAno && matchMes && matchSemana && matchTipo;
                 });
 
-            const card = document.createElement('div');
+                const card = document.createElement('div');
                 card.className = 'pessoa-comparison-card';
                 let cardHTML = `<h5>${pessoaObj.nome} <small>(${pessoaObj.genero}, ${pessoaObj.idioma})</small></h5><ul>`;
                 cardHTML += `<li>Total Designações (filt.): <span class="stat-value">${designacoesDaPessoaFiltradas.length}</span></li>`;
@@ -3728,7 +3975,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             setSectionLoadingState('gs-pessoas', false, 'btn-gs-pessoas-comparar');
         }
 
-      function popularListaElementosAbaDesignacoes() {
+ function popularListaElementosAbaDesignacoes() {
             if (!todosElementos || !gsDesignacoesTiposListUl) {
                 if(gsDesignacoesTiposListUl) gsDesignacoesTiposListUl.innerHTML = '<li>Nenhum elemento cadastrado ou lista não encontrada.</li>';
                 return;
@@ -3736,18 +3983,62 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             setSectionLoadingState('gs-designacoes-tipos', true, 'btn-gs-designacoes-aplicar-filtros');
             gsDesignacoesTiposListUl.innerHTML = '';
             
+            const diaFiltro = document.getElementById('gs-designacoes-filtro-dia').value;
+            const mesFiltro = document.getElementById('gs-designacoes-filtro-mes').value;
+            const anoFiltro = document.getElementById('gs-designacoes-filtro-ano').value;
+            const semanaFiltro = document.getElementById('gs-designacoes-filtro-semana').value;
+            const generoParticipanteFiltro = document.getElementById('gs-designacoes-filtro-genero').value;
+            const idiomaParticipanteFiltro = document.getElementById('gs-designacoes-filtro-idioma').value;
             const tipoFiltro = document.getElementById('gs-designacoes-filtro-tipo').value;
-            const elementosFiltrados = todosElementos.filter(el => !tipoFiltro || el.tipo === tipoFiltro);
+
+            const designacoesParaContagem = todasDesignacoesGlobais.filter(d => {
+                const matchDia = !diaFiltro || d.dia === String(diaFiltro).padStart(2, '0');
+                const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
+                const matchAno = !anoFiltro || d.ano === anoFiltro;
+                const matchSemana = !semanaFiltro || (d.semanaISO === parseInt(semanaFiltro));
+                
+                const elementoObj = getElementoByNome(d.nome);
+                const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
+                
+                let atendeFiltroParticipante = true;
+                if (generoParticipanteFiltro || idiomaParticipanteFiltro) {
+                    atendeFiltroParticipante = false;
+                    if (d.participantes) {
+                        atendeFiltroParticipante = Object.keys(d.participantes).some(nomeP => {
+                            const pessoa = todasPessoas.find(p => p.nome === nomeP);
+                            if (pessoa) {
+                                const matchGeneroEsteP = !generoParticipanteFiltro || pessoa.genero === generoParticipanteFiltro;
+                                const matchIdiomaEsteP = !idiomaParticipanteFiltro || pessoa.idioma === idiomaParticipanteFiltro;
+                                return matchGeneroEsteP && matchIdiomaEsteP;
+                            }
+                            return false;
+                        });
+                    }
+                }
+                return matchDia && matchMes && matchAno && matchSemana && matchTipo && atendeFiltroParticipante;
+            });
+
+            const contagemElementos = designacoesParaContagem.reduce((acc, d) => {
+                if (d.nome) {
+                    acc[d.nome] = (acc[d.nome] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const elementosOrdenados = Object.keys(contagemElementos).sort((a,b) => a.localeCompare(b));
             
-            if (elementosFiltrados.length === 0) {
+            // --- LINHA ADICIONADA ABAIXO ---
+            if (gsDesignacoesElementosCountSpan) gsDesignacoesElementosCountSpan.textContent = elementosOrdenados.length;
+
+            if (elementosOrdenados.length === 0) {
                 setSectionLoadingState('gs-designacoes-tipos', false, 'btn-gs-designacoes-aplicar-filtros');
                 return;
             }
             
-            elementosFiltrados.forEach(el => { // <-- Alterado para usar a lista filtrada
-                const nomeEl = el.designacao || el.nome;
+            elementosOrdenados.forEach(nomeEl => {
+                const count = contagemElementos[nomeEl];
                 const li = document.createElement('li');
-                li.textContent = nomeEl;
+                li.innerHTML = `${nomeEl} <span class="count">${count} ocorrências</span>`;
                 li.classList.add('clickable');
                 li.dataset.elementoNome = nomeEl;
                 li.addEventListener('click', () => {
@@ -3846,7 +4137,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             }
         }
 
-     async function calcularTopPessoas() {
+    async function calcularTopPessoas() {
             setSectionLoadingState('gs-top-pessoas', true, 'btn-gs-top-pessoas-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
             if (!gsTopPessoasListUl) { 
@@ -3856,19 +4147,22 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
 
             const mesFiltro = gsTopPessoasMesSelect.value;
             const anoFiltro = gsTopPessoasAnoSelect.value;
-            const elementoFiltro = gsTopPessoasElementoSelect.value;
-            // --- INÍCIO DA ALTERAÇÃO ---
             const tipoFiltro = document.getElementById('gs-top-pessoas-tipo').value;
+            
+            // --- INÍCIO DA ALTERAÇÃO ---
+            // Lê os valores do novo seletor múltiplo oculto
+            const elementosFiltro = Array.from(gsTopPessoasElementoMultiHidden.selectedOptions).map(opt => opt.value);
             // --- FIM DA ALTERAÇÃO ---
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
                 const matchAno = !anoFiltro || d.ano === anoFiltro;
-                const matchElemento = !elementoFiltro || d.nome === elementoFiltro;
-                // --- INÍCIO DA ALTERAÇÃO ---
+                
+                // --- LÓGICA DE FILTRO ATUALIZADA ---
+                const matchElemento = elementosFiltro.includes(d.nome);
+                
                 const elementoObj = getElementoByNome(d.nome);
                 const matchTipo = !tipoFiltro || (elementoObj && elementoObj.tipo === tipoFiltro);
-                // --- FIM DA ALTERAÇÃO ---
                 return matchMes && matchAno && matchElemento && matchTipo;
             });
 
@@ -3889,6 +4183,32 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             renderTopPessoasList();
             setSectionLoadingState('gs-top-pessoas', false, 'btn-gs-top-pessoas-aplicar');
         }
+
+
+
+ function renderTopPessoasList() {
+            if (!gsTopPessoasListUl || !gsTopPessoasMostrarTodosLink) return;
+            gsTopPessoasListUl.innerHTML = '';
+
+            const dadosParaRenderizar = gsTopPessoasMostrandoApenasTop5 ? topPessoasDadosCompletos.slice(0, 5) : topPessoasDadosCompletos;
+
+            if (dadosParaRenderizar.length > 0) {
+                dadosParaRenderizar.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${item.nome} <span class="count">${item.count}</span>`;
+                    gsTopPessoasListUl.appendChild(li);
+                });
+            }
+
+            if (topPessoasDadosCompletos.length > 5) {
+                gsTopPessoasMostrarTodosLink.style.display = 'inline-block';
+                gsTopPessoasMostrarTodosLink.textContent = gsTopPessoasMostrandoApenasTop5 ? `Mostrar lista completa (${topPessoasDadosCompletos.length})` : 'Mostrar apenas Top 5';
+            } else {
+                gsTopPessoasMostrarTodosLink.style.display = 'none';
+            }
+        }
+
+
 
         async function exibirTodasDesignacoes() {
             setSectionLoadingState('gs-todas-desig', true, 'btn-gs-todas-desig-aplicar');
@@ -4106,14 +4426,16 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
 
                 popularFiltrosStatsGlobais();
                 popularDropdownsPessoasNosModais(); 
+                initGsTopElementosCheckboxMultiselect(); 
 
                 const activeTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
-                if (activeTab) {
+                 if (activeTab) {
                     const activeTabTargetId = activeTab.dataset.tabTarget;
                     if (activeTabTargetId === 'gs-total-content') {
                          await atualizarAbaTotalGlobalStats();
                     } else if (activeTabTargetId === 'gs-pessoas-content') {
                          initGsPessoasCustomMultiselect();
+                         setupGsPessoasSubmenu(); // <-- LINHA ADICIONADA
                     } else if (activeTabTargetId === 'gs-designacoes-content') {
                         popularListaElementosAbaDesignacoes();
                     } else if (activeTabTargetId === 'gs-old-content') {
