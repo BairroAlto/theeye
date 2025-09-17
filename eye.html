@@ -801,6 +801,113 @@
             color: white;
         }
 
+
+        @media (max-width: 768px) {
+    /* Make the modal itself take up more of the screen */
+    .modal-global-stats-content {
+        width: 98%;
+        max-width: 98%;
+        height: 90vh; /* Use viewport height */
+        margin: 5vh auto;
+        padding: 15px;
+    }
+
+    /* Reduce title size and padding */
+    .modal-global-stats-content .global-stats-header {
+        font-size: 1.25em;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* Make the tab bar horizontally scrollable if needed */
+    .modal-global-stats-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+    }
+
+    .global-stats-tab-button {
+        display: inline-block; /* Allow horizontal scrolling to work */
+        flex-shrink: 0; /* Prevent tabs from shrinking */
+    }
+    
+    .global-stats-tab-content {
+        padding: 5px; /* Reduce padding on content area */
+    }
+
+    /* --- Key change for filter responsiveness --- */
+    .stats-filters {
+        flex-direction: column !important; /* Force all filter groups to stack */
+        gap: 15px;
+    }
+
+    .stats-filters > div {
+        flex-direction: column; /* Stack filters within groups */
+        width: 100%;
+        gap: 8px;
+        align-items: stretch !important; /* Ensure full width */
+    }
+
+    .stats-filters > div > div {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    /* Ensure labels are visible and inputs are full-width */
+    .stats-filters label {
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+    .stats-filters select, 
+    .stats-filters input, 
+    .stats-filters button,
+    .custom-multiselect-container {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .stats-apply-button {
+        padding: 12px;
+        margin-top: 5px;
+    }
+    
+    /* Adjust KPI grid for smaller screens */
+    .stats-kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .stats-kpi-card .kpi-value {
+        font-size: 1.6em;
+    }
+    
+    /* Ensure charts and their containers stack vertically */
+    .stats-chart-container {
+        min-height: 250px; /* Reduce minimum height */
+    }
+    
+    #gs-total-content div[style*="flex-wrap: wrap"] {
+        flex-direction: column;
+    }
+    
+    /* Adjust comparison cards area */
+    #gs-pessoas-comparison-area {
+        gap: 10px;
+    }
+    .pessoa-comparison-card {
+        flex-basis: 85%; /* Make cards wider on mobile */
+        max-width: 300px;
+    }
+
+    .stats-card-section {
+        padding: 15px;
+    }
+
+    .stats-card-section h4 {
+        font-size: 1.1em;
+    }
+}
+
     </style>
 </head>
 
@@ -910,8 +1017,67 @@
                 <button class="global-stats-tab-button" data-tab-target="gs-designacoes-content">Designações</button>
             </div>
 
-            <!-- Conteúdo da Aba: Visão Geral (Nova) -->
+            <!-- Conteúdo da Aba: Visão Geral (MODIFICADO) -->
             <div id="gs-total-content" class="global-stats-tab-content active">
+                
+                <div class="stats-filters" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                        <!-- Filtros de Data -->
+                        <div style="flex: 1; min-width: 120px;">
+                            <label for="gs-total-filtro-ano">Ano:</label>
+                            <select id="gs-total-filtro-ano" style="width: 100%;"><option value="">Todos</option></select>
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <label for="gs-total-filtro-mes">Mês:</label>
+                            <select id="gs-total-filtro-mes" style="width: 100%;"><option value="">Todos</option></select>
+                        </div>
+                        
+                        <!-- Filtros de Elemento -->
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="gs-total-filtro-tipo-elemento">Tipo (Elemento):</label>
+                            <select id="gs-total-filtro-tipo-elemento" style="width: 100%;">
+                                <option value="">Todos</option>
+                                <option value="reuniao">Reunião</option>
+                                <option value="pregacao">Pregação</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="gs-total-filtro-genero-reuniao">Gênero da Reunião:</label>
+                            <select id="gs-total-filtro-genero-reuniao" style="width: 100%;">
+                                <option value="">Todos</option>
+                                <option value="semana">Semana</option>
+                                <option value="fim de semana">Fim de Semana</option>
+                                <option value="tecnico">Técnico</option>
+                            </select>
+                        </div>
+
+                        <!-- Filtros de Participante -->
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="gs-total-filtro-genero-participante">Gênero (Participante):</label>
+                            <select id="gs-total-filtro-genero-participante" style="width: 100%;">
+                                <option value="">Todos</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label for="gs-total-filtro-idioma-participante">Idioma (Participante):</label>
+                            <select id="gs-total-filtro-idioma-participante" style="width: 100%;">
+                                <option value="">Todos</option>
+                                <option value="Português">Português</option>
+                                <option value="Italiano">Italiano</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        
+                        <div style="align-self: flex-end;">
+                            <button id="btn-gs-total-aplicar-filtros" class="stats-apply-button">
+                                <i class="fas fa-filter stats-btn-icon"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <h4><i class="fas fa-tachometer-alt stats-icon"></i> Métricas Chave</h4>
                 <div class="stats-kpi-grid">
                     <div class="stats-kpi-card">
@@ -939,36 +1105,15 @@
                         <span class="kpi-label">Participações (Outro Idioma)</span>
                     </div>
                 </div>
-                <div class="stats-filters">
-                     <label for="gs-total-filtro-ano">Ano:</label>
-                    <select id="gs-total-filtro-ano"><option value="">Todos</option></select>
-                    <label for="gs-total-filtro-mes">Mês:</label>
-                    <select id="gs-total-filtro-mes"><option value="">Todos</option></select>
-                    <button id="btn-gs-total-aplicar-filtros" class="stats-apply-button">
-                        <i class="fas fa-sync-alt stats-btn-icon"></i> Atualizar Métricas e Gráficos
-                    </button>
-                </div>
-
+                
                 <h4><i class="fas fa-tasks stats-icon"></i> Lista de Tipos de Designação (Elementos)</h4>
-                <div class="stats-filters">
-                    <label for="gs-total-filtro-elemento-tipo">Filtrar por Tipo de Reunião:</label>
-                    <select id="gs-total-filtro-elemento-tipo">
-                        <option value="">Todos</option>
-                        <option value="semana">Semana</option>
-                        <option value="fim de semana">Fim de Semana</option>
-                        <option value="tecnico">Técnico</option>
-                    </select>
-                    <button id="btn-gs-total-aplicar-filtro-elemento" class="stats-apply-button">
-                        <i class="fas fa-filter stats-btn-icon"></i> Filtrar Lista
-                    </button>
-                </div>
                 <div class="stats-results-container">
                     <div class="loading-spinner" id="gs-total-elementos-loading" style="display:none;"></div>
                     <p>Total de elementos encontrados: <span id="gs-total-elementos-count">0</span></p>
                     <ul id="gs-total-elementos-list" class="stats-result-list"></ul>
                 </div>
 
-                <h4><i class="fas fa-chart-line stats-icon"></i> Gráficos de Tendência (Filtrado por Ano/Mês acima)</h4>
+                <h4><i class="fas fa-chart-line stats-icon"></i> Gráficos de Tendência</h4>
                 <div class="stats-chart-container">
                     <canvas id="gs-total-chart-designacoes-mes"></canvas>
                 </div>
@@ -981,7 +1126,7 @@
                     </div>
                 </div>
 
-                <h4><i class="fas fa-calculator stats-icon"></i> Médias Mensais (Filtrado por Ano/Mês acima)</h4>
+                <h4><i class="fas fa-calculator stats-icon"></i> Médias Mensais</h4>
                  <div class="stats-kpi-grid">
                     <div class="stats-kpi-card">
                         <span id="gs-total-media-designacoes" class="kpi-value">-</span>
@@ -1307,6 +1452,7 @@
         </div>
     </div>
 
+
     <script type="module">
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
@@ -1421,7 +1567,6 @@
         const gsTotalFiltroMesSelect = document.getElementById('gs-total-filtro-mes');
         const btnGsTotalAplicarFiltros = document.getElementById('btn-gs-total-aplicar-filtros');
         const gsTotalFiltroElementoTipoSelect = document.getElementById('gs-total-filtro-elemento-tipo');
-        const btnGsTotalAplicarFiltroElemento = document.getElementById('btn-gs-total-aplicar-filtro-elemento');
         const gsTotalElementosCountSpan = document.getElementById('gs-total-elementos-count');
         const gsTotalElementosListUl = document.getElementById('gs-total-elementos-list');
         const gsTotalElementosLoading = document.getElementById('gs-total-elementos-loading');
@@ -4001,7 +4146,6 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
         } else { console.warn("Botão btnGlobalStats não encontrado."); }
 
         if(btnGsTotalAplicarFiltros) btnGsTotalAplicarFiltros.addEventListener('click', atualizarAbaTotalGlobalStats);
-        if(btnGsTotalAplicarFiltroElemento) btnGsTotalAplicarFiltroElemento.addEventListener('click', renderListaTiposDesignacaoTotal);
         if(btnGsPessoasComparar) btnGsPessoasComparar.addEventListener('click', compararPessoasSelecionadas);
         if(btnGsDesignacoesAplicarFiltros) {
              btnGsDesignacoesAplicarFiltros.addEventListener('click', () => {
