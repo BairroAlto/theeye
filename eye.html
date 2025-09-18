@@ -271,26 +271,27 @@
             align-items: center;
             justify-content: center;
         }
-        .modal-global-stats-tabs { /* Container para os botões das abas */
-            display: flex;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 20px; /* Espaço antes do conteúdo da aba */
-            background-color: #fff;
-            padding: 0 10px;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-        }
-        .global-stats-tab-button { /* Estilo para cada botão de aba */
-            padding: 12px 20px;
-            cursor: pointer;
-            border: none;
-            background-color: transparent;
-            font-size: 1.05em; /* Aumentado */
-            margin-right: 8px;
-            border-bottom: 3px solid transparent;
-            color: #555;
-            transition: color 0.2s ease, border-bottom-color 0.2s ease;
-        }
+   .modal-global-stats-tabs { /* Container para os botões das abas */
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+    background-color: #fff;
+    padding: 0 10px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    /* REMOVA AS LINHAS flex-wrap, overflow-x, e white-space daqui */
+}
+
+/* DEIXE ESTA REGRA ASSIM (versão desktop) */
+.global-stats-tab-button {
+    /* As duas propriedades mais importantes para o alinhamento em barra */
+    flex-grow: 1;
+    flex-basis: 0;
+
+    /* Estilos de aparência */
+    text-align: center;
+
+}
         .global-stats-tab-button:hover {
             color: #007bff;
         }
@@ -824,15 +825,21 @@
     }
 
     /* Make the tab bar horizontally scrollable if needed */
-    .modal-global-stats-tabs {
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+  .modal-global-stats-tabs {
+        flex-wrap: wrap;     /* Permite a quebra de linha */
+        overflow-x: visible; /* Remove a barra de rolagem */
+        white-space: normal;
     }
 
-    .global-stats-tab-button {
-        display: inline-block; /* Allow horizontal scrolling to work */
-        flex-shrink: 0; /* Prevent tabs from shrinking */
+ .global-stats-tab-button {
+        flex-grow: 1;       /* ESTA É A CHAVE: faz os botões crescerem para preencher a linha */
+        text-align: center;
+        
+        /* Removemos as propriedades antigas da solução de rolagem */
+        display: block;  /* Ou remova a linha 'display' completamente */
+        flex-shrink: 1; 
+        
+        /* As propriedades antigas como 'display: inline-block' e 'flex-shrink: 0' não são mais necessárias aqui */
     }
     
     .global-stats-tab-content {
@@ -1135,10 +1142,10 @@
     <div id="modal-global-stats" class="modal">
         <div class="modal-content modal-global-stats-content">
             <span class="close-button" data-modal-id="modal-global-stats">×</span>
-            <h3 class="global-stats-header"><i class="fas fa-chart-pie stats-header-icon"></i> Estatísticas Globais Avançadas</h3>
+            <h3 class="global-stats-header"><i class="fas fa-chart-pie stats-header-icon"></i> Estatísticas Globais</h3>
 
             <div class="modal-global-stats-tabs">
-                <button class="global-stats-tab-button active" data-tab-target="gs-total-content">Visão Geral</button>
+                <button class="global-stats-tab-button active" data-tab-target="gs-total-content">Geral</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-old-content">Top</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-pessoas-content">Pessoas</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-designacoes-content">Designações</button>
