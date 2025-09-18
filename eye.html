@@ -617,15 +617,17 @@
         }
 
         /* Control visibility of the sections within gs-old-content */
-       #gs-old-content > .stats-card-section,
-        #gs-pessoas-content > .stats-card-section {
-            display: none; /* Hide all sections by default */
-        }
+     #gs-old-content > .stats-card-section,
+#gs-pessoas-content > .stats-card-section,
+#gs-discursos-content > .stats-card-section { /* <-- ADICIONE ESTA LINHA */
+    display: none; /* Hide all sections by default */
+}
 
-        #gs-old-content > .stats-card-section.active-submenu-section,
-        #gs-pessoas-content > .stats-card-section.active-submenu-section {
-            display: block; /* Show only the active section */
-        }
+#gs-old-content > .stats-card-section.active-submenu-section,
+#gs-pessoas-content > .stats-card-section.active-submenu-section,
+#gs-discursos-content > .stats-card-section.active-submenu-section { /* <-- E ESTA LINHA */
+    display: block; /* Show only the active section */
+}
 
 .participante-editavel {
     color: #333; /* Define a cor do texto para um preto suave */
@@ -1003,8 +1005,40 @@
             text-decoration: underline;
         }
         
+
+
+         .chart-wrapper {
+            position: relative; /* Essencial para o posicionamento do canvas */
+            flex-grow: 1;      /* Faz com que o contentor ocupe o espaço vertical disponível no card */
+            min-height: 250px; /* Garante uma altura mínima para o gráfico */
+        }
+
+        /* Ajusta o canvas para preencher o novo contentor */
+        .chart-wrapper canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Remove a altura máxima antiga do canvas, que já não é necessária */
+        .coluna #designacoesPorElementoChartContainer.stat-card canvas,
+        .coluna .stats-chart-container-pessoa.stat-card canvas {
+            max-height: none; 
+        }
+
+        #gs-discursos-content > .stats-card-section {
+    display: none; /* Esconde todas as seções de Discursos por padrão */
+}
+
+#gs-discursos-content > .stats-card-section.active-submenu-section {
+    display: block; /* Mostra APENAS a seção da sub-aba ativa */
+}
+
     </style>
 </head>
+
 
 <body>
     <div class="main-container">
@@ -1108,6 +1142,7 @@
                 <button class="global-stats-tab-button" data-tab-target="gs-old-content">Top</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-pessoas-content">Pessoas</button>
                 <button class="global-stats-tab-button" data-tab-target="gs-designacoes-content">Designações</button>
+                <button class="global-stats-tab-button" data-tab-target="gs-discursos-content">Discursos</button>
             </div>
 
             <!-- Conteúdo da Aba: Visão Geral -->
@@ -1218,7 +1253,6 @@
                     </div>
                 </div>
                 
-                <!-- SEÇÃO DE PERCENTAGENS ATUALIZADA -->
                 <h4><i class="fas fa-percentage stats-icon"></i> Análise Percentual</h4>
                 <div class="stats-kpi-grid">
                     <div class="stats-kpi-card">
@@ -1246,7 +1280,6 @@
                         <span class="kpi-label">% Participações (Outro Idioma)</span>
                     </div>
                 </div>
-                <!-- FIM DA SEÇÃO ATUALIZADA -->
 
                 <h4><i class="fas fa-chart-line stats-icon"></i> Gráficos de Tendência</h4>
                 <div class="stats-chart-container">
@@ -1262,7 +1295,7 @@
                 </div>
             </div>
 
-            <!-- Conteúdo da Aba: Análises Anteriores -->
+            <!-- Conteúdo da Aba: Top -->
            <div id="gs-old-content" class="global-stats-tab-content">
                 <div class="gs-old-submenu-tabs">
                     <button class="gs-old-submenu-button active" data-submenu-target="gs-old-sec-top-pessoas">Top Pessoas</button>
@@ -1559,8 +1592,60 @@
                     </ul>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- Conteúdo da Aba: Discursos -->
+         <div id="gs-discursos-content" class="global-stats-tab-content">
+                <!-- Filtros Partilhados para todas as sub-abas de Discursos -->
+                <div id="gs-discursos-filtros-container">
+                    <!-- O JavaScript vai gerar os filtros aqui -->
+                </div>
+
+                <!-- Sub-Abas -->
+                <div class="gs-old-submenu-tabs">
+                    <button class="gs-old-submenu-button active" data-submenu-target="gs-discursos-sec-recentes">Feito recentemente</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-discursos-sec-lista">Lista Discursos</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-discursos-sec-oradores">Oradores</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-discursos-sec-nao-feitos">Menos Feitos</button>
+                </div>
+
+                <!-- Secção "Feito recentemente" -->
+                <div class="stats-card-section active-submenu-section" id="gs-discursos-sec-recentes">
+                    <h4><i class="fas fa-history stats-icon"></i> Últimos 20 Discursos Realizados</h4>
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-discursos-recentes-loading" style="display:none;"></div>
+                        <ul id="gs-discursos-recentes-list" class="stats-result-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Secção "Lista Discursos" -->
+                <div class="stats-card-section" id="gs-discursos-sec-lista">
+                    <h4><i class="fas fa-list-ol stats-icon"></i> Lista de Discursos Realizados</h4>
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-discursos-lista-loading" style="display:none;"></div>
+                        <ul id="gs-discursos-lista-list" class="stats-result-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Secção "Oradores" -->
+                <div class="stats-card-section" id="gs-discursos-sec-oradores">
+                    <h4><i class="fas fa-users stats-icon"></i> Ranking de Oradores</h4>
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-discursos-oradores-loading" style="display:none;"></div>
+                        <ul id="gs-discursos-oradores-list" class="stats-result-list"></ul>
+                    </div>
+                </div>
+
+                <!-- Secção "Menos Feitos" -->
+                <div class="stats-card-section" id="gs-discursos-sec-nao-feitos">
+                    <h4><i class="fas fa-search-minus stats-icon"></i> Discursos Ainda Não Realizados (no período)</h4>
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-discursos-nao-feitos-loading" style="display:none;"></div>
+                        <ul id="gs-discursos-nao-feitos-list" class="stats-result-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+
 
     <!-- Modal para exibir instâncias de uma designação (elemento) -->
     <div id="modal-instancias-designacao" class="modal">
@@ -1598,6 +1683,29 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL PARA LISTAR INSTÂNCIAS DE UM DISCURSO -->
+    <div id="modal-discurso-instancias" class="modal">
+        <div class="modal-content" style="max-width: 750px;">
+            <span class="close-button" data-modal-id="modal-discurso-instancias">×</span>
+            <h3 id="modal-discurso-instancias-titulo">Ocorrências do Discurso</h3>
+            <div class="stats-results-container" style="border-top: none; margin-top: 0;">
+                 <ul id="modal-discurso-instancias-list" class="stats-result-list" style="max-height: 60vh;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA LISTAR DISCURSOS DE UM ORADOR -->
+    <div id="modal-orador-discursos" class="modal">
+        <div class="modal-content" style="max-width: 750px;">
+            <span class="close-button" data-modal-id="modal-orador-discursos">×</span>
+            <h3 id="modal-orador-discursos-titulo">Discursos Realizados</h3>
+            <div class="stats-results-container" style="border-top: none; margin-top: 0;">
+                 <ul id="modal-orador-discursos-list" class="stats-result-list" style="max-height: 60vh;"></ul>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal para expandir Gráfico -->
     <div id="modal-grafico-expandido" class="modal">
@@ -1654,6 +1762,8 @@
         const modalPessoaTitulo = document.getElementById('modal-pessoa-titulo');
         const pessoaIdEditInput = document.getElementById('pessoa-id-edit');
         const btnSubmitPessoa = document.getElementById('btn-submit-pessoa');
+        const modalDiscursoInstancias = document.getElementById('modal-discurso-instancias');
+        const modalOradorDiscursos = document.getElementById('modal-orador-discursos');
         const closeButtons = document.querySelectorAll('.close-button');
         const formCriarPessoa = document.getElementById('form-criar-pessoa');
         const nomePessoaInput = document.getElementById('nome-pessoa');
@@ -1812,6 +1922,9 @@ const gsSelectedPessoasAreaDiv = document.querySelector('#gs-pessoas-custom-mult
         let designacoesPorSemanaChart = null;
         let designacoesPorAnoChart = null;
         let dirigentePorDiaChart = null;
+        let chartDiscursosPorAno = null;
+        let chartTemasPorMes = null;
+        let todosDiscursos = [];
 
         let todasDesignacoesGlobais = [];
         let todasDesignacoesGlobaisCarregadas = false;
@@ -1856,6 +1969,356 @@ const gsSelectedPessoasAreaDiv = document.querySelector('#gs-pessoas-custom-mult
             "---SEP---",
             "Áudio/Vídeo", "Zoom", "Micro Palco", "Micro 2", "Indicador"
         ];
+
+
+
+
+
+
+
+
+
+
+  function abrirModalDiscursoInstancias(tema, discursosFiltrados) {
+    const modal = document.getElementById('modal-discurso-instancias');
+    const titulo = document.getElementById('modal-discurso-instancias-titulo');
+    const listUl = document.getElementById('modal-discurso-instancias-list');
+    titulo.textContent = `Ocorrências de: ${tema}`;
+    const instancias = discursosFiltrados.filter(d => d.tema && d.tema.trim() === tema);
+    listUl.innerHTML = '';
+    instancias.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = `(${d.data}) por ${d.pessoaA} (${d.congregacao || 'N/A'})`;
+        listUl.appendChild(li);
+    });
+    abrirModal(modal);
+}
+
+function abrirModalOradorDiscursos(orador, discursosFiltrados) {
+    const modal = document.getElementById('modal-orador-discursos');
+    const titulo = document.getElementById('modal-orador-discursos-titulo');
+    const listUl = document.getElementById('modal-orador-discursos-list');
+    titulo.textContent = `Discursos de: ${orador}`;
+    const instancias = discursosFiltrados.filter(d => d.pessoaA === orador);
+    listUl.innerHTML = '';
+    instancias.forEach(d => {
+        const li = document.createElement('li');
+        const discursoInfo = todosDiscursos.find(discurso => d.tema && discurso.nome.trim() === d.tema.trim());
+        const numeroDisplay = discursoInfo ? `<strong>${discursoInfo.numero}</strong> - ` : '';
+        li.innerHTML = `(${d.data}) ${numeroDisplay}${d.tema}`;
+        listUl.appendChild(li);
+    });
+    abrirModal(modal);
+}
+
+
+
+
+function generateDiscursosFiltersHTML() {
+    return `
+        <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                    <label for="gs-discursos-filtro-ano">Ano:</label>
+                    <select id="gs-discursos-filtro-ano"><option value="">Todos</option></select>
+                </div>
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                    <label for="gs-discursos-filtro-mes">Mês:</label>
+                    <select id="gs-discursos-filtro-mes"><option value="">Todos</option></select>
+                </div>
+                <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                    <label for="gs-discursos-filtro-idioma">Idioma (Orador):</label>
+                    <select id="gs-discursos-filtro-idioma"><option value="">Todos</option><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select>
+                </div>
+                <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 5px;">
+                    <label for="gs-discursos-filtro-congregacao">Congregação:</label>
+                    <select id="gs-discursos-filtro-congregacao"><option value="">Todas</option></select>
+                </div>
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                    <label for="gs-discursos-filtro-numero">Nº Discurso:</label>
+                    <select id="gs-discursos-filtro-numero"><option value="">Todos</option></select>
+                </div>
+                <div style="align-self: flex-end;">
+                    <button id="btn-gs-discursos-aplicar" class="stats-apply-button">
+                        <i class="fas fa-filter stats-btn-icon"></i> Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setupGsDiscursosSubmenu() {
+    const discursosContentDiv = document.getElementById('gs-discursos-content');
+    if (!discursosContentDiv) return;
+
+    const submenuButtons = discursosContentDiv.querySelectorAll('.gs-old-submenu-button');
+    submenuButtons.forEach(btn => {
+        if (btn.dataset.listenerAttached === 'true') {
+            return;
+        }
+        btn.addEventListener('click', () => {
+            submenuButtons.forEach(b => b.classList.remove('active'));
+            discursosContentDiv.querySelectorAll('.stats-card-section').forEach(sec => sec.classList.remove('active-submenu-section'));
+
+            btn.classList.add('active');
+            const targetSection = document.getElementById(btn.dataset.submenuTarget);
+            if (targetSection) {
+                targetSection.classList.add('active-submenu-section');
+            }
+
+            switch (btn.dataset.submenuTarget) {
+                case 'gs-discursos-sec-recentes': renderDiscursosRecentes(); break;
+                case 'gs-discursos-sec-lista': renderListaDiscursos(); break;
+                case 'gs-discursos-sec-oradores': renderOradores(); break;
+                case 'gs-discursos-sec-nao-feitos': renderDiscursosNaoFeitos(); break;
+            }
+        });
+        btn.dataset.listenerAttached = 'true';
+    });
+}
+
+function populateDiscursosFilters() {
+    const anoSelect = document.getElementById(`gs-discursos-filtro-ano`);
+    const mesSelect = document.getElementById(`gs-discursos-filtro-mes`);
+    const congregacaoSelect = document.getElementById(`gs-discursos-filtro-congregacao`);
+    const numeroSelect = document.getElementById(`gs-discursos-filtro-numero`);
+
+    if (!anoSelect || !mesSelect || !congregacaoSelect || !numeroSelect) return;
+
+    const discursosPublicos = todasDesignacoesGlobais.filter(d => d.nome === "Orador Público");
+    const anosUnicos = [...new Set(discursosPublicos.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+    const mesesUnicos = [...new Set(discursosPublicos.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
+    const congregacoesUnicas = [...new Set(discursosPublicos.map(d => d.congregacao).filter(Boolean))].sort();
+
+    anoSelect.innerHTML = '<option value="">Todos</option>' + anosUnicos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
+    mesSelect.innerHTML = '<option value="">Todos</option>' + mesesUnicos.map(mes => `<option value="${String(mes).padStart(2, '0')}">${new Date(0, mes-1).toLocaleString('pt-BR', {month: 'long'})}</option>`).join('');
+    congregacaoSelect.innerHTML = '<option value="">Todas</option>' + congregacoesUnicas.map(c => `<option value="${c}">${c}</option>`).join('');
+    numeroSelect.innerHTML = '<option value="">Todos</option>' + todosDiscursos.sort((a,b) => a.numero - b.numero).map(d => `<option value="${d.numero}">${d.numero}</option>`).join('');
+}
+
+function getFilteredDiscursos() {
+    const anoFiltro = document.getElementById(`gs-discursos-filtro-ano`).value;
+    const mesFiltro = document.getElementById(`gs-discursos-filtro-mes`).value;
+    const idiomaFiltro = document.getElementById(`gs-discursos-filtro-idioma`).value;
+    const congregacaoFiltro = document.getElementById(`gs-discursos-filtro-congregacao`).value;
+    const numeroFiltro = document.getElementById(`gs-discursos-filtro-numero`).value;
+    
+    let temaDoNumeroFiltrado = null;
+    if (numeroFiltro && todosDiscursos.length > 0) {
+        const discurso = todosDiscursos.find(d => d.numero == numeroFiltro);
+        if (discurso) temaDoNumeroFiltrado = discurso.nome;
+    }
+
+    return todasDesignacoesGlobais.filter(d => {
+        if (d.nome !== "Orador Público") return false;
+        const matchAno = !anoFiltro || d.ano === anoFiltro;
+        const matchMes = !mesFiltro || String(d.mes).padStart(2, '0') === mesFiltro;
+        const matchCongregacao = !congregacaoFiltro || d.congregacao === congregacaoFiltro;
+        const matchNumero = !temaDoNumeroFiltrado || (d.tema && d.tema.trim() === temaDoNumeroFiltrado.trim());
+
+        if (!matchAno || !matchMes || !matchCongregacao || !matchNumero) return false;
+
+        if (idiomaFiltro) {
+            const orador = todasPessoas.find(p => p.nome === d.pessoaA);
+            return orador && orador.idioma === idiomaFiltro;
+        }
+        return true;
+    });
+}
+
+function renderDiscursosRecentes() {
+    const prefix = 'gs-discursos-recentes';
+    setSectionLoadingState(prefix, true);
+    const listUl = document.getElementById(`${prefix}-list`);
+    const discursosFiltrados = getFilteredDiscursos();
+    discursosFiltrados.sort((a, b) => new Date(b.ano, b.mes - 1, b.dia) - new Date(a.ano, a.mes - 1, a.dia));
+    const ultimos20 = discursosFiltrados.slice(0, 20);
+    listUl.innerHTML = '';
+    if (ultimos20.length === 0) {
+        setSectionLoadingState(prefix, false);
+        return;
+    }
+    ultimos20.forEach(d => {
+        const li = document.createElement('li');
+        li.innerHTML = `(${d.data}) <strong>${d.tema || 'Tema não registrado'}</strong> <span class="value">por ${d.pessoaA} (${d.congregacao || 'N/A'})</span>`;
+        listUl.appendChild(li);
+    });
+    setSectionLoadingState(prefix, false);
+}
+
+function renderListaDiscursos() {
+    const prefix = 'gs-discursos-lista';
+    setSectionLoadingState(prefix, true);
+    const listUl = document.getElementById(`${prefix}-list`);
+    const discursosFiltrados = getFilteredDiscursos();
+    const contagemTemas = discursosFiltrados.reduce((acc, d) => {
+        if (d.tema) acc[d.tema.trim()] = (acc[d.tema.trim()] || 0) + 1;
+        return acc;
+    }, {});
+    const temasCompletos = Object.entries(contagemTemas).map(([tema, count]) => {
+        const discursoInfo = todosDiscursos.find(d => d.nome.trim() === tema);
+        return { tema, count, numero: discursoInfo ? discursoInfo.numero : Infinity };
+    }).sort((a, b) => a.numero - b.numero);
+    listUl.innerHTML = '';
+    if (temasCompletos.length === 0) {
+        setSectionLoadingState(prefix, false);
+        return;
+    }
+    temasCompletos.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'clickable';
+        const numeroDisplay = item.numero === Infinity ? '?' : item.numero;
+        li.innerHTML = `<strong>${numeroDisplay}</strong> - ${item.tema} <span class="count">${item.count}</span>`;
+        li.onclick = () => abrirModalDiscursoInstancias(item.tema, discursosFiltrados);
+        listUl.appendChild(li);
+    });
+    setSectionLoadingState(prefix, false);
+}
+
+function renderOradores() {
+    const prefix = 'gs-discursos-oradores';
+    setSectionLoadingState(prefix, true);
+    const listUl = document.getElementById(`${prefix}-list`);
+    const discursosFiltrados = getFilteredDiscursos();
+    const contagemOradores = discursosFiltrados.reduce((acc, d) => {
+        if (d.pessoaA) acc[d.pessoaA] = (acc[d.pessoaA] || 0) + 1;
+        return acc;
+    }, {});
+    const oradoresOrdenados = Object.entries(contagemOradores).sort((a,b) => b[1] - a[1]);
+    listUl.innerHTML = '';
+    if (oradoresOrdenados.length === 0) {
+        setSectionLoadingState(prefix, false);
+        return;
+    }
+    oradoresOrdenados.forEach(([orador, count]) => {
+        const li = document.createElement('li');
+        li.className = 'clickable';
+        li.innerHTML = `${orador} <span class="count">${count}</span>`;
+        li.onclick = () => abrirModalOradorDiscursos(orador, discursosFiltrados);
+        listUl.appendChild(li);
+    });
+    setSectionLoadingState(prefix, false);
+}
+
+function renderDiscursosNaoFeitos() {
+    const prefix = 'gs-discursos-nao-feitos';
+    setSectionLoadingState(prefix, true);
+    const listUl = document.getElementById(`${prefix}-list`);
+    const discursosFiltrados = getFilteredDiscursos();
+    const temasFeitos = new Set(discursosFiltrados.map(d => d.tema.trim()));
+    const discursosNaoFeitos = todosDiscursos
+        .filter(d => !temasFeitos.has(d.nome.trim()))
+        .sort((a, b) => a.numero - b.numero);
+    listUl.innerHTML = '';
+    if (discursosNaoFeitos.length === 0) {
+        listUl.innerHTML = '<li>Todos os discursos da lista foram feitos no período filtrado.</li>';
+        setSectionLoadingState(prefix, false);
+        return;
+    }
+    discursosNaoFeitos.forEach(d => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${d.numero}</strong> - ${d.nome}`;
+        listUl.appendChild(li);
+    });
+    setSectionLoadingState(prefix, false);
+}
+
+// --- CÓDIGO PRINCIPAL QUE ATIVA AS ABAS ---
+globalStatsTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        const targetContentId = button.dataset.tabTarget;
+        globalStatsTabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === targetContentId) {
+                content.classList.add('active');
+            }
+        });
+
+        if (targetContentId === 'gs-total-content') {
+            atualizarAbaTotalGlobalStats();
+        } else if (targetContentId === 'gs-pessoas-content') {
+            initGsPessoasCustomMultiselect();
+            setupGsPessoasSubmenu();
+        } else if (targetContentId === 'gs-designacoes-content') {
+            popularListaElementosAbaDesignacoes();
+        } else if (targetContentId === 'gs-old-content') {
+            setupGsOldSubmenu();
+        } else if (targetContentId === 'gs-discursos-content') {
+            const discursosContentDiv = document.getElementById('gs-discursos-content');
+            const filtrosContainer = document.getElementById('gs-discursos-filtros-container');
+            
+            if (!filtrosContainer.querySelector('.filters-container')) {
+                filtrosContainer.innerHTML = generateDiscursosFiltersHTML(); 
+                populateDiscursosFilters();
+                
+                document.getElementById('btn-gs-discursos-aplicar').addEventListener('click', () => {
+                    const activeSubmenu = discursosContentDiv.querySelector('.gs-old-submenu-button.active');
+                    if (activeSubmenu) {
+                        activeSubmenu.click();
+                    }
+                });
+            }
+            
+            setupGsDiscursosSubmenu();
+
+            const activeSubmenu = discursosContentDiv.querySelector('.gs-old-submenu-button.active');
+            const firstSubmenuButton = discursosContentDiv.querySelector('.gs-old-submenu-button');
+
+            if (activeSubmenu) {
+                activeSubmenu.click();
+            } else if (firstSubmenuButton) {
+                firstSubmenuButton.click();
+            }
+        }
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         // --- FUNÇÃO HELPER PARA LOADING ---
@@ -2003,6 +2466,13 @@ const gsSelectedPessoasAreaDiv = document.querySelector('#gs-pessoas-custom-mult
             console.log("popularDropdownsPessoasNosModais: Dropdowns populados.");
         }
 
+
+
+
+
+
+
+        
         async function carregarPessoas() {
             console.log("carregarPessoas: Iniciando");
             try {
@@ -2092,6 +2562,21 @@ const gsSelectedPessoasAreaDiv = document.querySelector('#gs-pessoas-custom-mult
             } catch (error) {
                 console.error(`Erro ao carregar designações para ${nomePessoa}: `, error);
                 if (historicoContent) historicoContent.innerHTML = `<p style="text-align:center;color:#777;margin-top:20px;">Erro ao carregar designações.</p>`;
+            }
+        }
+
+
+        async function carregarListaDiscursos() {
+            console.log("carregarListaDiscursos: Iniciando");
+            try {
+                const querySnapshot = await getDocs(collection(db, "listadiscursos"));
+                todosDiscursos = [];
+                querySnapshot.forEach((docSnap) => {
+                    todosDiscursos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                console.log(`carregarListaDiscursos: ${todosDiscursos.length} discursos carregados.`);
+            } catch (error) {
+                console.error("Erro ao carregar lista de discursos: ", error);
             }
         }
 
@@ -2741,7 +3226,7 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             });
         }
 
-function renderizarEstatisticas() {
+ function renderizarEstatisticas() {
             console.log("renderizarEstatisticas: Iniciando");
             const statsContent = document.getElementById('estatisticas-content');
             if (!statsContent) { console.error("renderizarEstatisticas: #estatisticas-content não encontrado."); return; }
@@ -2794,7 +3279,10 @@ function renderizarEstatisticas() {
                     cardsPregacaoHtml += `<div class="stat-card stats-chart-container-pessoa">
                                             <h4>Gráfico Dirigente/Semana</h4>
                                             <button class="btn-expand-chart" data-chart-id="chartDirigentePorDia" data-chart-title="Gráfico Dirigente/Semana (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
-                                            <canvas id="chartDirigentePorDia"></canvas>
+                                            <!-- Wrapper Adicionado -->
+                                            <div class="chart-wrapper">
+                                                <canvas id="chartDirigentePorDia"></canvas>
+                                            </div>
                                           </div>`;
                 }
                 
@@ -2904,7 +3392,10 @@ function renderizarEstatisticas() {
             allCardsHtml += `<div class="stat-card" id="designacoesPorElementoChartContainer">
                                 <h4>Designações por Elemento</h4>
                                 <button class="btn-expand-chart" data-chart-id="designacoesPorElementoChart" data-chart-title="Designações por Elemento (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
-                                <canvas id="designacoesPorElementoChart"></canvas>
+                                <!-- Wrapper Adicionado -->
+                                <div class="chart-wrapper">
+                                    <canvas id="designacoesPorElementoChart"></canvas>
+                                </div>
                              </div>`;
             
             const desigPorMes = {};
@@ -2925,29 +3416,273 @@ function renderizarEstatisticas() {
                 <div class="stat-card stats-chart-container-pessoa">
                     <h4>Designações por Mês</h4>
                     <button class="btn-expand-chart" data-chart-id="chartDesigPorMes" data-chart-title="Designações por Mês (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
-                    <canvas id="chartDesigPorMes"></canvas>
+                    <!-- Wrapper Adicionado -->
+                    <div class="chart-wrapper">
+                        <canvas id="chartDesigPorMes"></canvas>
+                    </div>
                 </div>
                 <div class="stat-card stats-chart-container-pessoa">
                     <h4>Designações por Semana</h4>
                     <button class="btn-expand-chart" data-chart-id="chartDesigPorSemana" data-chart-title="Designações por Semana (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
-                    <canvas id="chartDesigPorSemana"></canvas>
+                    <!-- Wrapper Adicionado -->
+                    <div class="chart-wrapper">
+                        <canvas id="chartDesigPorSemana"></canvas>
+                    </div>
                 </div>
                 <div class="stat-card stats-chart-container-pessoa">
                     <h4>Designações por Ano</h4>
                     <button class="btn-expand-chart" data-chart-id="chartDesigPorAno" data-chart-title="Designações por Ano (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
-                    <canvas id="chartDesigPorAno"></canvas>
+                    <!-- Wrapper Adicionado -->
+                    <div class="chart-wrapper">
+                        <canvas id="chartDesigPorAno"></canvas>
+                    </div>
                 </div>
             `;
 
+            const designacoesOradorPublico = designacoesFiltradas.filter(d => d.nome === "Orador Público" && d.tema && d.tema.trim() !== '');
+            let cardsOradorPublicoHtml = '';
+
+            if (designacoesOradorPublico.length > 0) {
+                
+                if (todosDiscursos.length === 0) {
+                    console.warn("A lista de discursos (com números) não foi carregada. Não é possível exibir os números.");
+                }
+
+                const contagemTemas = designacoesOradorPublico.reduce((acc, desig) => {
+                    if (desig.tema) {
+                        acc[desig.tema] = (acc[desig.tema] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+                
+                const temasCompletos = Object.entries(contagemTemas).map(([tema, count]) => {
+                    const discursoInfo = todosDiscursos.find(d => d.nome.trim() === tema.trim());
+                    return {
+                        tema: tema,
+                        count: count,
+                        numero: discursoInfo ? discursoInfo.numero : Infinity
+                    };
+                }).sort((a, b) => a.numero - b.numero);
+
+                let listaTemasHtml = temasCompletos.length > 0
+                    ? `<ul>${temasCompletos.map(item => {
+                        const numeroDisplay = item.numero === Infinity ? '?' : item.numero;
+                        return `<li><strong>${numeroDisplay}</strong> - ${item.tema}: <span class="stat-value-inline">${item.count}</span></li>`;
+                      }).join('')}</ul>`
+                    : '<p>Nenhum tema de discurso encontrado para os filtros atuais.</p>';
+
+                cardsOradorPublicoHtml += `
+                    <div class="stat-card">
+                        <h4>Discursos Realizados (Tema e Contagem)</h4>
+                        ${listaTemasHtml}
+                    </div>
+                `;
+
+                cardsOradorPublicoHtml += `
+                    <div class="stat-card stats-chart-container-pessoa">
+                        <h4>Discursos por Ano</h4>
+                        <button class="btn-expand-chart" data-chart-id="chartDiscursosPorAno" data-chart-title="Discursos por Ano (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                        <!-- Wrapper Adicionado -->
+                        <div class="chart-wrapper">
+                            <canvas id="chartDiscursosPorAno"></canvas>
+                        </div>
+                    </div>
+                `;
+
+                cardsOradorPublicoHtml += `
+                    <div class="stat-card stats-chart-container-pessoa">
+                        <h4>Discursos por Mês</h4>
+                        <button class="btn-expand-chart" data-chart-id="chartTemasPorMes" data-chart-title="Discursos por Mês (Pessoa: ${pessoaSelecionadaAtual.nome})"><i class="fas fa-expand"></i></button>
+                        <!-- Wrapper Adicionado -->
+                        <div class="chart-wrapper">
+                            <canvas id="chartTemasPorMes"></canvas>
+                        </div>
+                    </div>
+                `;
+            }
+            allCardsHtml += cardsOradorPublicoHtml;
+
             statsContent.innerHTML = allCardsHtml;
+    
+
+
+
+        function populateDiscursosFilters() {
+            // Esta função também já não precisa de prefixo
+            const anoSelect = document.getElementById(`gs-discursos-filtro-ano`);
+            const mesSelect = document.getElementById(`gs-discursos-filtro-mes`);
+            const congregacaoSelect = document.getElementById(`gs-discursos-filtro-congregacao`);
+            const numeroSelect = document.getElementById(`gs-discursos-filtro-numero`);
+
+            if (!anoSelect || !mesSelect || !congregacaoSelect || !numeroSelect) return;
+
+            const discursosPublicos = todasDesignacoesGlobais.filter(d => d.nome === "Orador Público");
+            const anosUnicos = [...new Set(discursosPublicos.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+            const mesesUnicos = [...new Set(discursosPublicos.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
+            const congregacoesUnicas = [...new Set(discursosPublicos.map(d => d.congregacao).filter(Boolean))].sort();
+
+            anoSelect.innerHTML = '<option value="">Todos</option>' + anosUnicos.map(ano => `<option value="${ano}">${ano}</option>`).join('');
+            mesSelect.innerHTML = '<option value="">Todos</option>' + mesesUnicos.map(mes => `<option value="${String(mes).padStart(2, '0')}">${new Date(0, mes-1).toLocaleString('pt-BR', {month: 'long'})}</option>`).join('');
+            congregacaoSelect.innerHTML = '<option value="">Todas</option>' + congregacoesUnicas.map(c => `<option value="${c}">${c}</option>`).join('');
+            numeroSelect.innerHTML = '<option value="">Todos</option>' + todosDiscursos.sort((a,b) => a.numero - b.numero).map(d => `<option value="${d.numero}">${d.numero}</option>`).join('');
+        }
+        
+        function getFilteredDiscursos() {
+            // Esta função agora lê sempre dos mesmos IDs de filtros
+            const anoFiltro = document.getElementById(`gs-discursos-filtro-ano`).value;
+            const mesFiltro = document.getElementById(`gs-discursos-filtro-mes`).value;
+            const idiomaFiltro = document.getElementById(`gs-discursos-filtro-idioma`).value;
+            const congregacaoFiltro = document.getElementById(`gs-discursos-filtro-congregacao`).value;
+            const numeroFiltro = document.getElementById(`gs-discursos-filtro-numero`).value;
+            
+            let temaDoNumeroFiltrado = null;
+            if (numeroFiltro && todosDiscursos.length > 0) {
+                const discurso = todosDiscursos.find(d => d.numero == numeroFiltro);
+                if (discurso) temaDoNumeroFiltrado = discurso.nome;
+            }
+
+            return todasDesignacoesGlobais.filter(d => {
+                if (d.nome !== "Orador Público") return false;
+                const matchAno = !anoFiltro || d.ano === anoFiltro;
+                const matchMes = !mesFiltro || String(d.mes).padStart(2, '0') === mesFiltro;
+                const matchCongregacao = !congregacaoFiltro || d.congregacao === congregacaoFiltro;
+                const matchNumero = !temaDoNumeroFiltrado || (d.tema && d.tema.trim() === temaDoNumeroFiltrado.trim());
+
+                if (!matchAno || !matchMes || !matchCongregacao || !matchNumero) return false;
+
+                if (idiomaFiltro) {
+                    const orador = todasPessoas.find(p => p.nome === d.pessoaA);
+                    return orador && orador.idioma === idiomaFiltro;
+                }
+                return true;
+            });
+        }
+
+        function renderDiscursosRecentes() {
+            const prefix = 'gs-discursos-recentes';
+            setSectionLoadingState(prefix, true);
+            const listUl = document.getElementById(`${prefix}-list`);
+            const discursosFiltrados = getFilteredDiscursos();
+            discursosFiltrados.sort((a, b) => new Date(b.ano, b.mes - 1, b.dia) - new Date(a.ano, a.mes - 1, a.dia));
+            const ultimos20 = discursosFiltrados.slice(0, 20);
+            listUl.innerHTML = '';
+            if (ultimos20.length === 0) {
+                setSectionLoadingState(prefix, false);
+                return;
+            }
+            ultimos20.forEach(d => {
+                const li = document.createElement('li');
+                li.innerHTML = `(${d.data}) <strong>${d.tema || 'Tema não registrado'}</strong> <span class="value">por ${d.pessoaA} (${d.congregacao || 'N/A'})</span>`;
+                listUl.appendChild(li);
+            });
+            setSectionLoadingState(prefix, false);
+        }
+
+        function renderListaDiscursos() {
+            const prefix = 'gs-discursos-lista';
+            setSectionLoadingState(prefix, true);
+            const listUl = document.getElementById(`${prefix}-list`);
+            const discursosFiltrados = getFilteredDiscursos();
+            const contagemTemas = discursosFiltrados.reduce((acc, d) => {
+                if (d.tema) acc[d.tema.trim()] = (acc[d.tema.trim()] || 0) + 1;
+                return acc;
+            }, {});
+            const temasCompletos = Object.entries(contagemTemas).map(([tema, count]) => {
+                const discursoInfo = todosDiscursos.find(d => d.nome.trim() === tema);
+                return { tema, count, numero: discursoInfo ? discursoInfo.numero : Infinity };
+            }).sort((a, b) => a.numero - b.numero);
+            listUl.innerHTML = '';
+            if (temasCompletos.length === 0) {
+                setSectionLoadingState(prefix, false);
+                return;
+            }
+            temasCompletos.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'clickable';
+                const numeroDisplay = item.numero === Infinity ? '?' : item.numero;
+                li.innerHTML = `<strong>${numeroDisplay}</strong> - ${item.tema} <span class="count">${item.count}</span>`;
+                li.onclick = () => abrirModalDiscursoInstancias(item.tema, discursosFiltrados);
+                listUl.appendChild(li);
+            });
+            setSectionLoadingState(prefix, false);
+        }
+
+        function renderOradores() {
+            const prefix = 'gs-discursos-oradores';
+            setSectionLoadingState(prefix, true);
+            const listUl = document.getElementById(`${prefix}-list`);
+            const discursosFiltrados = getFilteredDiscursos();
+            const contagemOradores = discursosFiltrados.reduce((acc, d) => {
+                if (d.pessoaA) acc[d.pessoaA] = (acc[d.pessoaA] || 0) + 1;
+                return acc;
+            }, {});
+            const oradoresOrdenados = Object.entries(contagemOradores).sort((a,b) => b[1] - a[1]);
+            listUl.innerHTML = '';
+            if (oradoresOrdenados.length === 0) {
+                setSectionLoadingState(prefix, false);
+                return;
+            }
+            oradoresOrdenados.forEach(([orador, count]) => {
+                const li = document.createElement('li');
+                li.className = 'clickable';
+                li.innerHTML = `${orador} <span class="count">${count}</span>`;
+                li.onclick = () => abrirModalOradorDiscursos(orador, discursosFiltrados);
+                listUl.appendChild(li);
+            });
+            setSectionLoadingState(prefix, false);
+        }
+
+        function renderDiscursosNaoFeitos() {
+            const prefix = 'gs-discursos-nao-feitos';
+            setSectionLoadingState(prefix, true);
+            const listUl = document.getElementById(`${prefix}-list`);
+            const discursosFiltrados = getFilteredDiscursos();
+            const temasFeitos = new Set(discursosFiltrados.map(d => d.tema.trim()));
+            const discursosNaoFeitos = todosDiscursos
+                .filter(d => !temasFeitos.has(d.nome.trim()))
+                .sort((a, b) => a.numero - b.numero);
+            listUl.innerHTML = '';
+            if (discursosNaoFeitos.length === 0) {
+                listUl.innerHTML = '<li>Todos os discursos da lista foram feitos no período filtrado.</li>';
+                setSectionLoadingState(prefix, false);
+                return;
+            }
+            discursosNaoFeitos.forEach(d => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${d.numero}</strong> - ${d.nome}`;
+                listUl.appendChild(li);
+            });
+            setSectionLoadingState(prefix, false);
+        }
+        
+
+
+        function abrirModalOradorDiscursos(orador, discursosFiltrados) {
+            const modal = document.getElementById('modal-orador-discursos');
+            const titulo = document.getElementById('modal-orador-discursos-titulo');
+            const listUl = document.getElementById('modal-orador-discursos-list');
+            
+            titulo.textContent = `Discursos de: ${orador}`;
+            const instancias = discursosFiltrados.filter(d => d.pessoaA === orador);
+            listUl.innerHTML = '';
+            instancias.forEach(d => {
+                const li = document.createElement('li');
+                const discursoInfo = todosDiscursos.find(discurso => d.tema && discurso.nome.trim() === d.tema.trim());
+                const numeroDisplay = discursoInfo ? `<strong>${discursoInfo.numero}</strong> - ` : '';
+                li.innerHTML = `(${d.data}) ${numeroDisplay}${d.tema}`;
+                listUl.appendChild(li);
+            });
+            abrirModal(modal);
+        }
 
 
 
 
 
 
-            // ... (o restante da função continua igual)
- function renderListaElementosPessoaInterna() {
+
+
+            function renderListaElementosPessoaInterna() {
                 const listaUl = document.getElementById('lista-elementos-pessoa');
                 const link = document.getElementById('link-mostrar-todos-elementos-pessoa');
                 if (!listaUl || !link) {
@@ -3080,13 +3815,11 @@ function renderizarEstatisticas() {
                         borderWidth: 1
                     }]
                 }, { 
-                    // --- INÍCIO DA MODIFICAÇÃO (Adicionada a opção de layout) ---
                     layout: {
                         padding: {
                             bottom: 20
                         }
                     },
-                    // --- FIM DA MODIFICAÇÃO ---
                     scales: { 
                         x: { 
                             ticks: { 
@@ -3139,6 +3872,66 @@ function renderizarEstatisticas() {
                     datasets: [{ label: 'Nº Designações', data: labelsAno.map(k => desigPorAno[k]), backgroundColor: 'rgba(255, 159, 64, 0.6)', borderColor: 'rgba(255, 159, 64, 1)' }]
                 });
             } else { const el = document.getElementById('chartDesigPorAno'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico anual.</p>"; }
+
+            if (designacoesOradorPublico.length > 0) {
+                const discursosPorAno = designacoesOradorPublico.reduce((acc, d) => {
+                    if (d.ano) acc[d.ano] = (acc[d.ano] || 0) + 1;
+                    return acc;
+                }, {});
+                const labelsAnoDiscursos = Object.keys(discursosPorAno).sort();
+                if (labelsAnoDiscursos.length > 0) {
+                    chartDiscursosPorAno = renderChart(chartDiscursosPorAno, 'chartDiscursosPorAno', 'bar', {
+                        labels: labelsAnoDiscursos,
+                        datasets: [{
+                            label: 'Nº de Discursos',
+                            data: labelsAnoDiscursos.map(k => discursosPorAno[k]),
+                            backgroundColor: 'rgba(21, 115, 71, 0.6)',
+                            borderColor: 'rgba(21, 115, 71, 1)'
+                        }]
+                    });
+                }
+
+                const discursosPorMes = designacoesOradorPublico.reduce((acc, d) => {
+                    if (d.ano && d.mes) {
+                        const mesAnoKey = `${d.ano}-${String(d.mes).padStart(2, '0')}`;
+                        if (!acc[mesAnoKey]) acc[mesAnoKey] = { count: 0, themes: [] };
+                        acc[mesAnoKey].count++;
+                        acc[mesAnoKey].themes.push(d.tema);
+                    }
+                    return acc;
+                }, {});
+                const labelsMesDiscursos = Object.keys(discursosPorMes).sort();
+                if (labelsMesDiscursos.length > 0) {
+                    chartTemasPorMes = renderChart(chartTemasPorMes, 'chartTemasPorMes', 'bar', {
+                        labels: labelsMesDiscursos.map(l => { const [y,m] = l.split('-'); return `${m}/${y}`; }),
+                        datasets: [{
+                            label: 'Nº de Discursos',
+                            data: labelsMesDiscursos.map(k => discursosPorMes[k].count),
+                            backgroundColor: 'rgba(108, 117, 125, 0.6)',
+                            borderColor: 'rgba(108, 117, 125, 1)'
+                        }]
+                    }, {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    footer: function(tooltipItems) {
+                                        const label = tooltipItems[0].label;
+                                        const [mes, ano] = label.split('/');
+                                        const originalKey = `${ano}-${mes}`;
+                                        const themesForMonth = discursosPorMes[originalKey]?.themes || [];
+                                        if (themesForMonth.length > 0) {
+                                            const footerLines = ['Temas:'];
+                                            themesForMonth.forEach(theme => footerLines.push(`  • ${theme}`));
+                                            return footerLines;
+                                        }
+                                        return '';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
              document.querySelectorAll('.btn-expand-chart').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const target = e.currentTarget;
@@ -3211,9 +4004,9 @@ function renderizarEstatisticas() {
                 case 'chartDesigPorMes': originalChartInstance = designacoesPorMesChart; break;
                 case 'chartDesigPorSemana': originalChartInstance = designacoesPorSemanaChart; break;
                 case 'chartDesigPorAno': originalChartInstance = designacoesPorAnoChart; break;
-                // --- INÍCIO DA MODIFICAÇÃO (Adicionada a nova case) ---
                 case 'chartDirigentePorDia': originalChartInstance = dirigentePorDiaChart; break;
-                // --- FIM DA MODIFICAÇÃO ---
+case 'chartDiscursosPorAno': originalChartInstance = chartDiscursosPorAno; break;
+                case 'chartTemasPorMes': originalChartInstance = chartTemasPorMes; break;
             }
 
             if (!originalChartInstance) {
@@ -3391,6 +4184,7 @@ function renderizarEstatisticas() {
             formCriarElemento.reset();
             fecharModal(modalElemento);
             await carregarTodosElementosParaEstatisticas();
+            await carregarListaDiscursos();
         } catch (error) { console.error("Erro ao criar elemento: ", error); alert("Erro: " + error.message); }
     });
 }
@@ -3912,29 +4706,72 @@ function setupGsPessoasSubmenu() {
             }
         }
 
-    globalStatsTabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                const targetContentId = button.dataset.tabTarget;
-                globalStatsTabContents.forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === targetContentId) {
-                        content.classList.add('active');
+ globalStatsTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // Lógica padrão para alternar as abas principais (Visão Geral, Top, Pessoas, etc.)
+        globalStatsTabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        const targetContentId = button.dataset.tabTarget;
+        globalStatsTabContents.forEach(content => {
+            content.classList.remove('active');
+            if (content.id === targetContentId) {
+                content.classList.add('active');
+            }
+        });
+
+        // Executa a lógica específica para a aba que foi clicada
+        if (targetContentId === 'gs-total-content') {
+            atualizarAbaTotalGlobalStats();
+        } else if (targetContentId === 'gs-pessoas-content') {
+            initGsPessoasCustomMultiselect();
+            setupGsPessoasSubmenu();
+        } else if (targetContentId === 'gs-designacoes-content') {
+            popularListaElementosAbaDesignacoes();
+        } else if (targetContentId === 'gs-old-content') {
+            setupGsOldSubmenu();
+        } 
+        // =========================================================
+        //          ↓↓↓ ESTE É O BLOCO CORRIGIDO ↓↓↓
+        // =========================================================
+        else if (targetContentId === 'gs-discursos-content') {
+            const discursosContentDiv = document.getElementById('gs-discursos-content');
+            const filtrosContainer = document.getElementById('gs-discursos-filtros-container');
+            
+            // 1. Gera os filtros na tela (só na primeira vez que a aba é aberta)
+            if (!filtrosContainer.querySelector('.filters-container')) {
+                filtrosContainer.innerHTML = generateDiscursosFiltersHTML();
+                populateDiscursosFilters();
+                
+                // Adiciona a funcionalidade ao botão "Aplicar" dos filtros
+                document.getElementById('btn-gs-discursos-aplicar').addEventListener('click', () => {
+                    const activeSubmenu = discursosContentDiv.querySelector('.gs-old-submenu-button.active');
+                    if (activeSubmenu) {
+                        activeSubmenu.click(); // Simula um clique na sub-aba ativa para recarregar com os novos filtros
                     }
                 });
-                if (targetContentId === 'gs-total-content') {
-                    atualizarAbaTotalGlobalStats();
-                } else if (targetContentId === 'gs-pessoas-content') {
-                     initGsPessoasCustomMultiselect();
-                     setupGsPessoasSubmenu(); // <-- LINHA ADICIONADA
-                } else if (targetContentId === 'gs-designacoes-content') {
-                    popularListaElementosAbaDesignacoes();
-                } else if (targetContentId === 'gs-old-content') {
-                    setupGsOldSubmenu();
-                }
-            });
-        });
+            }
+            
+            // 2. Chama a função que adiciona o clique às sub-abas
+            setupGsDiscursosSubmenu();
+
+            // 3. Carrega o conteúdo da primeira sub-aba (ou da que já estiver ativa)
+            const activeSubmenu = discursosContentDiv.querySelector('.gs-old-submenu-button.active');
+            const submenuButtons = discursosContentDiv.querySelectorAll('.gs-old-submenu-button');
+
+            if (activeSubmenu) {
+                activeSubmenu.click();
+            } else if (submenuButtons.length > 0) {
+                // Se nenhuma estiver ativa, clica na primeira por padrão
+                submenuButtons[0].click();
+            }
+        }
+        // =========================================================
+        //          ↑↑↑ FIM DO BLOCO CORRIGIDO ↑↑↑
+        // =========================================================
+    });
+});
+
+
 
         document.addEventListener('click', (e) => {
             if (gsPessoasCustomMultiselectDiv && !gsPessoasCustomMultiselectDiv.contains(e.target) && gsPessoasDropdownCustomDiv) {
@@ -4033,7 +4870,7 @@ function setupGsPessoasSubmenu() {
 
 
 
-async function atualizarAbaTotalGlobalStats() {
+  async function atualizarAbaTotalGlobalStats() {
             if (!todasDesignacoesGlobaisCarregadas) {
                 await carregarTodasDesignacoesParaStatsGlobais();
                 if (!todasDesignacoesGlobaisCarregadas) {
@@ -4044,7 +4881,9 @@ async function atualizarAbaTotalGlobalStats() {
             
             const anoFiltro = document.getElementById('gs-total-filtro-ano').value;
             const mesFiltro = document.getElementById('gs-total-filtro-mes').value;
+            // --- LINHA CORRIGIDA ---
             const tipoElementoFiltro = document.getElementById('gs-total-filtro-tipo-elemento').value;
+            // --- FIM DA CORREÇÃO ---
             const generoReuniaoFiltro = document.getElementById('gs-total-filtro-genero-reuniao').value;
             const generoParticipanteFiltro = document.getElementById('gs-total-filtro-genero-participante').value;
             const idiomaParticipanteFiltro = document.getElementById('gs-total-filtro-idioma-participante').value;
@@ -4077,7 +4916,7 @@ async function atualizarAbaTotalGlobalStats() {
                 
                 return false;
             });
-
+            // ... (o resto da função continua igual)
             gsTotalNumDesignacoesSpan.textContent = designacoesFiltradas.length;
             let countMasc = 0, countFem = 0, countPt = 0, countIt = 0, countOutroIdioma = 0;
 
@@ -4117,7 +4956,6 @@ async function atualizarAbaTotalGlobalStats() {
                 cardMediaOutroIdioma.style.display = (countOutroIdioma === 0) ? 'none' : 'block';
             }
 
-            // --- LÓGICA DA SEÇÃO DE PERCENTAGENS ATUALIZADA ---
             const totalDesignacoesGlobal = todasDesignacoesGlobais.length;
             const totalParticipacoesFiltradas = countMasc + countFem;
 
@@ -4148,8 +4986,6 @@ async function atualizarAbaTotalGlobalStats() {
             if (cardPercOutroIdioma) {
                 cardPercOutroIdioma.style.display = (countOutroIdioma > 0) ? 'block' : 'none';
             }
-            // --- FIM DA LÓGICA ATUALIZADA ---
-
             const dadosGraficoTotal = {};
             const dadosGraficoGenero = { Masculino: {}, Feminino: {} };
             const dadosGraficoIdioma = { Português: {}, Italiano: {}, Outro: {} };
@@ -4725,7 +5561,7 @@ async function atualizarAbaTotalGlobalStats() {
             }
         }
 
-        if (btnGlobalStats) {
+     if (btnGlobalStats) {
             btnGlobalStats.addEventListener('click', async () => {
                 console.log("Botão de Estatísticas Globais clicado.");
                 abrirModal(modalGlobalStats);
@@ -4740,22 +5576,15 @@ async function atualizarAbaTotalGlobalStats() {
                 popularFiltrosStatsGlobais();
                 popularDropdownsPessoasNosModais(); 
                 initGsTopElementosCheckboxMultiselect(); 
-                 initGsIndivElementosCheckboxMultiselect();
+                initGsIndivElementosCheckboxMultiselect();
 
                 const activeTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
                  if (activeTab) {
                     const activeTabTargetId = activeTab.dataset.tabTarget;
-                    if (activeTabTargetId === 'gs-total-content') {
-                         await atualizarAbaTotalGlobalStats();
-                    } else if (activeTabTargetId === 'gs-pessoas-content') {
-                         initGsPessoasCustomMultiselect();
-                         setupGsPessoasSubmenu(); // <-- LINHA ADICIONADA
-                    } else if (activeTabTargetId === 'gs-designacoes-content') {
-                        popularListaElementosAbaDesignacoes();
-                    } else if (activeTabTargetId === 'gs-old-content') {
-                        setupGsOldSubmenu();
-                    }
+                    // Simula um clique na aba ativa para forçar o carregamento do seu conteúdo
+                    activeTab.click(); 
                 } else {
+                    // Se nenhuma aba estiver ativa (caso raro), clica na primeira
                     const firstTabButton = document.querySelector('#modal-global-stats .global-stats-tab-button');
                     if(firstTabButton) {
                         firstTabButton.click();
@@ -4773,13 +5602,8 @@ async function atualizarAbaTotalGlobalStats() {
                 if(gsTodasDesigAgrupadoMostrarTodosLink) gsTodasDesigAgrupadoMostrarTodosLink.style.display = 'none';
                 if(gsPessoaEspResultsDiv) gsPessoaEspResultsDiv.innerHTML = '';
                 if(gsPessoasComparisonAreaDiv) gsPessoasComparisonAreaDiv.innerHTML = ''; 
-
-                const currentActiveMainTab = document.querySelector('#modal-global-stats .global-stats-tab-button.active');
-                if (currentActiveMainTab && currentActiveMainTab.dataset.tabTarget === 'gs-old-content') {
-                    setupGsOldSubmenu();
-                }
             });
-        } else { console.warn("Botão btnGlobalStats não encontrado."); }
+        }
 
         if(btnGsTotalAplicarFiltros) btnGsTotalAplicarFiltros.addEventListener('click', atualizarAbaTotalGlobalStats);
         if(btnGsPessoasComparar) btnGsPessoasComparar.addEventListener('click', compararPessoasSelecionadas);
@@ -5191,26 +6015,21 @@ async function atualizarAbaTotalGlobalStats() {
             btnRankingAplicarFiltros.addEventListener('click', renderRankingList);
         }
 
-        window.onload = async () => {
+       window.onload = async () => {
             console.log("Window onload: Iniciando aplicação.");
             if (!listaPessoasUl || !colunaDetalhesDiv || !colunaDetalhesContent || !modalGlobalStats) {
                 console.error("ERRO CRÍTICO: Elementos DOM essenciais não encontrados. A aplicação pode não funcionar.");
                 alert("Erro crítico ao carregar. Verifique o console.");
                 return;
-
-                 const closeButtonGrafico = document.querySelector('[data-modal-id="modal-grafico-expandido"]');
-        if (closeButtonGrafico) {
-            closeButtonGrafico.addEventListener('click', () => {
-                if (graficoExpandidoChart) {
-                    graficoExpandidoChart.destroy();
-                    graficoExpandidoChart = null; // Limpa a referência
-                }
-            });
-        }
             }
 
             await carregarPessoas();
             await carregarTodosElementosParaEstatisticas();
+            
+            // --- INÍCIO DA CORREÇÃO ---
+            await carregarListaDiscursos(); // LINHA QUE FALTA
+            // --- FIM DA CORREÇÃO ---
+
             popularDropdownsPessoasNosModais(); 
 
             if (colunaDetalhesDiv && colunaDetalhesContent) {
