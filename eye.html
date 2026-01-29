@@ -1728,10 +1728,10 @@
 
     <script type="module">
         // Firebase SDK imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import {
             getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc,
-            serverTimestamp, updateDoc, deleteDoc
+            serverTimestamp, updateDoc, deleteDoc, FieldPath
         } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
         // CUIDADO: Expor API Key no cliente não é o ideal para produção crítica.
@@ -2521,49 +2521,55 @@ globalStatsTabButtons.forEach(button => {
             } catch (error) { console.error("Erro ao carregar pessoas: ", error); alert("Falha ao carregar pessoas."); }
         }
 
-        async function carregarDesignacoesDaPessoa(pessoaId) {
+ async function carregarDesignacoesDaPessoa(pessoaId) {
             console.log("carregarDesignacoesDaPessoa para ID:", pessoaId);
             pessoaSelecionadaAtual = todasPessoas.find(p => p.id === pessoaId);
             if (!pessoaSelecionadaAtual) {
                 console.error("Não foi possível encontrar a pessoa selecionada para carregar designações.");
-                if(colunaDetalhesDiv && colunaDetalhesContent) {
-                    colunaDetalhesDiv.innerHTML = '';
-                    colunaDetalhesDiv.appendChild(colunaDetalhesContent);
-                    colunaDetalhesContent.style.display = 'flex';
-                }
                 return;
             }
             const nomePessoa = pessoaSelecionadaAtual.nome;
 
-            criarEstruturaDetalhes(); // This will also reset editModeActive visually
+            criarEstruturaDetalhes();
             const historicoContent = document.getElementById('historico-content');
             if (historicoContent) historicoContent.innerHTML = '<p style="text-align:center;color:#777;margin-top:20px;">Carregando designações...</p>';
-            else { console.error("Elemento #historico-content não encontrado após criarEstruturaDetalhes."); return; }
+            else { console.error("Elemento #historico-content não encontrado."); return; }
 
             try {
-                const q = query(collection(db, "designacoes"), where(`participantes.${nomePessoa}`, "==", true));
+                const q = query(collection(db, "designacoes"), where(new FieldPath('participantes', nomePessoa), "==", true));
+                
                 const querySnapshot = await getDocs(q);
-                designacoesDaPessoaAtual = [];
+                let designacoesBrutas = [];
                 querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                    designacoesBrutas.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // =========================================================
+                //          ↓↓↓ FILTRO DE SEGURANÇA ADICIONADO AQUI ↓↓↓
+                // =========================================================
+                designacoesDaPessoaAtual = designacoesBrutas.filter(desig => {
+                    const participantesVisiveis = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean);
+                    return participantesVisiveis.includes(nomePessoa);
+                });
+                // =========================================================
+
+                // Processamento de 'semanaISO' agora é feito nos dados já filtrados
+                designacoesDaPessoaAtual.forEach(data => {
                     if (!data.semanaISO && data.data) {
                         try {
                             const [dia, mes, ano] = data.data.split('/');
                             const dateObj = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
                             if (!isNaN(dateObj.getTime())) {
                                  data.semanaISO = getISOWeek(dateObj);
-                            } else {
-                                console.warn("Data inválida para designação (carregarDesignacoesDaPessoa), não foi possível calcular semanaISO:", data.data, docSnap.id);
-                                data.semanaISO = null;
                             }
                         } catch (e) {
-                            console.warn("Erro ao converter data para semanaISO (carregarDesignacoesDaPessoa):", data.data, docSnap.id, e);
-                            data.semanaISO = null;
+                           // Ignora erros de parsing de data
                         }
                     }
-                    designacoesDaPessoaAtual.push({ id: docSnap.id, ...data });
                 });
-                console.log(`carregarDesignacoesDaPessoa: ${designacoesDaPessoaAtual.length} designações encontradas para ${nomePessoa}`);
+
+                console.log(`DADOS APÓS FILTRO CLIENT-SIDE para ${nomePessoa}:`, JSON.parse(JSON.stringify(designacoesDaPessoaAtual)));
+                
                 popularFiltros();
                 aplicarEAtualizarFiltros();
             } catch (error) {
@@ -4385,73 +4391,105 @@ case 'chartDiscursosPorAno': originalChartInstance = chartDiscursosPorAno; break
 
       
 
-       function initGsTopElementosCheckboxMultiselect() {
-            if (!gsTopPessoasElementoMultiHidden || !gsTopElementosOptionsList || todosElementos.length === 0) return;
+function initGsTopElementosCheckboxMultiselect() {
+    // Validações básicas
+    if (!gsTopPessoasElementoMultiHidden || !gsTopElementosOptionsList || todosElementos.length === 0) return;
 
-            gsTopElementosOptionsList.innerHTML = '';
-            gsTopPessoasElementoMultiHidden.innerHTML = '';
+    // 1. Limpa e Re-popula a lista (Isso deve acontecer sempre para atualizar novos elementos)
+    gsTopElementosOptionsList.innerHTML = '';
+    gsTopPessoasElementoMultiHidden.innerHTML = '';
 
-            todosElementos.forEach(el => {
-                const elNome = el.designacao || el.nome;
+    todosElementos.forEach(el => {
+        const elNome = el.designacao || el.nome;
 
-                // Cria o item para o dropdown visível
-                const listItem = document.createElement('li');
-                listItem.className = 'dropdown-item';
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `el-check-${el.id}`;
-                checkbox.value = elNome;
-                checkbox.checked = true; // Pré-selecionado por padrão
-                const label = document.createElement('label');
-                label.htmlFor = `el-check-${el.id}`;
-                label.textContent = elNome;
-                
-                listItem.appendChild(checkbox);
-                listItem.appendChild(label);
-                gsTopElementosOptionsList.appendChild(listItem);
+        // Cria item visual da lista
+        const listItem = document.createElement('li');
+        listItem.className = 'dropdown-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `el-check-${el.id}`;
+        checkbox.value = elNome;
+        checkbox.checked = true; // Pré-selecionado por padrão
 
-                // Cria a opção correspondente no select oculto
-                const option = new Option(elNome, elNome);
-                option.selected = true; // Pré-selecionado por padrão
-                gsTopPessoasElementoMultiHidden.appendChild(option);
+        const label = document.createElement('label');
+        label.htmlFor = `el-check-${el.id}`;
+        label.textContent = elNome;
+        label.style.cursor = 'pointer'; // Melhora UX
+        
+        // Impede que clicar no checkbox/label feche o dropdown
+        checkbox.addEventListener('click', (e) => e.stopPropagation());
+        label.addEventListener('click', (e) => e.stopPropagation());
 
-                // Adiciona o evento para sincronizar
-                checkbox.addEventListener('change', () => {
-                    option.selected = checkbox.checked;
-                    updateGsTopElementosDisplayText();
-                });
-            });
+        listItem.appendChild(checkbox);
+        listItem.appendChild(label);
+        gsTopElementosOptionsList.appendChild(listItem);
 
+        // Cria a opção correspondente no select oculto (para lógica interna)
+        const option = new Option(elNome, elNome);
+        option.selected = true; 
+        gsTopPessoasElementoMultiHidden.appendChild(option);
+
+        // Sincroniza checkbox visual com select oculto
+        checkbox.addEventListener('change', () => {
+            option.selected = checkbox.checked;
             updateGsTopElementosDisplayText();
+        });
+    });
 
-            // Eventos para abrir/fechar o dropdown
-            gsTopElementosCheckboxMultiselect.addEventListener('click', (e) => {
-                if (!gsTopElementosOptions.contains(e.target)) { // Evita fechar ao clicar dentro
-                    gsTopElementosOptions.classList.toggle('visible');
-                }
-            });
+    updateGsTopElementosDisplayText();
 
-            document.addEventListener('click', (e) => {
-                if (!gsTopElementosCheckboxMultiselect.contains(e.target)) {
-                    gsTopElementosOptions.classList.remove('visible');
-                }
-            });
+    // =========================================================
+    //          ↓↓↓ CORREÇÃO DO BUG ↓↓↓
+    // =========================================================
+    // Verifica se os "Listeners" (eventos de clique) já foram adicionados.
+    // Se sim, paramos aqui para não adicionar de novo e quebrar o toggle.
+    if (gsTopElementosCheckboxMultiselect.dataset.hasListeners === 'true') {
+        return; 
+    }
 
-            // Eventos para os botões "Selecionar Todos" e "Limpar"
-            document.getElementById('gs-top-elementos-select-all').addEventListener('click', (e) => {
-                e.stopPropagation();
-                gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-                Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = true);
-                updateGsTopElementosDisplayText();
-            });
+    // --- Eventos do Container (Abrir/Fechar) ---
+    gsTopElementosCheckboxMultiselect.addEventListener('click', (e) => {
+        // Se o clique foi DENTRO da lista de opções (ex: scrollbar), não faz toggle
+        if (gsTopElementosOptions.contains(e.target)) return;
+        
+        gsTopElementosOptions.classList.toggle('visible');
+    });
 
-            document.getElementById('gs-top-elementos-deselect-all').addEventListener('click', (e) => {
-                e.stopPropagation();
-                gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = false);
-                updateGsTopElementosDisplayText();
-            });
+    // --- Fechar ao clicar fora ---
+    document.addEventListener('click', (e) => {
+        if (!gsTopElementosCheckboxMultiselect.contains(e.target)) {
+            gsTopElementosOptions.classList.remove('visible');
         }
+    });
+
+    // --- Botões de Ação (Selecionar Todos / Limpar) ---
+    const btnSelectAll = document.getElementById('gs-top-elementos-select-all');
+    const btnDeselectAll = document.getElementById('gs-top-elementos-deselect-all');
+
+    if (btnSelectAll) {
+        btnSelectAll.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Impede fechar o menu
+            gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = true);
+            updateGsTopElementosDisplayText();
+        });
+    }
+
+    if (btnDeselectAll) {
+        btnDeselectAll.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Impede fechar o menu
+            gsTopElementosOptionsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            Array.from(gsTopPessoasElementoMultiHidden.options).forEach(opt => opt.selected = false);
+            updateGsTopElementosDisplayText();
+        });
+    }
+
+    // Marca o elemento para indicar que os eventos já foram configurados
+    gsTopElementosCheckboxMultiselect.dataset.hasListeners = 'true';
+}
 
         function updateGsTopElementosDisplayText() {
             if (!gsTopElementosDisplayText || !gsTopPessoasElementoMultiHidden) return;
@@ -5275,7 +5313,7 @@ function setupGsPessoasSubmenu() {
             }
         }
 
-  async function calcularTopPessoas() {
+ async function calcularTopPessoas() {
             setSectionLoadingState('gs-top-pessoas', true, 'btn-gs-top-pessoas-aplicar');
             if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
             if (!gsTopPessoasListUl) { 
@@ -5287,12 +5325,8 @@ function setupGsPessoasSubmenu() {
             const anoFiltro = gsTopPessoasAnoSelect.value;
             const tipoFiltro = document.getElementById('gs-top-pessoas-tipo').value;
             const elementosFiltro = Array.from(gsTopPessoasElementoMultiHidden.selectedOptions).map(opt => opt.value);
-            
-            // --- INÍCIO DA ALTERAÇÃO ---
-            // 1. Lê os valores dos novos filtros de participante
             const generoParticipanteFiltro = gsTopPessoasGeneroParticipante.value;
             const idiomaParticipanteFiltro = gsTopPessoasIdiomaParticipante.value;
-            // --- FIM DA ALTERAÇÃO ---
 
             let designacoesFiltradasGlobal = todasDesignacoesGlobais.filter(d => {
                 const matchMes = !mesFiltro || String(d.mes).padStart(2,'0') === String(mesFiltro).padStart(2,'0');
@@ -5305,23 +5339,26 @@ function setupGsPessoasSubmenu() {
 
             const contagemPessoas = {};
             designacoesFiltradasGlobal.forEach(d => {
-                Object.keys(d.participantes || {}).forEach(nomePessoa => {
-                    if (nomePessoa && d.participantes[nomePessoa]) {
+                // =========================================================
+                //          ↓↓↓ CORREÇÃO APLICADA AQUI ↓↓↓
+                // =========================================================
+                // 1. Ignora o campo 'participantes' e cria uma lista fiável a partir de pessoaA/B/C.
+                const participantesReais = [d.pessoaA, d.pessoaB, d.pessoaC].filter(Boolean); // 'filter(Boolean)' remove nomes nulos ou vazios.
+                
+                // 2. Itera sobre a lista de participantes reais.
+                participantesReais.forEach(nomePessoa => {
+                    const pessoaObj = todasPessoas.find(p => p.nome === nomePessoa);
+                    
+                    if (pessoaObj) {
+                        const matchGenero = !generoParticipanteFiltro || pessoaObj.genero === generoParticipanteFiltro;
+                        const matchIdioma = !idiomaParticipanteFiltro || pessoaObj.idioma === idiomaParticipanteFiltro;
                         
-                        // --- INÍCIO DA ALTERAÇÃO ---
-                        // 2. Verifica se o participante corresponde aos filtros de gênero e idioma
-                        const pessoaObj = todasPessoas.find(p => p.nome === nomePessoa);
-                        if (pessoaObj) {
-                            const matchGenero = !generoParticipanteFiltro || pessoaObj.genero === generoParticipanteFiltro;
-                            const matchIdioma = !idiomaParticipanteFiltro || pessoaObj.idioma === idiomaParticipanteFiltro;
-                            
-                            if (matchGenero && matchIdioma) {
-                                contagemPessoas[nomePessoa] = (contagemPessoas[nomePessoa] || 0) + 1;
-                            }
+                        if (matchGenero && matchIdioma) {
+                            contagemPessoas[nomePessoa] = (contagemPessoas[nomePessoa] || 0) + 1;
                         }
-                        // --- FIM DA ALTERAÇÃO ---
                     }
                 });
+                // =========================================================
             });
 
             topPessoasDadosCompletos = Object.entries(contagemPessoas)
@@ -5680,99 +5717,54 @@ function setupGsPessoasSubmenu() {
             abrirModal(modalRanking);
         }
 
-     function popularFiltrosRankingPopup() {
-            if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) {
-                console.error("Elementos de filtro do modal de ranking não encontrados.");
-                return;
-            }
-            if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) {
-                console.warn("Modal Ranking: Dados de designações globais não disponíveis para popular filtros.");
-                 rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
-                 rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
-                 rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
-                return;
-            }
+ function popularFiltrosRankingPopup() {
+    if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) {
+        console.error("Elementos de filtro do modal de ranking não encontrados.");
+        return;
+    }
 
-            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
-            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+    // 1. Verifica se há dados
+    if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) {
+        rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
+        rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
+        rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
+        return;
+    }
 
-            const monthMap = { 'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 };
+    // 2. Salva seleção atual para tentar manter após repopular
+    const currentMesVal = rankingFiltroMesSelect.value;
+    const currentAnoVal = rankingFiltroAnoSelect.value;
 
-            const semanasCompletas = todasDesignacoesGlobais
-                .filter(d => d.semana && typeof d.semana === 'string')
-                .map(d => {
-                    const parts = d.semana.match(/^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})\s*-\s*(\d{1,2})$/i);
-                    if (parts) {
-                        const monthName = parts[1].toLowerCase();
-                        const year = parseInt(parts[2]);
-                        const startDay = parseInt(parts[3]);
-                        const monthNumber = monthMap[monthName];
+    // 3. Extrai Meses e Anos únicos baseados nos campos numéricos 'mes' e 'ano' do documento
+    // Isso popula os dropdowns superiores corretamente
+    const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
+    const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
 
-                        if (monthNumber && year && startDay) {
-                            try {
-                                const sortDate = new Date(year, monthNumber - 1, startDay);
-                                 if (!isNaN(sortDate.getTime())) {
-                                    return { year, month: monthNumber, startDay, originalString: d.semana, sortDate };
-                                }
-                            } catch (e) {
-                                return null;
-                            }
-                        }
-                    }
-                    return null;
-                })
-                .filter(item => item !== null);
+    // 4. Popula Select de Mês
+    rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
+    mesesUnicos.forEach(mes => {
+        // getNomeMesRanking deve retornar "Janeiro", "Fevereiro", etc.
+        rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2, '0')));
+    });
+    rankingFiltroMesSelect.value = currentMesVal;
 
-            const uniqueSemanas = semanasCompletas.reduce((acc, current) => {
-                if (!acc.find(item => item.originalString === current.originalString)) {
-                    acc.push(current);
-                }
-                return acc;
-            }, []);
+    // 5. Popula Select de Ano
+    rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
+    anosUnicos.forEach(ano => {
+        rankingFiltroAnoSelect.appendChild(new Option(ano, ano));
+    });
+    rankingFiltroAnoSelect.value = currentAnoVal;
 
-            uniqueSemanas.sort((a, b) => {
-                if (a.year !== b.year) return b.year - a.year;
-                if (a.month !== b.month) return b.month - b.month;
-                return b.startDay - b.startDay;
-            });
+    // 6. Adiciona os "Ouvintes" (Listeners)
+    // Quando mudar o Mês ou Ano, atualiza a lista de Semanas
+    rankingFiltroMesSelect.onchange = atualizarDropdownSemanasRanking;
+    rankingFiltroAnoSelect.onchange = atualizarDropdownSemanasRanking;
 
-            const currentMesVal = rankingFiltroMesSelect.value;
-            rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
-            mesesUnicos.forEach(mes => rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
-            rankingFiltroMesSelect.value = currentMesVal;
+    // 7. Chama a função para filtrar as semanas pela primeira vez
+    atualizarDropdownSemanasRanking();
+}
 
-            const currentAnoVal = rankingFiltroAnoSelect.value;
-            rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
-            anosUnicos.forEach(ano => rankingFiltroAnoSelect.appendChild(new Option(ano, ano)));
-            rankingFiltroAnoSelect.value = currentAnoVal;
 
-            const currentSemanaVal = rankingFiltroSemanaSelect.value;
-            rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
-            let currentYearForOptgroup = null;
-            let optgroup = null;
-
-            uniqueSemanas.forEach(item => {
-                if (item.year !== currentYearForOptgroup) {
-                    currentYearForOptgroup = item.year;
-                    optgroup = document.createElement('optgroup');
-                    optgroup.label = `${item.year}`;
-                    rankingFiltroSemanaSelect.appendChild(optgroup);
-                }
-                const option = document.createElement('option');
-                option.value = item.originalString;
-                option.textContent = item.originalString;
-                if (optgroup) {
-                    optgroup.appendChild(option);
-                } else {
-                    rankingFiltroSemanaSelect.appendChild(option);
-                }
-            });
-            if (Array.from(rankingFiltroSemanaSelect.options).some(opt => opt.value === currentSemanaVal)) {
-                 rankingFiltroSemanaSelect.value = currentSemanaVal;
-            } else {
-                rankingFiltroSemanaSelect.value = "";
-            }
-        }
 
         function setDefaultRankingFilters() {
              if (!rankingFiltroAnoSelect || !rankingFiltroMesSelect || !rankingFiltroSemanaSelect) return;
@@ -6092,8 +6084,140 @@ function setupGsPessoasSubmenu() {
             }
             renderRankingList();
         }
-    </script>
 
+
+function atualizarDropdownSemanasRanking() {
+    console.log("--- INÍCIO DEBUG: atualizarDropdownSemanasRanking ---");
+
+    if (!rankingFiltroSemanaSelect) {
+        console.error("Erro: Select de semana não encontrado no DOM.");
+        return;
+    }
+
+    // 1. Pega o valor dos filtros superiores
+    const mesSelecionado = rankingFiltroMesSelect.value; 
+    const anoSelecionado = rankingFiltroAnoSelect.value; 
+    const semanaSelecionadaAtual = rankingFiltroSemanaSelect.value;
+
+    console.log(`1. Filtros Atuais -> Mês Selecionado: "${mesSelecionado}" | Ano Selecionado: "${anoSelecionado}"`);
+
+    // 2. Mapa para converter o texto da string 'semana' em número
+    const monthMap = { 
+        'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6, 
+        'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 
+    };
+
+    // 3. Filtra e processa as designações
+    let contadorProcessados = 0;
     
+    const listaSemanasProcessada = todasDesignacoesGlobais
+        .filter(d => d.semana && typeof d.semana === 'string') 
+        .map(d => {
+            // Regex: Captura (Mês) (Ano) | (Dia)
+            const regex = /^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})/i;
+            const parts = d.semana.match(regex);
+
+            if (parts) {
+                const nomeMesTexto = parts[1].toLowerCase(); // ex: "dezembro"
+                const anoTexto = parts[2];                 // ex: "2025"
+                const diaInicio = parseInt(parts[3]);      // ex: 29
+                
+                const numeroMes = monthMap[nomeMesTexto];  // Converte "dezembro" para 12
+
+                // LOG DE AMOSTRA (mostra os 3 primeiros para não poluir demais)
+                if (contadorProcessados < 3) {
+                    console.log(`   > Processando string: "${d.semana}" -> Detectado Mês: "${nomeMesTexto}" (${numeroMes}), Ano: "${anoTexto}"`);
+                    contadorProcessados++;
+                }
+
+                if (numeroMes) {
+                    const sortDate = new Date(parseInt(anoTexto), numeroMes - 1, diaInicio);
+                    return {
+                        originalString: d.semana, 
+                        monthNum: numeroMes,      
+                        yearStr: anoTexto,        
+                        sortDate: sortDate        
+                    };
+                } else {
+                    console.warn(`   ! Aviso: Mês "${nomeMesTexto}" não encontrado no mapa monthMap.`);
+                }
+            }
+            return null;
+        })
+        .filter(item => item !== null) 
+        .filter(item => {
+            // --- AQUI ACONTECE O FILTRO ---
+            
+            const matchAno = !anoSelecionado || item.yearStr === anoSelecionado;
+            
+            // Logica do Mês
+            const mesDropdownNumerico = parseInt(mesSelecionado);
+            const matchMes = !mesSelecionado || item.monthNum === mesDropdownNumerico;
+
+            // Se tiver um mês selecionado, vamos logar por que passou ou falhou
+            if (mesSelecionado && item.yearStr === (anoSelecionado || "2025")) { 
+                // Loga apenas se o ano bater (para reduzir barulho), útil para debug
+               // console.log(`   ? Comparando: Item Mês ${item.monthNum} === Filtro ${mesDropdownNumerico}? ${matchMes}`);
+            }
+            
+            return matchAno && matchMes;
+        });
+
+    console.log(`2. Total de itens compatíveis encontrados: ${listaSemanasProcessada.length}`);
+
+    // 4. Remove duplicatas
+    const semanasUnicas = [];
+    const stringsVistas = new Set();
+
+    listaSemanasProcessada.forEach(item => {
+        if (!stringsVistas.has(item.originalString)) {
+            stringsVistas.add(item.originalString);
+            semanasUnicas.push(item);
+        }
+    });
+
+    console.log(`3. Total de Semanas Únicas para exibir: ${semanasUnicas.length}`);
+
+    // 5. Ordena
+    semanasUnicas.sort((a, b) => b.sortDate - a.sortDate);
+
+    // 6. Monta o HTML
+    rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
+    
+    let currentYearGroup = null;
+    let optgroup = null;
+
+    semanasUnicas.forEach(item => {
+        if (item.yearStr !== currentYearGroup) {
+            currentYearGroup = item.yearStr;
+            optgroup = document.createElement('optgroup');
+            optgroup.label = item.yearStr;
+            rankingFiltroSemanaSelect.appendChild(optgroup);
+        }
+        
+        const option = document.createElement('option');
+        option.value = item.originalString;
+        option.textContent = item.originalString;
+
+        if (optgroup) {
+            optgroup.appendChild(option);
+        } else {
+            rankingFiltroSemanaSelect.appendChild(option);
+        }
+    });
+
+    // 7. Restaura seleção
+    if (semanaSelecionadaAtual && stringsVistas.has(semanaSelecionadaAtual)) {
+        console.log("4. Mantendo a seleção anterior da semana.");
+        rankingFiltroSemanaSelect.value = semanaSelecionadaAtual;
+    } else {
+        rankingFiltroSemanaSelect.value = "";
+    }
+
+    console.log("--- FIM DEBUG ---");
+}
+
+
+    </script>
 </body>
 </html>
