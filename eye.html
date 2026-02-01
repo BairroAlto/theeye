@@ -1049,14 +1049,13 @@
 
 <body>
     <div class="main-container">
-
         <button id="sidebar-toggle-button" class="sidebar-toggle-button">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
-<div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
         <div id="coluna-pessoas" class="coluna">
             <h2>Pessoas</h2>
@@ -1066,7 +1065,8 @@
         <div id="coluna-detalhes" class="coluna"><div id="coluna-detalhes-content"><p>Selecione uma pessoa para ver os detalhes.</p></div></div>
     </div>
 
-  <div class="fab-container">
+    <!-- BOTÕES FLUTUANTES (FAB) -->
+    <div class="fab-container">
         <button id="btn-ranking-popup" class="fab-stats-button" title="Ranking da Reunião">
             <i class="fas fa-list-ol"></i>
         </button>
@@ -1082,9 +1082,13 @@
         </div>
     </div>
 
+    <!-- MODAIS -->
     <div id="modal-pessoa" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-pessoa">×</span><h3 id="modal-pessoa-titulo">Criar Nova Pessoa</h3><form id="form-criar-pessoa"><input type="hidden" id="pessoa-id-edit"><div><label for="nome-pessoa">Nome:</label><input type="text" id="nome-pessoa" required></div><div><label for="idioma-pessoa">Idioma:</label><select id="idioma-pessoa"><option value="Português">Português</option><option value="Italiano">Italiano</option><option value="Outro">Outro</option></select></div><div><label for="genero-pessoa">Gênero:</label><select id="genero-pessoa"><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option></select></div><div><label for="cargo-pessoa">Cargo:</label><select id="cargo-pessoa"><option value="Publicador">Publicador</option><option value="Servo Ministerial">Servo Ministerial</option><option value="Ancião">Ancião</option></select></div><div><label for="pregacao-pessoa">Pregação:</label><select id="pregacao-pessoa"><option value="">Nenhum</option><option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option><option value="Pioneiro Regular">Pioneiro Regular</option></select></div><button type="submit" id="btn-submit-pessoa">Criar Pessoa</button></form></div></div>
+    
     <div id="modal-gerenciar-pessoas" class="modal"><div class="modal-content modal-gerenciar"><span class="close-button" data-modal-id="modal-gerenciar-pessoas">×</span><h3>Gerenciar Pessoas</h3><p><small>Aqui você pode editar, remover ou ocultar pessoas da lista principal do site.</small></p><ul id="lista-gerenciar-pessoas"></ul></div></div>
+    
     <div id="modal-elemento" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-elemento">×</span><h3>Criar Novo Elemento</h3><form id="form-criar-elemento"><div><label for="nome-elemento-modal">Nome do Elemento:</label><input type="text" id="nome-elemento-modal" required></div><div> <label for="emoji-elemento-modal">Emoji:</label> <input type="text" id="emoji-elemento-modal"> </div><div><label for="tipo-elemento">Tipo:</label><select id="tipo-elemento"><option value="reuniao">Reunião</option><option value="pregacao">Pregação</option></select></div><div><label for="genero-elemento">Gênero (Reunião):</label><select id="genero-elemento"><option value="semana">Semana</option><option value="fim de semana">Fim de Semana</option><option value="tecnico">Técnico</option></select></div><button type="submit">Criar Elemento</button></form></div></div>
+    
     <div id="modal-designacao" class="modal"><div class="modal-content"><span class="close-button" data-modal-id="modal-designacao">×</span><h3>Criar Nova Designação</h3><form id="form-criar-designacao"><div><label for="select-elemento-designacao">Elemento:</label><select id="select-elemento-designacao" required><option value="">-- Selecione um Elemento --</option></select></div><div><label for="select-pessoaA">Pessoa A:</label><select id="select-pessoaA"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaB">Pessoa B:</label><select id="select-pessoaB"><option value="">-- Nenhuma --</option></select></div><div><label for="select-pessoaC">Pessoa C:</label><select id="select-pessoaC"><option value="">-- Nenhuma --</option></select></div><div><label for="data-designacao">Data (DD/MM/AAAA):</label><input type="text" id="data-designacao" placeholder="DD/MM/AAAA" required pattern="\d{2}/\d{2}/\d{4}"></div><button type="submit">Criar Designação</button></form></div></div>
 
     <!-- MODAL EDITAR DESIGNAÇÃO -->
@@ -1137,8 +1141,7 @@
         </div>
     </div>
 
-
-    <!-- MODAL DE ESTATÍSTICAS GLOBAIS - ATUALIZADO -->
+    <!-- MODAL DE ESTATÍSTICAS GLOBAIS -->
     <div id="modal-global-stats" class="modal">
         <div class="modal-content modal-global-stats-content">
             <span class="close-button" data-modal-id="modal-global-stats">×</span>
@@ -1313,7 +1316,7 @@
                 <div class="stats-card-section active-submenu-section" id="gs-old-sec-top-pessoas">
                     <h4><i class="fas fa-users stats-icon"></i> Pessoas com Mais Designações</h4>
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
-                        <!-- Primeira linha de filtros -->
+                        <!-- Filtros Top Pessoas -->
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-top-pessoas-ano">Ano:</label>
@@ -1348,7 +1351,6 @@
                                 </select>
                             </div>
                         </div>
-                        <!-- Segunda linha de filtros -->
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-top: 10px;">
                             <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-top-pessoas-genero-participante">Gênero (Participante):</label>
@@ -1381,7 +1383,7 @@
                     </div>
                 </div>
 
-                <!-- Seção "Todas Designações" (agora corretamente separada) -->
+                <!-- Seção "Todas Designações" -->
                 <div class="stats-card-section" id="gs-old-sec-todas-designacoes">
                     <h4><i class="fas fa-list-alt stats-icon"></i> Todas as Designações</h4>
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
@@ -1433,7 +1435,10 @@
                 <div class="gs-old-submenu-tabs">
                     <button class="gs-old-submenu-button active" data-submenu-target="gs-pessoas-sec-individual">Individual</button>
                     <button class="gs-old-submenu-button" data-submenu-target="gs-pessoas-sec-comparacao">Comparação</button>
+                    <button class="gs-old-submenu-button" data-submenu-target="gs-pessoas-sec-escala">Escala Designações</button>
                 </div>
+
+                <!-- Seção Individual -->
                 <div class="stats-card-section active-submenu-section" id="gs-pessoas-sec-individual">
                     <h4><i class="fas fa-user-chart stats-icon"></i> Desempenho Individual vs. Média</h4>
                     <div class="filters-container stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
@@ -1442,7 +1447,7 @@
                             <select id="gs-pessoa-esp-select"><option value="">-- Selecione --</option></select>
                         </div>
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                             <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-pessoa-esp-ano-filtro">Ano:</label>
                                 <select id="gs-pessoa-esp-ano-filtro"><option value="">Todos</option></select>
                             </div>
@@ -1477,7 +1482,7 @@
                         </div>
                         <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                             <button id="btn-gs-pessoa-esp-aplicar" class="stats-apply-button">
-                                 <i class="fas fa-analytics stats-btn-icon"></i> Analisar
+                                    <i class="fas fa-analytics stats-btn-icon"></i> Analisar
                             </button>
                         </div>
                     </div>
@@ -1486,6 +1491,8 @@
                         <div id="gs-pessoa-esp-results" class="stats-result-text"></div>
                     </div>
                 </div>
+
+                <!-- Seção Comparação -->
                 <div class="stats-card-section" id="gs-pessoas-sec-comparacao">
                     <h4><i class="fas fa-users-cog stats-icon"></i> Comparar Desempenho de Pessoas</h4>
                     <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
@@ -1525,7 +1532,7 @@
                             </div>
                             <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
                                 <label for="gs-pessoas-filtro-tipo">Tipo (Designação):</label>
-                                 <select id="gs-pessoas-filtro-tipo">
+                                    <select id="gs-pessoas-filtro-tipo">
                                     <option value="">Todos</option>
                                     <option value="reuniao">Reunião</option>
                                     <option value="pregacao">Pregação</option>
@@ -1542,6 +1549,55 @@
                         <div class="loading-spinner" id="gs-pessoas-loading" style="display:none;"></div>
                         <div id="gs-pessoas-comparison-area">
                         </div>
+                    </div>
+                </div>
+
+                <!-- NOVA SEÇÃO: Escala Designações -->
+                <div class="stats-card-section" id="gs-pessoas-sec-escala">
+                    <h4><i class="fas fa-clipboard-list stats-icon"></i> Escala Detalhada por Pessoa</h4>
+                    <div class="stats-filters" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-escala-filtro-ano">Ano:</label>
+                                <select id="gs-escala-filtro-ano"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-escala-filtro-mes">Mês:</label>
+                                <select id="gs-escala-filtro-mes"><option value="">Todos</option></select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-escala-filtro-tipo">Tipo:</label>
+                                <select id="gs-escala-filtro-tipo">
+                                    <option value="">Todos</option>
+                                    <option value="reuniao">Reunião</option>
+                                    <option value="pregacao">Pregação</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px;">
+                                <label for="gs-escala-filtro-genero">Gênero (Pessoa):</label>
+                                <select id="gs-escala-filtro-genero">
+                                    <option value="">Todos</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Feminino">Feminino</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- BOTÕES DE AÇÃO: PDF e GERAR LISTA -->
+                       <div style="display: flex; justify-content: flex-end; margin-top: 10px; gap: 10px;">
+    <!-- Removi o 'display: none' e adicionei 'disabled' -->
+    <button id="btn-gs-escala-pdf" class="stats-apply-button" style="background-color: #dc3545; border-color: #dc3545;" disabled>
+        <i class="fas fa-file-pdf stats-btn-icon"></i> PDF
+    </button>
+    
+    <button id="btn-gs-escala-gerar" class="stats-apply-button">
+        <i class="fas fa-list-ul stats-btn-icon"></i> Gerar Lista
+    </button>
+</div>
+                    </div>
+                    <div class="stats-results-container">
+                        <div class="loading-spinner" id="gs-escala-loading" style="display:none;"></div>
+                        <div id="gs-escala-results-area" style="max-height: 400px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -1601,7 +1657,7 @@
             </div>
 
             <!-- Conteúdo da Aba: Discursos -->
-         <div id="gs-discursos-content" class="global-stats-tab-content">
+             <div id="gs-discursos-content" class="global-stats-tab-content">
                 <!-- Filtros Partilhados para todas as sub-abas de Discursos -->
                 <div id="gs-discursos-filtros-container">
                     <!-- O JavaScript vai gerar os filtros aqui -->
@@ -1651,8 +1707,8 @@
                     </div>
                 </div>
             </div>
-
-
+        </div>
+    </div>
 
     <!-- Modal para exibir instâncias de uma designação (elemento) -->
     <div id="modal-instancias-designacao" class="modal">
@@ -1713,7 +1769,6 @@
         </div>
     </div>
 
-
     <!-- Modal para expandir Gráfico -->
     <div id="modal-grafico-expandido" class="modal">
         <div class="modal-content" style="max-width: 90%; width: 800px;">
@@ -1724,7 +1779,11 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Scripts -->
+    <script type="module" src="script.js"></script>
+</body>
+    
 
     <script type="module">
         // Firebase SDK imports
@@ -3845,11 +3904,20 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                 });
             }
 
-            const labelsMes = Object.keys(desigPorMes).sort();
+         const labelsMes = Object.keys(desigPorMes).sort();
             if (labelsMes.length > 0) {
-                designacoesPorMesChart = renderChart(designacoesPorMesChart, 'chartDesigPorMes', 'line', {
+                // --- ALTERAÇÃO AQUI: Mudamos de 'line' para 'bar' ---
+                designacoesPorMesChart = renderChart(designacoesPorMesChart, 'chartDesigPorMes', 'bar', {
                     labels: labelsMes.map(l => { const [y,m] = l.split('-'); return `${m}/${y}`;}),
-                    datasets: [{ label: 'Nº Designações', data: labelsMes.map(k => desigPorMes[k]), backgroundColor: 'rgba(75, 192, 192, 0.2)', borderColor: 'rgba(75, 192, 192, 1)', tension: 0.1 }]
+                    datasets: [{ 
+                        label: 'Nº Designações', 
+                        data: labelsMes.map(k => desigPorMes[k]), 
+                        // Aumentamos a opacidade da cor para ficar mais visível (0.6 em vez de 0.2)
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)', 
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1 // Adicionamos borda para definição
+                        // tension: 0.1 // (Removido pois não se aplica a barras)
+                    }]
                 });
             } else { const el = document.getElementById('chartDesigPorMes'); if(el) el.outerHTML = "<p style='text-align:center; color:#777;'>Sem dados para gráfico mensal.</p>"; }
             
@@ -3945,14 +4013,9 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
                     });
                 }
             }
-             document.querySelectorAll('.btn-expand-chart').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const target = e.currentTarget;
-                    const chartId = target.dataset.chartId;
-                    const chartTitle = target.dataset.chartTitle;
-                    abrirModalGrafico(chartId, chartTitle);
-                });
-            });
+
+
+
 
             console.log("renderizarEstatisticas: Estatísticas renderizadas com HTML único e listeners reatribuídos.");
         }
@@ -4005,49 +4068,65 @@ else if (elementoCorrespondente && elementoCorrespondente.tipo === 'pregacao') {
             }
         }
 
-        function abrirModalGrafico(chartId, chartTitle) {
-            const modal = document.getElementById('modal-grafico-expandido');
-            const modalTitle = document.getElementById('modal-grafico-titulo');
-            if (!modal || !modalTitle) return;
+function abrirModalGrafico(chartId, chartTitle) {
+    const modal = document.getElementById('modal-grafico-expandido');
+    const modalTitle = document.getElementById('modal-grafico-titulo');
+    
+    // Identifica o gráfico original
+    let originalChartInstance = null;
+    switch (chartId) {
+        case 'designacoesPorElementoChart': originalChartInstance = designacoesChart; break;
+        case 'chartDesigPorMes': originalChartInstance = designacoesPorMesChart; break;
+        case 'chartDesigPorSemana': originalChartInstance = designacoesPorSemanaChart; break;
+        case 'chartDesigPorAno': originalChartInstance = designacoesPorAnoChart; break;
+        case 'chartDirigentePorDia': originalChartInstance = dirigentePorDiaChart; break;
+        case 'chartDiscursosPorAno': originalChartInstance = chartDiscursosPorAno; break;
+        case 'chartTemasPorMes': originalChartInstance = chartTemasPorMes; break;
+    }
 
-            let originalChartInstance = null;
-            // Identifica qual dos gráficos da página principal deve ser usado como fonte
-            switch (chartId) {
-                case 'designacoesPorElementoChart': originalChartInstance = designacoesChart; break;
-                case 'chartDesigPorMes': originalChartInstance = designacoesPorMesChart; break;
-                case 'chartDesigPorSemana': originalChartInstance = designacoesPorSemanaChart; break;
-                case 'chartDesigPorAno': originalChartInstance = designacoesPorAnoChart; break;
-                case 'chartDirigentePorDia': originalChartInstance = dirigentePorDiaChart; break;
-case 'chartDiscursosPorAno': originalChartInstance = chartDiscursosPorAno; break;
-                case 'chartTemasPorMes': originalChartInstance = chartTemasPorMes; break;
-            }
+    if (!originalChartInstance) {
+        alert("Erro: Gráfico não encontrado. Tente recarregar a aba.");
+        return;
+    }
 
-            if (!originalChartInstance) {
-                alert("Erro: Não foi possível encontrar os dados do gráfico para expandir.");
-                return;
-            }
+    if (modalTitle) modalTitle.textContent = chartTitle;
 
-            modalTitle.textContent = chartTitle;
+    const canvasExpandido = document.getElementById('canvas-grafico-expandido');
+    const ctx = canvasExpandido.getContext('2d');
 
-            const canvasExpandido = document.getElementById('canvas-grafico-expandido');
-            const ctx = canvasExpandido.getContext('2d');
+    // Destrói gráfico anterior se existir
+    if (graficoExpandidoChart) {
+        graficoExpandidoChart.destroy();
+    }
 
-            if (graficoExpandidoChart) {
-                graficoExpandidoChart.destroy();
-            }
+    // 1. Abre o modal PRIMEIRO (importante para o Chart.js calcular o tamanho correto)
+    if (typeof abrirModal === 'function') {
+        abrirModal(modal);
+    } else {
+        modal.style.display = 'block'; // Fallback manual
+    }
 
+    // 2. Cria o gráfico com um pequeno delay para garantir que o modal já está visível
+    setTimeout(() => {
+        try {
             graficoExpandidoChart = new Chart(ctx, {
                 type: originalChartInstance.config.type,
-                data: originalChartInstance.config.data,
+                // Clona os dados para não alterar o gráfico original
+                data: JSON.parse(JSON.stringify(originalChartInstance.config.data)),
                 options: {
-                    ...originalChartInstance.config.options, 
+                    ...originalChartInstance.config.options,
                     maintainAspectRatio: false,
-                    responsive: true
+                    responsive: true,
+                    animation: {
+                        duration: 0 // Sem animação para aparecer instantaneamente
+                    }
                 }
             });
-
-            abrirModal(modal);
+        } catch (err) {
+            console.error("Erro ao criar gráfico expandido:", err);
         }
+    }, 50);
+}
 
 
         // --- Modais e FAB ---
@@ -4859,51 +4938,101 @@ function setupGsPessoasSubmenu() {
             }
         }
 
-        function popularFiltrosStatsGlobais() {
-            if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
-            if (todosElementos.length === 0 && !document.getElementById('gs-total-filtro-elemento-tipo')) { }
-            if (todasPessoas.length === 0 && !document.getElementById('gs-pessoa-esp-select')) { }
+      function popularFiltrosStatsGlobais() {
+    if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) return;
+    
+    // Verifica se existem elementos ou pessoas carregados antes de tentar preencher filtros dependentes
+    if (todosElementos.length === 0 && !document.getElementById('gs-total-filtro-elemento-tipo')) { }
+    if (todasPessoas.length === 0 && !document.getElementById('gs-pessoa-esp-select')) { }
 
-            const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
-            const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
-            const elementosNomes = todosElementos.length > 0 ? [...new Set(todosElementos.map(el => el.designacao || el.nome))].sort((a,b) => a.localeCompare(b)) : [];
+    // Extrai meses e anos únicos das designações carregadas
+    const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a,b) => parseInt(a) - parseInt(b));
+    const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
+    const elementosNomes = todosElementos.length > 0 ? [...new Set(todosElementos.map(el => el.designacao || el.nome))].sort((a,b) => a.localeCompare(b)) : [];
 
-            const getNomeMes = (numMes) => {
-                if (!numMes) return "";
-                try {
-                    return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
-                } catch(e) { return "";}
-            }
+    // Helper para converter número do mês em nome (ex: "01" -> "Janeiro")
+    const getNomeMes = (numMes) => {
+        if (!numMes) return "";
+        try {
+            return new Date(2000, parseInt(numMes) - 1, 1).toLocaleString('pt-BR', { month: 'long' });
+        } catch(e) { return "";}
+    }
 
-            [gsTopPessoasMesSelect, gsTodasDesigMesSelect, gsPessoaEspMesFiltroSelect, gsTotalFiltroMesSelect, gsPessoasFiltroMesSelect, gsDesignacoesFiltroMesSelect].forEach(select => {
-                if (!select) return;
-                const currentVal = select.value;
-                select.innerHTML = '<option value="">Todos</option>';
-                mesesUnicos.forEach(mes => select.appendChild(new Option(getNomeMes(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0'))));
-                if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
-            });
+    // --- POPULA SELECTS DE MÊS ---
+    // Adicionado o novo 'gs-escala-filtro-mes' à lista
+    [
+        gsTopPessoasMesSelect, 
+        gsTodasDesigMesSelect, 
+        gsPessoaEspMesFiltroSelect, 
+        gsTotalFiltroMesSelect, 
+        gsPessoasFiltroMesSelect, 
+        gsDesignacoesFiltroMesSelect, 
+        document.getElementById('gs-discursos-filtro-mes'), // Garante que o de discursos também é atualizado
+        document.getElementById('gs-escala-filtro-mes')     // <--- NOVO
+    ].forEach(select => {
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Todos</option>';
+        mesesUnicos.forEach(mes => {
+            // Cria a opção com o nome do mês capitalizado (ex: "Janeiro") e valor numérico com zero à esquerda (ex: "01")
+            select.appendChild(new Option(getNomeMes(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2,'0')));
+        });
+        // Tenta restaurar a seleção anterior se ainda for válida
+        if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
+    });
 
-            [gsTopPessoasAnoSelect, gsTodasDesigAnoSelect, gsPessoaEspAnoFiltroSelect, gsTotalFiltroAnoSelect, gsPessoasFiltroAnoSelect, gsDesignacoesFiltroAnoSelect].forEach(select => {
-                if (!select) return;
-                select.innerHTML = '<option value="">Todos</option>';
-                anosUnicos.forEach(ano => select.appendChild(new Option(ano, ano)));
-                if (anosUnicos.length > 0) {
-                    select.value = anosUnicos[0];
-                } else {
-                    select.value = "";
-                }
-            });
-
-            [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => {
-                if (!select) return;
-                const currentVal = select.value;
-                select.innerHTML = '<option value="">Todos Elementos</option>';
-                elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
-                if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
-            });
-
-            console.log("Filtros do modal de estatísticas globais populados/atualizados.");
+    // --- POPULA SELECTS DE ANO ---
+    // Adicionado o novo 'gs-escala-filtro-ano' à lista
+    [
+        gsTopPessoasAnoSelect, 
+        gsTodasDesigAnoSelect, 
+        gsPessoaEspAnoFiltroSelect, 
+        gsTotalFiltroAnoSelect, 
+        gsPessoasFiltroAnoSelect, 
+        gsDesignacoesFiltroAnoSelect, 
+        document.getElementById('gs-discursos-filtro-ano'), // Garante que o de discursos também é atualizado
+        document.getElementById('gs-escala-filtro-ano')     // <--- NOVO
+    ].forEach(select => {
+        if (!select) return;
+        const currentVal = select.value; // Salva valor atual para tentar manter
+        select.innerHTML = '<option value="">Todos</option>';
+        anosUnicos.forEach(ano => select.appendChild(new Option(ano, ano)));
+        
+        // Define o ano mais recente como padrão se nenhum estiver selecionado
+        if (anosUnicos.length > 0 && !currentVal) {
+            select.value = anosUnicos[0]; 
+        } else if (currentVal && Array.from(select.options).some(opt => opt.value === currentVal)) {
+            select.value = currentVal;
+        } else {
+            select.value = "";
         }
+    });
+
+    // --- POPULA SELECTS DE ELEMENTOS ---
+    [gsTodasDesigElementoSelect, gsPessoaEspElementoFiltroSelect, gsTopPessoasElementoSelect].forEach(select => {
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Todos Elementos</option>';
+        elementosNomes.forEach(nomeEl => select.appendChild(new Option(nomeEl, nomeEl)));
+        if (Array.from(select.options).some(opt => opt.value === currentVal)) select.value = currentVal; else select.value = "";
+    });
+    
+    // --- POPULA SELECT DE CONGREGAÇÃO (Específico para Discursos) ---
+    const congregacaoSelect = document.getElementById('gs-discursos-filtro-congregacao');
+    if (congregacaoSelect) {
+         const discursosPublicos = todasDesignacoesGlobais.filter(d => d.nome === "Orador Público");
+         const congregacoesUnicas = [...new Set(discursosPublicos.map(d => d.congregacao).filter(Boolean))].sort();
+         const currentVal = congregacaoSelect.value;
+         
+         congregacaoSelect.innerHTML = '<option value="">Todas</option>';
+         congregacoesUnicas.forEach(c => congregacaoSelect.appendChild(new Option(c, c)));
+         
+         if (Array.from(congregacaoSelect.options).some(opt => opt.value === currentVal)) congregacaoSelect.value = currentVal;
+    }
+
+    console.log("Filtros do modal de estatísticas globais populados/atualizados.");
+}
+
 
         function getPessoaById(id) {
             return todasPessoas.find(p => p.id === id);
@@ -6217,7 +6346,274 @@ function atualizarDropdownSemanasRanking() {
     console.log("--- FIM DEBUG ---");
 }
 
+// --- EVENT LISTENER GLOBAL PARA BOTÕES DE EXPANDIR GRÁFICO ---
+document.addEventListener('click', (e) => {
+    // 1. Loga qual elemento exato recebeu o clique
+    console.log(">>> CLIQUE DETECTADO NO DOCUMENTO. Alvo:", e.target);
+
+    // Tenta encontrar o botão (se clicou no ícone <i>, sobe até o <button>)
+    const btn = e.target.closest('.btn-expand-chart');
+    
+    if (btn) {
+        // 2. Se entrou aqui, o botão foi encontrado corretamente
+        console.log(">>> SUCESSO: Botão '.btn-expand-chart' identificado:", btn);
+
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const chartId = btn.dataset.chartId;
+        const chartTitle = btn.dataset.chartTitle;
+        
+        // 3. Verifica se os dados (ID e Título) estão sendo lidos
+        console.log(`>>> DADOS LIDOS: ID="${chartId}", Título="${chartTitle}"`);
+        
+        // 4. Verifica se a função de abrir o modal existe
+        if (typeof abrirModalGrafico === 'function') {
+            console.log(">>> CHAMANDO função abrirModalGrafico()...");
+            try {
+                abrirModalGrafico(chartId, chartTitle);
+                console.log(">>> Função executada (verifique se o modal abriu).");
+            } catch (err) {
+                console.error(">>> ERRO ao executar abrirModalGrafico:", err);
+            }
+        } else {
+            console.error(">>> ERRO CRÍTICO: A função 'abrirModalGrafico' NÃO foi encontrada ou não está definida.");
+        }
+    } else {
+        // 5. Se clicou em algo que não é o botão, avisa (útil para ver se algo está bloqueando o clique)
+        // console.log(">>> O clique NÃO foi num botão de expandir.");
+    }
+});
+
+// --- CORREÇÃO DE POSICIONAMENTO DO MODAL ---
+// Executa assim que a janela carrega
+window.addEventListener('load', () => {
+    const modalGrafico = document.getElementById('modal-grafico-expandido');
+    if (modalGrafico && document.body) {
+        // Move o modal para ser filho direto do body (evita problemas de overflow/corte)
+        document.body.appendChild(modalGrafico);
+        
+        // Força um z-index altíssimo via JS para garantir que nada fique na frente
+        modalGrafico.style.zIndex = "99999";
+        console.log(">>> Modal de gráfico movido para document.body e z-index ajustado.");
+    }
+});
+
+// --- FUNÇÃO PARA GERAR PDF (IMPRIMIR) ---
+ function imprimirEscalaPDF() {
+    const areaImpressao = document.getElementById('gs-escala-results-area');
+    
+    // Verifica se há conteúdo para imprimir
+    if (!areaImpressao || !areaImpressao.querySelector('div')) {
+        alert("Gere a lista primeiro antes de criar o PDF.");
+        return;
+    }
+
+    // Cria uma janela popup para impressão limpa
+    const janelaPrint = window.open('', '', 'height=600,width=800');
+    
+    // Título do Relatório com base nos filtros
+    const mesSelect = document.getElementById('gs-escala-filtro-mes');
+    let mesTxt = "Todos";
+    if (mesSelect && mesSelect.selectedIndex >= 0) {
+        mesTxt = mesSelect.options[mesSelect.selectedIndex].text;
+    }
+    
+    const anoInput = document.getElementById('gs-escala-filtro-ano');
+    const anoTxt = anoInput ? anoInput.value : "";
+    const tituloRelatorio = `Escala de Designações - ${mesTxt}/${anoTxt}`;
+
+    // Monta o HTML da página de impressão
+    // NOTA IMPORTANTE: Usamos <\/ para evitar que o navegador feche o script prematuramente
+    janelaPrint.document.write('<html><head><title>' + tituloRelatorio + '<\/title>');
+    
+    // Inserção do CSS usando Template Literal
+    janelaPrint.document.write(`
+    <style>
+        body { font-family: sans-serif; padding: 20px; color: #333; }
+        h2 { text-align: center; color: #0056b3; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        /* Estilos dos cartões na impressão */
+        .escala-pessoa-card { 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            break-inside: avoid; /* Evita cortar o cartão no meio da página */
+            page-break-inside: avoid; 
+        }
+        /* Cabeçalho do cartão (Nome da pessoa) */
+        .escala-pessoa-card > div:first-child { 
+            background-color: #f0f0f0 !important; /* Força cor de fundo na impressão */
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact;
+            padding: 8px 10px; 
+            font-weight: bold; 
+            border-bottom: 1px solid #ccc; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+        li:last-child { border-bottom: none; }
+        /* Esconde elementos indesejados */
+        button, .no-print { display: none !important; }
+    <\/style>
+    `);
+    
+    janelaPrint.document.write('<\/head><body>');
+    janelaPrint.document.write('<h2>' + tituloRelatorio + '<\/h2>');
+    
+    // Pega o conteúdo gerado na div de resultados
+    const conteudoParaImprimir = document.getElementById('area-impressao-escala').innerHTML;
+    janelaPrint.document.write('<div class="conteudo-lista">' + conteudoParaImprimir + '<\/div>');
+    
+    janelaPrint.document.write('<\/body><\/html>');
+
+    janelaPrint.document.close();
+    janelaPrint.focus();
+    
+    // Pequeno delay para garantir que o CSS carregou antes de imprimir
+    setTimeout(() => {
+        janelaPrint.print();
+        janelaPrint.close();
+    }, 500);
+}
+
+// --- FUNÇÃO PARA GERAR A ESCALA DE DESIGNAÇÕES ---
+async function gerarEscalaDesignacoes() {
+    const loadingSpinner = document.getElementById('gs-escala-loading');
+    const resultsArea = document.getElementById('gs-escala-results-area');
+    const btnGerar = document.getElementById('btn-gs-escala-gerar');
+    const btnPdf = document.getElementById('btn-gs-escala-pdf'); // Botão PDF
+
+    if (loadingSpinner) loadingSpinner.style.display = 'block';
+    if (resultsArea) resultsArea.innerHTML = '';
+    if (btnGerar) btnGerar.disabled = true;
+    if (btnPdf) btnPdf.style.display = 'none'; // Esconde PDF enquanto carrega
+
+    if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+    if (todasPessoas.length === 0) await carregarPessoas();
+
+    const anoFiltro = document.getElementById('gs-escala-filtro-ano').value;
+    const mesFiltro = document.getElementById('gs-escala-filtro-mes').value;
+    const tipoFiltro = document.getElementById('gs-escala-filtro-tipo').value;
+    const generoFiltro = document.getElementById('gs-escala-filtro-genero').value;
+
+    const designacoesFiltradas = todasDesignacoesGlobais.filter(d => {
+        const matchAno = !anoFiltro || d.ano === anoFiltro;
+        const matchMes = !mesFiltro || String(d.mes).padStart(2, '0') === String(mesFiltro).padStart(2, '0');
+        let matchTipo = true;
+        if (tipoFiltro) {
+            const el = todosElementos.find(e => (e.designacao || e.nome) === d.nome);
+            matchTipo = el && el.tipo === tipoFiltro;
+        }
+        return matchAno && matchMes && matchTipo;
+    });
+
+    const mapaPessoas = {}; 
+
+    designacoesFiltradas.forEach(desig => {
+        // Correção para evitar erro se participante for null/undefined
+        const participantes = [desig.pessoaA, desig.pessoaB, desig.pessoaC].filter(Boolean);
+        
+        participantes.forEach(nomePessoa => {
+            if (generoFiltro) {
+                const pessoaObj = todasPessoas.find(p => p.nome === nomePessoa);
+                if (!pessoaObj || pessoaObj.genero !== generoFiltro) return;
+            }
+            if (!mapaPessoas[nomePessoa]) mapaPessoas[nomePessoa] = [];
+            mapaPessoas[nomePessoa].push(desig);
+        });
+    });
+
+    const nomesOrdenados = Object.keys(mapaPessoas).sort((a, b) => a.localeCompare(b));
+
+    if (nomesOrdenados.length === 0) {
+        resultsArea.innerHTML = '<p style="text-align:center; color:#777; padding: 20px;">Nenhuma designação encontrada para os filtros selecionados.</p>';
+    } else {
+        const ulPrincipal = document.createElement('div');
+        ulPrincipal.id = "area-impressao-escala"; // ID para facilitar a impressão
+        
+        nomesOrdenados.forEach(nomePessoa => {
+            const listaDesig = mapaPessoas[nomePessoa];
+            
+            listaDesig.sort((a, b) => {
+                const dateA = new Date(parseInt(a.ano), parseInt(a.mes) - 1, parseInt(a.dia));
+                const dateB = new Date(parseInt(b.ano), parseInt(b.mes) - 1, parseInt(b.dia));
+                return dateA - dateB; 
+            });
+
+            const cardPessoa = document.createElement('div');
+            cardPessoa.className = 'escala-pessoa-card'; // Classe para CSS de impressão
+            cardPessoa.style.marginBottom = '15px';
+            cardPessoa.style.border = '1px solid #e9ecef';
+            cardPessoa.style.borderRadius = '6px';
+            cardPessoa.style.backgroundColor = '#fff';
+            // Evita quebra de página dentro do cartão na impressão
+            cardPessoa.style.breakInside = 'avoid'; 
+            cardPessoa.style.pageBreakInside = 'avoid';
+
+            const header = document.createElement('div');
+            header.style.padding = '10px 15px';
+            header.style.backgroundColor = '#f8f9fa';
+            header.style.borderBottom = '1px solid #e9ecef';
+            header.style.fontWeight = 'bold';
+            header.style.color = '#0056b3';
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.innerHTML = `<span>${nomePessoa}</span> <span style="background:#007bff; color:white; padding:2px 8px; border-radius:10px; font-size:0.85em;">${listaDesig.length}</span>`;
+
+            const ulDesig = document.createElement('ul');
+            ulDesig.style.listStyle = 'none';
+            ulDesig.style.padding = '0';
+            ulDesig.style.margin = '0';
+
+            listaDesig.forEach(d => {
+                const li = document.createElement('li');
+                li.style.padding = '8px 15px';
+                li.style.borderBottom = '1px solid #f1f1f1';
+                li.style.fontSize = '0.95em';
+                
+                let detalhesExtra = "";
+                if (d.nome === "Orador Público" && (d.tema || d.congregacao)) {
+                     detalhesExtra = ` <span style="color:#666; font-style:italic; font-size:0.9em;">(${d.tema || ''} - ${d.congregacao || ''})</span>`;
+                }
+
+                // --- FORMATAÇÃO PEDIDA: DATA - NOME ---
+                li.innerHTML = `<span style="font-family:monospace; color:#333; font-weight:500;">${d.data}</span> - ${d.nome}${detalhesExtra}`;
+                
+                ulDesig.appendChild(li);
+            });
+
+            cardPessoa.appendChild(header);
+            cardPessoa.appendChild(ulDesig);
+            ulPrincipal.appendChild(cardPessoa);
+        });
+
+        resultsArea.appendChild(ulPrincipal);
+        
+        // Mostra o botão PDF se houver resultados
+      if (btnPdf) {
+    btnPdf.style.display = 'inline-flex'; // Garante que está visível
+    btnPdf.disabled = false;              // Destrava o clique
+}
+    }
+
+    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    if (btnGerar) btnGerar.disabled = false;
+}
+
+// Listener para o botão da nova aba "Escala Designações"
+const btnGsEscalaGerar = document.getElementById('btn-gs-escala-gerar');
+if (btnGsEscalaGerar) {
+    btnGsEscalaGerar.addEventListener('click', gerarEscalaDesignacoes);
+}
+
+const btnGsEscalaPdf = document.getElementById('btn-gs-escala-pdf');
+if (btnGsEscalaPdf) {
+    btnGsEscalaPdf.addEventListener('click', imprimirEscalaPDF);
+}
+
+
 
     </script>
-</body>
 </html>
