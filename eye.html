@@ -1043,6 +1043,44 @@
     display: block; /* Mostra APENAS a seção da sub-aba ativa */
 }
 
+/* Layout A4 Visual para o PDF */
+.schedule-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    color: #000;
+}
+.schedule-grid th, .schedule-grid td {
+    border: 1px solid #333;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* CORES ESPECÍFICAS DA IMAGEM */
+.bg-header-main { background-color: #000; color: #fff; font-size: 1.2em; font-weight: bold; padding: 10px; }
+.bg-brown { background-color: #5d4037; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-cyan { background-color: #00acc1; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-yellow { background-color: #ffc107; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-red { background-color: #b71c1c; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-blue-dark { background-color: #0d47a1; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-blue-light { background-color: #42a5f5; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-green { background-color: #2e7d32; color: #fff; font-weight: bold; text-transform: uppercase; }
+.bg-orange { background-color: #ff5722; color: #fff; font-weight: bold; }
+
+/* Bordas coloridas da seção de tarefas */
+.border-pink { border: 2px solid #e91e63 !important; }
+.border-blue { border: 2px solid #0d47a1 !important; }
+.border-green { border: 2px solid #2e7d32 !important; }
+
+/* Tipografia */
+.label-col { width: 15%; background-color: #fff; font-weight: bold; font-size: 0.9em; color: #000; text-align: right; padding-right: 8px; }
+.data-col { width: 17%; background-color: #fff; height: 35px; }
+.text-red { color: #d32f2f; font-weight: bold; }
+.text-italic { font-style: italic; }
+.cell-split { display: flex; flex-direction: column; gap: 2px; font-size: 0.9em; }
+.sub-label { font-size: 0.8em; color: #555; display: block; }
+
     </style>
 </head>
 
@@ -1721,31 +1759,51 @@
         </div>
     </div>
 
-    <!-- MODAL DE RANKING DA REUNIÃO -->
-    <div id="modal-ranking" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close-button" data-modal-id="modal-ranking">×</span>
-            <h3><i class="fas fa-list-ol"></i> Ranking da Reunião/Semana</h3>
+<!-- MODAL DE RANKING DA REUNIÃO -->
+<div id="modal-ranking" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <span class="close-button" data-modal-id="modal-ranking">×</span>
+        <h3><i class="fas fa-list-ol"></i> Ranking da Reunião/Semana</h3>
 
-            <div class="filters-container stats-filters" id="ranking-filters-container">
-                <label for="ranking-filtro-mes">Mês:</label>
-                <select id="ranking-filtro-mes"></select>
-                <label for="ranking-filtro-ano">Ano:</label>
-                <select id="ranking-filtro-ano"></select>
-                <label for="ranking-filtro-semana">Semana (ISO):</label>
-                <select id="ranking-filtro-semana"></select>
+        <div class="filters-container stats-filters" id="ranking-filters-container">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; width: 100%;">
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <label for="ranking-filtro-mes">Mês:</label>
+                    <select id="ranking-filtro-mes" style="width: 100%;"></select>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <label for="ranking-filtro-ano">Ano:</label>
+                    <select id="ranking-filtro-ano" style="width: 100%;"></select>
+                </div>
+                <!-- O Dropdown de Semana reagirá aos dois acima -->
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <label for="ranking-filtro-semana">Semana:</label>
+                    <select id="ranking-filtro-semana" style="width: 100%;">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
                 <button id="btn-ranking-aplicar-filtros" class="stats-apply-button">
                     <i class="fas fa-sync-alt stats-btn-icon"></i> Ver Ranking
                 </button>
-            </div>
-
-            <div class="ranking-list-container">
-                <p><small>Use os botões <i class="fas fa-arrow-up"></i>/<i class="fas fa-arrow-down"></i> para reordenar os itens apenas para esta visualização.</small></p>
-                <ul id="lista-ranking-designacoes">
-                </ul>
+                
+                <!-- BOTÃO PDF: Controlado via JS -->
+                <button id="btn-ranking-pdf-quadro" class="stats-apply-button" style="background-color: #dc3545; border-color: #dc3545; display: none;">
+                    <i class="fas fa-file-pdf stats-btn-icon"></i> PDF (Quadro)
+                </button>
             </div>
         </div>
+
+        <div class="ranking-list-container">
+            <ul id="lista-ranking-designacoes"></ul>
+        </div>
     </div>
+</div>
+
+<!-- CONTÊINER OCULTO PARA O LAYOUT DO PDF -->
+<div id="hidden-schedule-container" style="position: absolute; left: -9999px; top: 0; width: 1240px; background: white; font-family: Arial, sans-serif; z-index: -1;"></div>
 
     <!-- MODAL PARA LISTAR INSTÂNCIAS DE UM DISCURSO -->
     <div id="modal-discurso-instancias" class="modal">
@@ -1784,7 +1842,8 @@
     <script type="module" src="script.js"></script>
 </body>
     
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="module">
         // Firebase SDK imports
      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
@@ -5847,49 +5906,49 @@ function setupGsPessoasSubmenu() {
         }
 
  function popularFiltrosRankingPopup() {
-    if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) {
-        console.error("Elementos de filtro do modal de ranking não encontrados.");
-        return;
-    }
+    if (!rankingFiltroMesSelect || !rankingFiltroAnoSelect || !rankingFiltroSemanaSelect) return;
 
     // 1. Verifica se há dados
     if (!todasDesignacoesGlobaisCarregadas || todasDesignacoesGlobais.length === 0) {
         rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
         rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
-        rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
         return;
     }
 
-    // 2. Salva seleção atual para tentar manter após repopular
+    // 2. Salva seleção atual
     const currentMesVal = rankingFiltroMesSelect.value;
     const currentAnoVal = rankingFiltroAnoSelect.value;
 
-    // 3. Extrai Meses e Anos únicos baseados nos campos numéricos 'mes' e 'ano' do documento
-    // Isso popula os dropdowns superiores corretamente
+    // 3. Extrai Meses e Anos únicos
     const mesesUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.mes).filter(Boolean))].sort((a, b) => parseInt(a) - parseInt(b));
     const anosUnicos = [...new Set(todasDesignacoesGlobais.map(d => d.ano).filter(Boolean))].sort((a, b) => parseInt(b) - parseInt(a));
 
-    // 4. Popula Select de Mês
+    // 4. Popula Select de Mês (Garante formato "01", "02" no value)
     rankingFiltroMesSelect.innerHTML = '<option value="">Todos</option>';
     mesesUnicos.forEach(mes => {
-        // getNomeMesRanking deve retornar "Janeiro", "Fevereiro", etc.
-        rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mes).replace(/^\w/, c => c.toUpperCase()), String(mes).padStart(2, '0')));
+        // PadStart garante que se o banco tiver "1", vire "01" visualmente e no value para consistência
+        const mesValor = String(mes).padStart(2, '0'); 
+        rankingFiltroMesSelect.appendChild(new Option(getNomeMesRanking(mesValor).replace(/^\w/, c => c.toUpperCase()), mesValor));
     });
-    rankingFiltroMesSelect.value = currentMesVal;
+    // Tenta restaurar ou define o mês atual se disponível
+    if (currentMesVal && Array.from(rankingFiltroMesSelect.options).some(o => o.value === currentMesVal)) {
+        rankingFiltroMesSelect.value = currentMesVal;
+    } 
 
     // 5. Popula Select de Ano
     rankingFiltroAnoSelect.innerHTML = '<option value="">Todos</option>';
     anosUnicos.forEach(ano => {
         rankingFiltroAnoSelect.appendChild(new Option(ano, ano));
     });
-    rankingFiltroAnoSelect.value = currentAnoVal;
+    if (currentAnoVal) rankingFiltroAnoSelect.value = currentAnoVal;
 
-    // 6. Adiciona os "Ouvintes" (Listeners)
-    // Quando mudar o Mês ou Ano, atualiza a lista de Semanas
-    rankingFiltroMesSelect.onchange = atualizarDropdownSemanasRanking;
-    rankingFiltroAnoSelect.onchange = atualizarDropdownSemanasRanking;
+    // 6. Configura os Listeners (CRUCIAL: Removemos antigos para não duplicar e adicionamos novos)
+    // Usamos uma função nomeada ou arrow function direta que chama as duas lógicas
+    rankingFiltroMesSelect.onchange = () => { atualizarDropdownSemanasRanking(); };
+    rankingFiltroAnoSelect.onchange = () => { atualizarDropdownSemanasRanking(); };
+    rankingFiltroSemanaSelect.onchange = () => { verificarVisibilidadeBotaoPDF(); };
 
-    // 7. Chama a função para filtrar as semanas pela primeira vez
+    // 7. CHAMA IMEDIATAMENTE para popular as semanas e mostrar o botão se já houver filtros padrão
     atualizarDropdownSemanasRanking();
 }
 
@@ -6215,135 +6274,127 @@ function setupGsPessoasSubmenu() {
         }
 
 
-function atualizarDropdownSemanasRanking() {
-    console.log("--- INÍCIO DEBUG: atualizarDropdownSemanasRanking ---");
+// --- 1. CONFIGURAÇÃO DOS EVENT LISTENERS ---
+// Adicione isto logo após as declarações das variáveis DOM (ou dentro de window.onload)
 
-    if (!rankingFiltroSemanaSelect) {
-        console.error("Erro: Select de semana não encontrado no DOM.");
+if (rankingFiltroMesSelect && rankingFiltroAnoSelect && rankingFiltroSemanaSelect) {
+    
+    // Quando Mês muda: Atualiza semanas e verifica botão PDF
+    rankingFiltroMesSelect.addEventListener('change', () => {
+        atualizarDropdownSemanasRanking(); 
+        verificarVisibilidadeBotaoPDF();
+    });
+
+    // Quando Ano muda: Atualiza semanas e verifica botão PDF
+    rankingFiltroAnoSelect.addEventListener('change', () => {
+        atualizarDropdownSemanasRanking();
+        verificarVisibilidadeBotaoPDF();
+    });
+
+    // Quando Semana muda: Apenas verifica botão PDF
+    rankingFiltroSemanaSelect.addEventListener('change', () => {
+        verificarVisibilidadeBotaoPDF();
+    });
+}
+
+// --- 2. FUNÇÃO QUE FILTRA AS SEMANAS COM BASE NO MÊS/ANO ---
+function atualizarDropdownSemanasRanking() {
+    const mesSelecionado = rankingFiltroMesSelect.value; 
+    const anoSelecionado = rankingFiltroAnoSelect.value;
+    
+    // Limpa o dropdown e adiciona "Todas"
+    rankingFiltroSemanaSelect.innerHTML = '';
+    const optionTodas = document.createElement('option');
+    optionTodas.value = ""; 
+    optionTodas.textContent = "Todas";
+    rankingFiltroSemanaSelect.appendChild(optionTodas);
+
+    if (!mesSelecionado || !anoSelecionado) {
+        verificarVisibilidadeBotaoPDF();
         return;
     }
 
-    // 1. Pega o valor dos filtros superiores
-    const mesSelecionado = rankingFiltroMesSelect.value; 
-    const anoSelecionado = rankingFiltroAnoSelect.value; 
-    const semanaSelecionadaAtual = rankingFiltroSemanaSelect.value;
+    const semanasEncontradas = new Set();
 
-    console.log(`1. Filtros Atuais -> Mês Selecionado: "${mesSelecionado}" | Ano Selecionado: "${anoSelecionado}"`);
+    todasDesignacoesGlobais.forEach(d => {
+        const mesDB = String(d.mes).padStart(2, '0');
+        const mesFiltro = String(mesSelecionado).padStart(2, '0');
+        const anoDB = String(d.ano);
+        const anoFiltro = String(anoSelecionado);
 
-    // 2. Mapa para converter o texto da string 'semana' em número
-    const monthMap = { 
-        'janeiro': 1, 'fevereiro': 2, 'março': 3, 'abril': 4, 'maio': 5, 'junho': 6, 
-        'julho': 7, 'agosto': 8, 'setembro': 9, 'outubro': 10, 'novembro': 11, 'dezembro': 12 
-    };
-
-    // 3. Filtra e processa as designações
-    let contadorProcessados = 0;
-    
-    const listaSemanasProcessada = todasDesignacoesGlobais
-        .filter(d => d.semana && typeof d.semana === 'string') 
-        .map(d => {
-            // Regex: Captura (Mês) (Ano) | (Dia)
-            const regex = /^([a-zA-ZçÇãõÃÕáéíóúÁÉÍÓÚ]+)\s+(\d{4})\s*\|\s*(\d{1,2})/i;
-            const parts = d.semana.match(regex);
-
-            if (parts) {
-                const nomeMesTexto = parts[1].toLowerCase(); // ex: "dezembro"
-                const anoTexto = parts[2];                 // ex: "2025"
-                const diaInicio = parseInt(parts[3]);      // ex: 29
-                
-                const numeroMes = monthMap[nomeMesTexto];  // Converte "dezembro" para 12
-
-                // LOG DE AMOSTRA (mostra os 3 primeiros para não poluir demais)
-                if (contadorProcessados < 3) {
-                    console.log(`   > Processando string: "${d.semana}" -> Detectado Mês: "${nomeMesTexto}" (${numeroMes}), Ano: "${anoTexto}"`);
-                    contadorProcessados++;
-                }
-
-                if (numeroMes) {
-                    const sortDate = new Date(parseInt(anoTexto), numeroMes - 1, diaInicio);
-                    return {
-                        originalString: d.semana, 
-                        monthNum: numeroMes,      
-                        yearStr: anoTexto,        
-                        sortDate: sortDate        
-                    };
-                } else {
-                    console.warn(`   ! Aviso: Mês "${nomeMesTexto}" não encontrado no mapa monthMap.`);
-                }
+        if (mesDB === mesFiltro && anoDB === anoFiltro) {
+            if (d.semana) {
+                semanasEncontradas.add(d.semana);
+            } else if (d.semanaISO) {
+                semanasEncontradas.add(`Semana ISO ${d.semanaISO}`);
             }
-            return null;
-        })
-        .filter(item => item !== null) 
-        .filter(item => {
-            // --- AQUI ACONTECE O FILTRO ---
-            
-            const matchAno = !anoSelecionado || item.yearStr === anoSelecionado;
-            
-            // Logica do Mês
-            const mesDropdownNumerico = parseInt(mesSelecionado);
-            const matchMes = !mesSelecionado || item.monthNum === mesDropdownNumerico;
-
-            // Se tiver um mês selecionado, vamos logar por que passou ou falhou
-            if (mesSelecionado && item.yearStr === (anoSelecionado || "2025")) { 
-                // Loga apenas se o ano bater (para reduzir barulho), útil para debug
-               // console.log(`   ? Comparando: Item Mês ${item.monthNum} === Filtro ${mesDropdownNumerico}? ${matchMes}`);
-            }
-            
-            return matchAno && matchMes;
-        });
-
-    console.log(`2. Total de itens compatíveis encontrados: ${listaSemanasProcessada.length}`);
-
-    // 4. Remove duplicatas
-    const semanasUnicas = [];
-    const stringsVistas = new Set();
-
-    listaSemanasProcessada.forEach(item => {
-        if (!stringsVistas.has(item.originalString)) {
-            stringsVistas.add(item.originalString);
-            semanasUnicas.push(item);
         }
     });
 
-    console.log(`3. Total de Semanas Únicas para exibir: ${semanasUnicas.length}`);
+    // Converte para Array
+    const semanasArray = Array.from(semanasEncontradas);
 
-    // 5. Ordena
-    semanasUnicas.sort((a, b) => b.sortDate - a.sortDate);
+    // --- NOVA LÓGICA DE ORDENAÇÃO (DESCENDENTE / MAIS RECENTE PRIMEIRO) ---
+    semanasArray.sort((a, b) => {
+        // Função auxiliar para extrair o dia de início da string
+        // Formato esperado: "Fevereiro 2026 | 16 - 22" -> Extrai "16"
+        const extrairDia = (str) => {
+            // Tenta pegar o número logo após o pipe "|"
+            const matchPipe = str.match(/\|\s*(\d+)/);
+            if (matchPipe) return parseInt(matchPipe[1]);
+            
+            // Fallback para Semana ISO (pega o número da semana)
+            const matchIso = str.match(/ISO\s*(\d+)/);
+            if (matchIso) return parseInt(matchIso[1]) * 7; // Multiplica por 7 para dar peso similar a dias
+            
+            // Fallback final: pega o primeiro número que encontrar
+            const matchGeneric = str.match(/(\d+)/);
+            return matchGeneric ? parseInt(matchGeneric[1]) : 0;
+        };
 
-    // 6. Monta o HTML
-    rankingFiltroSemanaSelect.innerHTML = '<option value="">Todas</option>';
-    
-    let currentYearGroup = null;
-    let optgroup = null;
+        const diaA = extrairDia(a);
+        const diaB = extrairDia(b);
 
-    semanasUnicas.forEach(item => {
-        if (item.yearStr !== currentYearGroup) {
-            currentYearGroup = item.yearStr;
-            optgroup = document.createElement('optgroup');
-            optgroup.label = item.yearStr;
-            rankingFiltroSemanaSelect.appendChild(optgroup);
-        }
-        
+        // Ordem Decrescente (B - A)
+        return diaB - diaA;
+    });
+    // ---------------------------------------------------------------------
+
+    semanasArray.forEach(semanaTexto => {
         const option = document.createElement('option');
-        option.value = item.originalString;
-        option.textContent = item.originalString;
-
-        if (optgroup) {
-            optgroup.appendChild(option);
-        } else {
-            rankingFiltroSemanaSelect.appendChild(option);
-        }
+        option.value = semanaTexto;
+        option.textContent = semanaTexto;
+        rankingFiltroSemanaSelect.appendChild(option);
     });
 
-    // 7. Restaura seleção
-    if (semanaSelecionadaAtual && stringsVistas.has(semanaSelecionadaAtual)) {
-        console.log("4. Mantendo a seleção anterior da semana.");
-        rankingFiltroSemanaSelect.value = semanaSelecionadaAtual;
-    } else {
-        rankingFiltroSemanaSelect.value = "";
-    }
+    rankingFiltroSemanaSelect.value = "";
+    verificarVisibilidadeBotaoPDF();
+}
 
-    console.log("--- FIM DEBUG ---");
+// --- 3. FUNÇÃO QUE MOSTRA/ESCONDE O BOTÃO PDF ---
+function verificarVisibilidadeBotaoPDF() {
+    const btnPdf = document.getElementById('btn-ranking-pdf-quadro');
+    
+    // Proteção se o botão ainda não existir no DOM
+    if (!btnPdf) return;
+
+    const mes = rankingFiltroMesSelect.value;
+    const ano = rankingFiltroAnoSelect.value;
+    const semana = rankingFiltroSemanaSelect.value;
+
+    // LÓGICA:
+    // 1. Mês deve ter valor
+    // 2. Ano deve ter valor
+    // 3. Semana deve ser "" (que corresponde à opção "Todas")
+    if (mes !== "" && ano !== "" && semana === "") {
+        btnPdf.style.display = 'inline-flex';
+        
+        // Atualiza o texto do botão
+        const nomeMes = rankingFiltroMesSelect.options[rankingFiltroMesSelect.selectedIndex]?.text || mes;
+        btnPdf.innerHTML = `<i class="fas fa-file-pdf stats-btn-icon"></i> PDF (${nomeMes} ${ano})`;
+    } else {
+        btnPdf.style.display = 'none';
+    }
 }
 
 // --- EVENT LISTENER GLOBAL PARA BOTÕES DE EXPANDIR GRÁFICO ---
@@ -6613,7 +6664,331 @@ if (btnGsEscalaPdf) {
     btnGsEscalaPdf.addEventListener('click', imprimirEscalaPDF);
 }
 
+// --- NOVO: REFERÊNCIAS ---
+const btnRankingPdfQuadro = document.getElementById('btn-ranking-pdf-quadro');
+const hiddenScheduleContainer = document.getElementById('hidden-schedule-container');
 
+// 1. Mostrar/Ocultar botão PDF
+if (rankingFiltroSemanaSelect) {
+    rankingFiltroSemanaSelect.addEventListener('change', () => {
+        // Mostra o botão apenas se "Todas" estiver selecionado e houver Mês/Ano
+        const isTodas = rankingFiltroSemanaSelect.value === "";
+        const hasMes = rankingFiltroMesSelect.value !== "";
+        if (isTodas && hasMes) {
+            btnRankingPdfQuadro.style.display = 'inline-flex';
+            // Atualiza texto do botão
+            const nomeMes = rankingFiltroMesSelect.options[rankingFiltroMesSelect.selectedIndex].text;
+            const ano = rankingFiltroAnoSelect.value;
+            btnRankingPdfQuadro.innerHTML = `<i class="fas fa-file-pdf stats-btn-icon"></i> PDF (${nomeMes} ${ano})`;
+        } else {
+            btnRankingPdfQuadro.style.display = 'none';
+        }
+    });
+}
+
+// 2. Event Listener do Botão PDF
+if (btnRankingPdfQuadro) {
+    btnRankingPdfQuadro.addEventListener('click', async () => {
+        const originalText = btnRankingPdfQuadro.innerHTML;
+        btnRankingPdfQuadro.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Gerando...`;
+        btnRankingPdfQuadro.disabled = true;
+
+        try {
+            await gerarQuadroMensalHTML();
+            await baixarPDFQuadro();
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao gerar PDF.");
+        } finally {
+            btnRankingPdfQuadro.innerHTML = originalText;
+            btnRankingPdfQuadro.disabled = false;
+        }
+    });
+}
+
+// 3. Função para montar o HTML (O coração da réplica)
+async function gerarQuadroMensalHTML() {
+    if (!todasDesignacoesGlobaisCarregadas) await carregarTodasDesignacoesParaStatsGlobais();
+
+    const mes = rankingFiltroMesSelect.value;
+    const ano = rankingFiltroAnoSelect.value;
+    const nomeMes = rankingFiltroMesSelect.options[rankingFiltroMesSelect.selectedIndex].text;
+
+    const dadosMes = todasDesignacoesGlobais.filter(d => 
+        String(d.mes).padStart(2,'0') === String(mes).padStart(2,'0') && 
+        d.ano === ano
+    );
+
+    const semanasMap = {};
+    dadosMes.forEach(d => {
+        const chave = d.semanaISO || d.semana || "Outras";
+        if (!semanasMap[chave]) {
+            semanasMap[chave] = { label: formatarDataCurta(d.data), dados: [] };
+        }
+        semanasMap[chave].dados.push(d);
+    });
+
+    const colunasSemanas = Object.values(semanasMap).sort((a,b) => {
+        const diaA = parseInt(a.label.split('-')[0]);
+        const diaB = parseInt(b.label.split('-')[0]);
+        return diaA - diaB;
+    });
+
+    // --- CSS AJUSTADO ---
+    const cssReset = `
+        <style>
+            #hidden-schedule-container * {
+                box-sizing: border-box;
+                font-family: Arial, sans-serif;
+            }
+            .pdf-wrapper {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 15px; 
+                width: 100%;
+                /* Garante que o container tenha altura mínima para forçar o canvas */
+                min-height: 1200px; 
+            }
+            
+            .bg-header-main { 
+                background-color: #000000 !important; 
+                color: #ffffff !important; 
+                font-size: 18px !important;
+                font-weight: bold; 
+                padding: 15px !important; /* Aumentado levemente */
+                margin-bottom: 0; 
+                text-transform: uppercase;
+                line-height: 1.2;
+            }
+
+            .schedule-grid {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px !important;
+                color: #000000 !important;
+                background-color: #ffffff !important;
+            }
+            .schedule-grid th, .schedule-grid td {
+                border: 1px solid #000000 !important;
+                padding: 0 4px !important;
+                text-align: center;
+                vertical-align: middle;
+            }
+            
+            /* --- ALTERAÇÃO 1: TÍTULOS COLORIDOS MAIS ALTOS --- */
+            .bg-section-title { 
+                font-weight: bold; 
+                text-transform: uppercase; 
+                -webkit-print-color-adjust: exact; 
+                font-size: 14px !important; 
+                /* Aumentei o padding vertical para 12px (antes era 4px ou 8px) */
+                padding: 12px 4px !important; 
+                color: #ffffff !important;
+                line-height: 1.2;
+            }
+            
+            /* Cores (Mantidas) */
+            .bg-brown { background-color: #5d4037 !important; }
+            .bg-cyan { background-color: #00acc1 !important; }
+            .bg-yellow { background-color: #ffc107 !important; }
+            .bg-red { background-color: #b71c1c !important; }
+            .bg-blue-dark { background-color: #0d47a1 !important; }
+            .bg-blue-light { background-color: #42a5f5 !important; }
+            .bg-green { background-color: #2e7d32 !important; }
+            .bg-orange { background-color: #ff5722 !important; }
+
+            /* --- ALTERAÇÃO 2: CÉLULAS MAIS ALTAS PARA IR ATÉ O FUNDO --- */
+            .data-col { 
+                background-color: #ffffff !important; 
+                color: #000000 !important; 
+                width: 17%; 
+                /* Aumentei para 50px. Isso empurrará a tabela para baixo preenchendo o vazio */
+                height: 50px !important; 
+            }
+            
+            .label-col { 
+                background-color: #ffffff !important; 
+                color: #000000 !important; 
+                width: 15%; 
+                font-weight: bold; 
+                text-align: right; 
+                padding-right: 8px !important;
+                font-size: 0.9em; 
+            }
+
+            /* Utilitários */
+            .text-red { color: #d32f2f !important; font-weight: bold; }
+            .text-blue { color: #0d47a1 !important; }
+            .text-blue-dark { color: #0d47a1 !important; }
+            .text-italic { font-style: italic; font-size: 0.9em; }
+            .sub-label { font-size: 0.8em; color: #333 !important; display: block; margin-top: 2px; }
+            .cell-split { display: flex; flex-direction: column; justify-content: center; gap: 2px; line-height: 1.1; height: 100%; }
+            
+            /* Bordas Coloridas */
+            .border-pink { border: 2px solid #e91e63 !important; }
+            .border-blue { border: 2px solid #0d47a1 !important; }
+            .border-green { border: 2px solid #2e7d32 !important; }
+        </style>
+    `;
+
+    // Cabeçalho HTML
+    let html = `
+    ${cssReset}
+    <div class="pdf-wrapper">
+        <div class="bg-header-main" style="text-align:center;">
+            PROGRAMA MENSAL DE ACTIVIDADES DA CONGREGAÇÃO<br>
+            <span style="font-size:1.4em; display:block; margin-top:5px;">${nomeMes} ${ano}</span>
+        </div>
+        
+        <table class="schedule-grid">
+            <thead>
+                <tr>
+                    <th class="label-col" style="border:none !important;"></th>
+                    <!-- Semanas -->
+                    ${colunasSemanas.map(c => `<th style="background-color:#ffffff !important; color:#000000 !important; font-weight:900; font-size:16px !important; padding: 6px !important;">${c.label}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- REUNIÃO VIDA E MINISTÉRIO -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-brown">REUNIÃO VIDA E MINISTÉRIO CRISTÃOS</td></tr>
+                
+                ${renderRow("PRESIDENTE", "Presidente Semana", colunasSemanas)}
+                ${renderRow("ORAÇÃO INICIAL", "Oração Inicial Semana", colunasSemanas)}
+
+                <!-- TESOUROS -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-cyan"><i class="fas fa-gem"></i> TESOUROS DA PALAVRA DE DEUS</td></tr>
+                ${renderRow("TESOUROS", "Tesouros", colunasSemanas, "text-blue")}
+                ${renderRow("PÉROLAS", "Pérolas", colunasSemanas, "text-blue")}
+                ${renderRow("LEITURA BÍBLICA", "Leitura da Bíblia", colunasSemanas, "text-blue")}
+
+                <!-- MINISTÉRIO -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-yellow"><i class="fas fa-comments"></i> EMPENHE-SE NO MINISTÉRIO</td></tr>
+                ${renderRow("DESIGNAÇÃO 1", "Designação 1", colunasSemanas)}
+                ${renderRow("DESIGNAÇÃO 2", "Designação 2", colunasSemanas)}
+                ${renderRow("DESIGNAÇÃO 3", "Designação 3", colunasSemanas)}
+                ${renderRow("DESIGNAÇÃO 4", "Designação 4", colunasSemanas)}
+
+                <!-- VIVER COMO CRISTÃOS -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-red"><i class="fas fa-sheep"></i> VIVER COMO CRISTÃOS</td></tr>
+                ${renderRow("1ª PARTE", "1ª Parte", colunasSemanas, "text-red")}
+                ${renderRow("2ª PARTE", "2ª Parte", colunasSemanas, "text-red")}
+                ${renderRow("3ª PARTE", "3ª Parte", colunasSemanas, "text-red")}
+                ${renderRow("ESTUDO BÍBL.", "Estudo Bíblico", colunasSemanas, "text-red")}
+                ${renderRow("LEITOR", "Leitor do Estudo Bíblico", colunasSemanas, "text-red")}
+                ${renderRow("ORAÇÃO FINAL", "Oração Final Semana", colunasSemanas, "text-red")}
+
+                <!-- FIM DE SEMANA -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-blue-dark">REUNIÃO PÚBLICA E ESTUDO DE "A SENTINELA"</td></tr>
+                
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-blue-dark" style="font-size:12px !important; padding:4px !important;"><i class="fas fa-comment"></i> REUNIÃO PÚBLICA</td></tr>
+                ${renderRow("PRESIDENTE", "Presidente Fim de Semana", colunasSemanas, "text-blue-dark")}
+                ${renderRow("ORADOR", "Orador Público", colunasSemanas, "text-blue-dark", true)}
+
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-blue-light" style="font-size:12px !important; padding:4px !important;"><i class="fas fa-book-open"></i> ESTUDO DE "A SENTINELA"</td></tr>
+                ${renderRow("DIRIGENTE", "Dirigente Sentinela", colunasSemanas, "text-blue-dark")}
+                ${renderRow("LEITOR", "Leitor da Sentinela", colunasSemanas, "text-blue-dark")}
+                ${renderRow("ORAÇÃO FINAL", "Oração Final Fim de Semana", colunasSemanas, "text-blue-dark")}
+
+                <!-- TAREFAS -->
+                <tr><td colspan="${colunasSemanas.length + 1}" class="bg-section-title bg-green"><i class="fas fa-clipboard-check"></i> TAREFAS</td></tr>
+                ${renderRow("VÍDEO/SOM", "Vídeo/Som", colunasSemanas, "", false, "border-pink")}
+                ${renderRow("ZOOM", "Zoom", colunasSemanas, "", false, "border-pink")}
+                ${renderRow("MICROS PALCO", "Micros Palco", colunasSemanas, "", false, "border-blue")}
+                ${renderRow("MICRO 2", "Micro 2", colunasSemanas, "", false, "border-blue")}
+                ${renderRow("INDICADOR 1", "Indicador 1", colunasSemanas, "", false, "border-green")}
+                ${renderRow("INDICADOR 2", "Indicador 2", colunasSemanas, "", false, "border-green")}
+                
+                <!-- LIMPEZA (RODAPÉ) -->
+                <tr>
+                    <td class="label-col bg-orange" style="color:white !important; border:none !important;">LIMPEZA</td>
+                    ${colunasSemanas.map(c => {
+                        const item = c.dados.find(d => d.nome === "Limpeza");
+                        const valor = item ? (item.pessoaA || Object.keys(item.participantes || {})[0] || "") : "";
+                        return `<td class="bg-orange" style="color:white !important; font-weight:bold;">${valor}</td>`;
+                    }).join('')}
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    `;
+
+    hiddenScheduleContainer.innerHTML = html;
+}
+
+// Helper para formatar "DD-DD" (Ex: 02-08) com base nas datas da semana
+function formatarDataCurta(dataStr) {
+    if (!dataStr) return "";
+    // Assume DD/MM/AAAA. Retorna DD (ex: 02)
+    // Para ser perfeito (02-08), precisaria calcular o fim da semana.
+    // Simplificação: Retorna o dia e o mês (02/02)
+    const [d, m] = dataStr.split('/');
+    // Tenta simular o formato 02-08 somando 6 dias (aproximado)
+    // Para produção real, usaríamos date-fns ou lógica de data robusta
+    return `${d}-${String(parseInt(d)+6).padStart(2,'0')}`; 
+}
+
+// Renderiza uma linha da tabela (ex: Presidente) cruzando com as colunas (semanas)
+function renderRow(label, nomeDesignacaoDB, colunas, textClass = "", isPublicTalk = false, cellBorderClass = "") {
+    let cells = colunas.map(col => {
+        // Encontra a designação nesta semana
+        const item = col.dados.find(d => d.nome === nomeDesignacaoDB);
+        
+        let content = "";
+        if (item) {
+            // Lógica para Orador Público (Tema + Congregação)
+            if (isPublicTalk) {
+                const orador = item.pessoaA || "";
+                const cong = item.congregacao ? `<br><span class="sub-label">${item.congregacao}</span>` : "";
+                const tema = item.tema ? `<br><span class="text-italic">"${item.tema}"</span>` : "";
+                content = `<strong>${orador}</strong>${cong}${tema}`;
+            } 
+            // Lógica Padrão (Pode ter Pessoa A / Pessoa B)
+            else {
+                const pA = item.pessoaA;
+                const pB = item.pessoaB; // Para designações com ajudante
+                if (pA && pB) {
+                    content = `<div class="cell-split"><span>${pA}</span><span style="border-top:1px dashed #ccc;">${pB}</span></div>`;
+                } else {
+                    content = pA || "";
+                }
+            }
+        }
+        
+        return `<td class="data-col ${textClass} ${cellBorderClass}">${content}</td>`;
+    }).join('');
+
+    return `<tr><td class="label-col">${label}</td>${cells}</tr>`;
+}
+
+// 4. Gerar e Baixar PDF
+async function baixarPDFQuadro() {
+    const { jsPDF } = window.jspdf;
+    
+    hiddenScheduleContainer.style.display = 'block';
+
+    const canvas = await html2canvas(hiddenScheduleContainer, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff', // Força o fundo branco no Canvas
+        windowWidth: 1240
+    });
+
+    // Esconde novamente após gerar
+    hiddenScheduleContainer.style.display = 'none';
+
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    
+    const mes = rankingFiltroMesSelect.options[rankingFiltroMesSelect.selectedIndex].text;
+    const ano = rankingFiltroAnoSelect.value;
+    pdf.save(`Quadro_Actividades_${mes}_${ano}.pdf`);
+}
 
     </script>
 </html>
